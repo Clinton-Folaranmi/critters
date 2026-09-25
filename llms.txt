@@ -1,0 +1,33 @@
+# Animal Farm
+
+> Interactive, top-down creature studies for the web (a frog pond first), the
+> method for building them, and the QA harness that measures them. The method's
+> single source of truth is docs/CREATURE_STUDY_SPEC.md: numbered MUST/SHOULD
+> rules, TypeScript interfaces, a file layout, a build procedure, a locomotion
+> catalogue, environment design, performance rules and a QA table in which every
+> check names the npm script that measures it.
+
+Start with the spec. The frog pond (packages/frog-pond) is its worked example.
+No sound anywhere. The frog study has two variants, Night and Day (theme keys
+`night` and `day`; titles Night Chorus and Day Chorus). Code is MIT; docs are
+CC BY 4.0.
+
+## Docs
+
+- [Creature Study Spec](docs/CREATURE_STUDY_SPEC.md): the rules, interfaces, layout, procedure and QA table (source of truth)
+- [Creature Study Field Manual](docs/CREATURE_STUDY_FIELD_MANUAL.html): the illustrated human edition of the spec, with figures
+- [Frog art direction](docs/FROG_ART_DIRECTION.md): what each frog pose and scene element must read as, with timings
+- [Frog study guide](docs/FROG_STUDY_GUIDE.md): a plain tour of the frog pond's code and how to change common things
+- [Audit report](docs/audit-report.html): the 2026-09-25 frog pond audit (26 findings, all addressed or superseded)
+
+## Code
+
+- [packages/frog-pond](packages/frog-pond/README.md): the framework-free study; `mountFrogScene()`, the theme, the world and shore maths
+- [studies/frogs](studies/frogs/index.html): the demo page (Night | Day), built by scripts/build.mjs
+- [standalone/frogs/entry.ts](standalone/frogs/entry.ts): the single offline HTML file's script (scripts/build-standalone.mjs)
+- [qa/README.md](qa/README.md): the QA checks (`npm run qa:*`), thresholds and how to run them
+
+## Working in this repo
+
+- [AGENTS.md](AGENTS.md): rules for coding agents (also CLAUDE.md)
+- [README.md](README.md): setup, scripts and layout

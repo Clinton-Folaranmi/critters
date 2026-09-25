@@ -1,8 +1,9 @@
 # Night Chorus / Day Chorus — art and motion sheet
 
-What each pose and scene element in `/play/frogs` is meant to communicate, so
+What each pose and scene element of the frog pond (`packages/frog-pond`, the demo
+at `studies/frogs`) is meant to communicate, so
 tuning stays anchored to intent rather than parameter nudging. All values live
-in `components/frogs/frog-world.ts` (motion), `frog-theme.ts` (palettes and
+in `packages/frog-pond/src/frog-world.ts` (motion), `frog-theme.ts` (palettes and
 looks), `frog-bank.ts` and `frog-bank-paint.ts` (the shore), `frog-shaders.ts`
 (WebGL art) and `frog-canvas.ts` (the Canvas 2D interpretation). Original work
 throughout.
@@ -30,7 +31,7 @@ throughout.
 | ------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Sit                 | rest                                           | Knees out beside the hips, feet forward, breathing, eyes following fireflies.                                                                                                                                                                                                                    |
 | Loading crouch      | 190 ms calm, 75 ms startled, 160 ms from water | Weight back over the hips (lean), legs folded tight, toes spread, squaring up only slightly (≤ 2.2 rad/s) to the target. The pad dips. A calm hop more than ~26° off the current heading is preceded by a pad shift (below). In water the crouch holds its line; the heading changes in the air. |
-| Launch              | first ~100 ms of air                           | Outside-of-turn hind leg drives back first, the other ~28 ms later; webs fully spread; forelegs stay tucked; slight stretch; the pad is shoved back.                                                                                                                                             |
+| Launch              | first ~100 ms of air                           | Outside-of-turn hind leg drives back first, the other 52 ms later; webs fully spread; forelegs stay tucked; slight stretch; the pad is shoved back.                                                                                                                                              |
 | Apex                | mid-flight                                     | Legs still long but relaxing; body barely larger (lift 0.35/unit height); shadow at its furthest, softest, faintest.                                                                                                                                                                             |
 | Landing compression | 0–100 ms after touchdown                       | Forefeet reached forward before contact; body squashes (0.81); hind legs fold beneath; the pad recoils and dimples.                                                                                                                                                                              |
 | Recovery            | 100–300 ms                                     | One small after-bounce (≈1.03) and settle into sit — never a snap.                                                                                                                                                                                                                               |
@@ -46,7 +47,10 @@ body can move over it without the foot sliding. A settled frog's four feet
 stay anchored while it breathes; they are re-set by each turn step and let go
 over the first frames of a push-off, as the body is driven away from them.
 In the crouch the forefeet ease off (the weight goes onto the hips); the hind
-feet keep gripping. Measured: planted feet hold within ~0.06 body lengths.
+feet keep gripping. Target: planted feet hold within 0.06 body lengths. Measured (`npm run qa:motion`,
+2026-09-25): the median foot is on its pin, but the 95th percentile is
+0.08–0.13 sitting or crouching, and a forefoot pinned beyond its compact reach
+moves ~0.02 with each breath (a known issue: spec section 15).
 
 ## On-pad shift
 
@@ -90,7 +94,7 @@ A swim lasts 3–7 s before the frog heads out. Over its last 2 s it comes
 round toward the nearest free stage, keeps to that one, swims round any pad in
 the way rather than circling it, and climbs onto it (or any free stage it
 meets). After a dive it heads out within 1.5–3 s. Measured over 2 h untouched
-(`tools/frog-qa/swims.mjs`): at aspect 1.48 median 6.6 s, 90 % within 10.7 s,
+(`npm run qa:swims`): at aspect 1.48 median 6.6 s, 90 % within 10.7 s,
 longest 25 s; at 0.91 median 5.4 s, 90 % within 6.8 s, longest 14.5 s.
 
 A swimmer's trailing legs never go under the bank: containment keeps the body
@@ -126,21 +130,20 @@ the Canvas fallback read the same palette):
 - All cast shadows (bed, contact, frog) fall away from the key light, which
   is up and to the right: down and to the left.
 
-**Night** (`/play/frogs`, Night Chorus): the last of a sunset as night
+**Night** (the demo's default, Night Chorus): the last of a sunset as night
 falls; dark, peaty water that mostly reflects a violet sky; the bed a
 suggestion, lit a little on the sunset side, stone tops catching warm light;
 fireflies and their reflections. Mean luma inside the visible picture, bank
 included: 35–40 (measured 39.2 WebGL, 36.7 Canvas).
 
-**Day** (`/play/frogs/day`, Day Chorus): a high sun; clear, green water;
+**Day** (`#day`, Day Chorus): a high sun; clear, green water;
 the bed plainly visible, with caustics (a baked cellular web, two copies
 sliding past each other; the shader bends them with the surface, the Canvas
 fallback turns one copy a little and softens the tile; both fade over deep
 water); pale sky reflection and crisp sun glints; midges instead of
-fireflies, with tiny shadows on the water. Brightness matched to the koi
-study: mean luma 85–90 inside the visible picture, bank included (measured
-86.6 WebGL, 86.2 Canvas; koi 90). The two renderers stay within 5 of each
-other in both lights (`tools/frog-qa/t-luma.mjs`).
+fireflies, with tiny shadows on the water. Brightness: mean luma 85–90 inside the visible picture, bank included (measured
+86.6 WebGL, 86.0 Canvas). The two renderers stay within 5 of each
+other in both lights (`npm run qa:luma`).
 
 ## Pond composition
 

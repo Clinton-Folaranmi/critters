@@ -1,4 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creature Study Field Manual</title>
+<meta name="description" content="The illustrated edition of the Creature Study Spec: how to build interactive, top-down animal studies that hold up under close inspection.">
+<!-- The illustrated edition of docs/CREATURE_STUDY_SPEC.md (the single source of truth). The regions marked
+     spec:…:start / spec:…:end are generated from the spec by `npm run docs:write`; `npm run docs:check` fails
+     when they're out of date. Edit the spec, then regenerate; edit the prose and figures here by hand. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -266,7 +275,8 @@
   .branch { fill: none; stroke: var(--branch); stroke-width: 12; stroke-linecap: round; }
   .branch-twig { fill: none; stroke: var(--branch); stroke-width: 5; stroke-linecap: round; }
 </style>
-
+</head>
+<body>
 <main class="shell" id="manual">
   <div class="topbar">
     <p class="eyebrow">Interactive animal studies · method</p>
@@ -277,6 +287,7 @@
   </div>
   <h1>Creature Study Field Manual</h1>
   <p class="intro">A method for building interactive, top-down animal scenes that hold up under close inspection. It covers research, body construction, motion, habitat, lighting, performance and QA, with example figures from finished work. It applies to any animal; four reference animals (a frog, a koi, a robin and a ground beetle) serve as examples throughout. Send it with the brief template at the end.</p>
+  <p class="intro">This is the illustrated edition of <code>docs/CREATURE_STUDY_SPEC.md</code>, the single source of truth, written for language models and people alike. Rule IDs in brackets, such as (P-3) or (E-12), point to its numbered MUST and SHOULD rules; the rules index, the time-of-day targets, the locomotion summary and the QA table here are generated from it. The frog pond in this repository is the worked example.</p>
   <div class="actions">
     <button class="btn primary" id="copy-all" type="button">Copy manual as a prompt</button>
     <a class="btn" href="#brief">Go to the brief template</a>
@@ -292,23 +303,23 @@
   </div>
 
   <nav class="toc" aria-label="Contents">
-    <a href="#polish">Principles</a><a href="#animals">Reference animals</a><a href="#order">Process</a><a href="#structure">Structure</a><a href="#body">Anatomy</a><a href="#pose">Pose</a><a href="#behaviour">Behaviour</a><a href="#contact">Contact</a><a href="#fluid">Water and air</a><a href="#habitat">Habitat</a><a href="#light">Light</a><a href="#performance">Performance</a><a href="#access">Interaction</a><a href="#measure">QA metrics</a><a href="#adapt">Other animals</a><a href="#done">Checklist</a><a href="#brief">Brief</a>
+    <a href="#polish">Principles</a><a href="#animals">Reference animals</a><a href="#order">Process</a><a href="#structure">Structure</a><a href="#body">Anatomy</a><a href="#pose">Pose</a><a href="#behaviour">Behaviour</a><a href="#contact">Contact</a><a href="#locomotion">Locomotion</a><a href="#habitat">Habitat</a><a href="#environment">Environment</a><a href="#light">Light</a><a href="#performance">Performance</a><a href="#access">Interaction</a><a href="#measure">QA</a><a href="#adapt">Other animals</a><a href="#first">First animal</a><a href="#done">Checklist</a><a href="#brief">Brief</a><a href="#rules">Rules index</a>
   </nav>
   <article class="card" id="polish">
     <p class="kicker">01 / Principles</p>
     <h2>Ten rules</h2>
     <p class="lead">A scene reads as fake because of a small set of errors: a foot sliding while the body turns, a swimmer rotating in place, a pose changing in a single frame, a shadow cast toward the light. These rules target those errors, and the sections after them explain how to meet each one.</p>
     <div class="rules">
-      <div class="rule"><b>1. Research the animal first</b><span>Watch slow-motion footage before designing any pose. A frog swimming in a straight line kicks both hind legs at once; most people guess they alternate.</span></div>
-      <div class="rule"><b>2. Give every action a motive</b><span>A robin turns toward a sound, a beetle steers around a twig, a koi rises for food. Nothing moves to fill time or because the page loaded.</span></div>
-      <div class="rule"><b>3. Pin feet that touch a surface</b><span>The frog's feet stay on the lily pad while its body turns over them. Feet only move by stepping.</span></div>
-      <div class="rule"><b>4. In water or air, turn only while moving</b><span>A koi changes heading along a curve as it swims. It can't rotate on the spot.</span></div>
-      <div class="rule"><b>5. Ease every pose change</b><span>Pose values move toward their targets over several frames. A landing squash still takes 20 to 30 ms.</span></div>
-      <div class="rule"><b>6. Keep mirrored motion mirrored</b><span>Paired limbs move together until steering, loading or a stumble gives them a reason to split.</span></div>
-      <div class="rule"><b>7. Use one key light</b><span>Every shadow falls away from it and every highlight faces it.</span></div>
-      <div class="rule"><b>8. Build depth from physical cues</b><span>A visible floor, a medium that hides it with depth, and shadows offset by height.</span></div>
-      <div class="rule"><b>9. Keep idle behaviour small</b><span>Breathing, blinking and looking around. Larger actions come at irregular intervals for each animal.</span></div>
-      <div class="rule"><b>10. Measure, then review by eye</b><span>Foot slide, pose jumps, brightness and frame time all get numbers before anyone signs off.</span></div>
+      <div class="rule"><b>P-1 · Research the animal first</b><span>Watch slow-motion footage before designing any pose. A frog swimming in a straight line kicks both hind legs at once; most people guess they alternate.</span></div>
+      <div class="rule"><b>P-2 · Give every action a motive</b><span>A robin turns toward a sound, a beetle steers around a twig, a koi rises for food. Nothing moves to fill time or because the page loaded.</span></div>
+      <div class="rule"><b>P-3 · Pin feet that touch a surface</b><span>The frog's feet stay on the lily pad while its body turns over them. Feet only move by stepping.</span></div>
+      <div class="rule"><b>P-4 · In water or air, turn only while moving</b><span>A koi changes heading along a curve as it swims. It can't rotate on the spot.</span></div>
+      <div class="rule"><b>P-5 · Ease every pose change</b><span>Pose values move toward their targets over several frames. A landing squash still takes 20 to 30 ms.</span></div>
+      <div class="rule"><b>P-6 · Keep mirrored motion mirrored</b><span>Paired limbs move together until steering, loading or a stumble gives them a reason to split.</span></div>
+      <div class="rule"><b>P-7 · Use one key light</b><span>Every shadow falls away from it and every highlight faces it.</span></div>
+      <div class="rule"><b>P-8 · Build depth from physical cues</b><span>A visible floor, a medium that hides it with depth, and shadows offset by height.</span></div>
+      <div class="rule"><b>P-9 · Keep idle behaviour small</b><span>Breathing, blinking and looking around. Larger actions come at irregular intervals for each animal.</span></div>
+      <div class="rule"><b>P-10 · Measure, then review by eye</b><span>Foot slide, pose jumps, brightness and frame time all get numbers before anyone signs off.</span></div>
     </div>
   </article>
 
@@ -623,13 +634,31 @@
     <p class="caption">The pinned point never moves and the leg adapts to it. In a turn of about 40 degrees the body's swing eases in and out while the feet step one or two at a time; the frog's short front legs step twice.</p>
     <p>Store each pin in the surface's own coordinates, so a floating lily pad or a swaying branch carries the foot with it. Each frame, before drawing, swing the leg around its root until it points at the pin and solve how far it has to extend to reach it. The body can then breathe, lean and pivot while the foot stays put.</p>
     <p>A step has four stages. The foot releases its pin, and at that moment you work out where it should rest relative to the body when this step ends. The pin then moves there along an eased path that curves slightly toward the body, which is how a lifted foot looks from above, and the toes close on the way. Finally the foot lands, the toes spread, and it's pinned again.</p>
-    <p>A settled animal keeps every touching foot pinned, so breathing moves the body over still feet. Turning on a surface happens by stepping, never by rotating the whole rig; pivot near the hindquarters so neither end outruns the reach of its legs. Plan steps around reach: a leg whose root is being carried away from its foot steps during the swing, before it straightens, and short legs take two small steps instead of dragging. While the frog crouches to jump, its back feet keep their grip, its front feet ease off as the weight moves back, and every foot lets go over the first frames of the push. An animal on a moving support, like the robin on a swaying branch, inherits the support's movement and rotation in every state, including landing and crouching. Cap how far a planted leg can stretch; beyond a compact reach, let the foot slip slightly rather than pulling the leg straight.</p>
+    <p>A settled animal keeps every touching foot pinned, so breathing moves the body over still feet. Turning on a surface happens by stepping, never by rotating the whole rig; pivot near the hindquarters so neither end outruns the reach of its legs. Plan steps around reach: a leg whose root is being carried away from its foot steps during the swing, before it straightens, and short legs take two small steps instead of dragging. While the frog crouches to jump, its back feet keep their grip, its front feet ease off as the weight moves back, and every foot lets go over the first frames of the push. An animal on a moving support, like the robin on a swaying branch, inherits the support's movement and rotation in every state, including landing and crouching. Cap how far a planted leg can stretch; beyond a compact reach, let the foot slip slightly rather than pulling the leg straight (C-1 to C-7).</p>
+    <p>Measure it. <code>npm run qa:motion</code> reports how far each planted foot sits from its pin and how far it slides per planted stretch; the target is 0.06 body lengths. The frog meets it at the median but not in the tail: a forefoot pinned beyond its compact reach moves a little with each breath, a known issue the spec records (its section 15) until the pins are re-set by a settling step.</p>
   </article>
 
-  <article class="card" id="fluid">
-    <p class="kicker">09 / Water and air</p>
-    <h2>Movement through water and air</h2>
-    <p class="lead">In water or air there's nothing to push against sideways, so heading changes only while the body travels, along a curve. The koi shows this most clearly. The frog follows the same rule when it swims, and so does the robin when it banks in flight.</p>
+  <article class="card" id="locomotion">
+    <p class="kicker">09 / Locomotion</p>
+    <h2>Locomotion catalogue</h2>
+    <p class="lead">Every way of moving gets the same four things written down before it is built: its pose keys, what is pinned and when (contact), how it turns, and how it is measured (L-1 to L-3). On the ground, feet are pinned and heading changes by stepping. In water or air there's nothing to push against sideways, so heading changes only while the body travels, along a curve. The koi shows this most clearly; the frog follows the same rule when it swims, and so does the robin when it banks in flight.</p>
+<!-- spec:locomotion:start -->
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Mode</th><th>Examples</th><th>Pinned</th><th>Heading changes by</th><th>Signature check</th></tr></thead>
+    <tbody>
+      <tr><td>Walking gaits</td><td>beetle (tripod), millipede (wave), lizard (walk), dog (trot)</td><td>every stance foot</td><td>stepping; body follows the feet</td><td>stance-foot slide ≤ 0.06 BL; duty factor within design</td></tr>
+      <tr><td>Hopping and jumping</td><td>frog, robin on a lawn, rabbit</td><td>all feet until the push</td><td>on the ground in the crouch; spread across the flight</td><td>one-frame pose change large only in the push; landing squash over ≥ 2 frames</td></tr>
+      <tr><td>Limb-driven swimming</td><td>frog, turtle, duck</td><td>nothing</td><td>curvature × distance travelled</td><td>straight strokes mirrored (L−R ≤ 0.01); no turning while still</td></tr>
+      <tr><td>Spine-driven swimming</td><td>koi, tadpole, eel</td><td>nothing</td><td>the head's path; the spine follows it</td><td>wave runs head to tail; no sideways slide of the body</td></tr>
+      <tr><td>Flying, flapping, gliding</td><td>robin, bat, dragonfly</td><td>nothing (feet tucked)</td><td>banking along a curve</td><td>no yaw while hovering without a reason; glides hold still</td></tr>
+      <tr><td>Perching</td><td>robin, dragonfly on a reed</td><td>both feet on the perch</td><td>stepping, or a hop in place</td><td>feet ride the perch's sway; zero slide on the perch</td></tr>
+      <tr><td>Slithering</td><td>grass snake, worm, sidewinder</td><td>contact points along the body (except sidewinding)</td><td>the head's path</td><td>body never slides sideways except when sidewinding</td></tr>
+      <tr><td>Burrowing</td><td>mole cricket, earthworm, beetle larva</td><td>forelimbs on the face being dug</td><td>the tunnel's path</td><td>depth cue continuous; spoil appears where digging happened</td></tr>
+    </tbody>
+  </table>
+</div>
+<!-- spec:locomotion:end -->
 <div class="diagram">
       <svg viewBox="0 0 700 250" role="img" aria-label="Left: rotating in place in water or air is ruled out. Right: a body curving along a path with its heading along the path and its hind legs trailing to the outside of the turn. Heading change equals curvature times distance travelled.">
         <g transform="translate(110 125)">
@@ -653,6 +682,47 @@
     <p class="caption">Left: the thing to avoid. Right: the heading stays along the path, and trailing limbs swing outward in proportion to the turn rate.</p>
     <p>Change heading by curvature multiplied by the distance actually travelled, measured after any collision or boundary has clamped the position. The exception is a stroke pushing against a wall or bank, which should count its push, or an animal facing the edge can never turn back. Let the stroke set the curvature: straight strokes allow a gentle drift, and a steering stroke allows a tighter turn. For the koi, the rest of the spine then follows the path the head took.</p>
     <p>Keep mirrored strokes mirrored. A frog swimming straight draws both knees in, kicks both legs back together, and holds a long, still glide. Unevenness only appears when steering: the outside leg drives fully and the inside one kicks a little later and shorter. Spread mid-air turns across the whole flight with an ease in and out, as the robin does when it banks between branches. Ease transitions between media too: a frog entering water dips slightly deeper before rising to swim, and leaving it clears the surface over a few frames. Drive trailing limbs from a smoothed turn rate (leg yaw of roughly minus the rate times a gain, capped near 0.4 radians) and let the body lag its path slightly. A startled escape reads best as a very short gather followed by a hard steering stroke that curves away from the threat.</p>
+    <h3>Walking gaits</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 250" role="img" aria-label="Two footfall timelines over one gait cycle. Left, a beetle's tripod gait: legs L1, R2 and L3 are on the ground for the first half of the cycle while R1, L2 and R3 swing, then they swap. Right, a lizard's walk: each leg is on the ground for about 70 percent of the cycle, starting in the order left hind, left fore, right hind, right fore, a quarter of a cycle apart.">
+        <text class="node-label key start" x="70" y="18">Tripod · beetle · duty 0.5</text>
+        <text class="node-label key start" x="450" y="18">Walk (lateral sequence) · lizard · duty 0.7</text>
+        <g class="edge">
+          <line x1="70" y1="44" x2="320" y2="44"/><line x1="70" y1="72" x2="320" y2="72"/><line x1="70" y1="100" x2="320" y2="100"/>
+          <line x1="70" y1="128" x2="320" y2="128"/><line x1="70" y1="156" x2="320" y2="156"/><line x1="70" y1="184" x2="320" y2="184"/>
+          <line x1="450" y1="44" x2="680" y2="44"/><line x1="450" y1="72" x2="680" y2="72"/><line x1="450" y1="100" x2="680" y2="100"/><line x1="450" y1="128" x2="680" y2="128"/>
+        </g>
+        <text class="node-sub start" x="30" y="44">L1</text><text class="node-sub start" x="30" y="72">R1</text><text class="node-sub start" x="30" y="100">L2</text>
+        <text class="node-sub start" x="30" y="128">R2</text><text class="node-sub start" x="30" y="156">L3</text><text class="node-sub start" x="30" y="184">R3</text>
+        <g class="node-key">
+          <rect x="70" y="38" width="125" height="12" rx="6"/><rect x="70" y="122" width="125" height="12" rx="6"/><rect x="70" y="150" width="125" height="12" rx="6"/>
+          <rect x="195" y="66" width="125" height="12" rx="6"/><rect x="195" y="94" width="125" height="12" rx="6"/><rect x="195" y="178" width="125" height="12" rx="6"/>
+        </g>
+        <text class="node-sub start" x="410" y="44">LH</text><text class="node-sub start" x="410" y="72">LF</text><text class="node-sub start" x="410" y="100">RH</text><text class="node-sub start" x="410" y="128">RF</text>
+        <g class="node-key">
+          <rect x="450" y="38" width="161" height="12" rx="6"/>
+          <rect x="507" y="66" width="161" height="12" rx="6"/>
+          <rect x="565" y="94" width="115" height="12" rx="6"/><rect x="450" y="94" width="46" height="12" rx="6"/>
+          <rect x="622" y="122" width="58" height="12" rx="6"/><rect x="450" y="122" width="103" height="12" rx="6"/>
+        </g>
+        <path class="edge" d="M70 206 H320 M450 206 H680"/>
+        <text class="node-sub start" x="70" y="222">0</text><text class="node-sub" x="300" y="222">1 cycle</text>
+        <text class="node-sub start" x="450" y="222">0</text><text class="node-sub" x="660" y="222">1 cycle</text>
+        <text class="edge-label key start" x="450" y="160">bar: foot on the ground, pinned</text>
+        <text class="node-sub start" x="450" y="178">gap: the foot swings forward</text>
+        <text class="node-sub start" x="70" y="244">Trot: diagonal pairs together, duty ≈ 0.5 · Wave: back to front on each side, sides half a cycle apart, duty 0.7–0.9</text>
+      </svg>
+    </div>
+    <p class="caption">A gait is a footfall timeline. Stance feet are pinned; speed comes from the stride and the cycle rate, never from sliding stance feet (L-5).</p>
+    <p>On the ground every stance foot is pinned (C-1), and the body moves over it. Each swing carries its foot to where it will rest relative to the body at the end of its next stance, on an eased arc curving slightly toward the body. Turning, the body yaws no faster than its stance feet can follow, and the outside legs take longer strides (L-6, L-7). The frog's turn on a lily pad is the worked example of a turn on the spot: the forefeet take two short steps each, inside first, and each hind foot steps once, the outside one mid-swing.</p>
+    <h3>Hopping and jumping</h3>
+    <p>Six keys, from the frog's motion sheet: <b>sit</b>; a <b>loading crouch</b> (190 ms calm, 75 ms startled, 160 ms from the water) with the weight back over the hips; the <b>launch</b>, the lead hind leg driving back first and the other 52 ms later; the <b>apex</b>, legs relaxing, body barely larger; the <b>landing compression</b>, forefeet reaching before contact and the body squashing to 0.81; and the <b>recovery</b>, one small after-bounce into the sit. Every foot is pinned until the push and lets go over its first frames; the forefeet are pinned on touchdown (L-8). A turn of more than about 43° finishes in the crouch and is spread across the flight (L-9). The shadow keeps its ground-sized footprint: height only offsets, softens and fades it (L-10).</p>
+    <h3>Limb-driven swimming</h3>
+    <p>Recovery (both knees draw in together, about 340 ms), kick (120 ms, mirrored, webs open, all the speed), glide (1.15–1.85 s, visibly still). Only a steering stroke is uneven (L-11). Nothing is pinned. Heading changes by curvature times distance (L-12), and trailing legs swing to the outside of the turn (L-13).</p>
+    <p><b>Swim homing.</b> A frog swims for 3 to 7 seconds. Over the last two it comes round toward the nearest free lily pad, then keeps to that one while it stays free rather than dithering between two. A pad in the way is swum round on the side the frog is already heading for, and it climbs onto its pad, or any free one it meets. Measured over two hours untouched: a median swim of 6.6 s and a longest of 25 s on a wide screen (L-15).</p>
+    <p><b>Leg clearance.</b> Keeping the body's centre in the water isn't enough: turning back from the shore, the trailing hind legs slipped under the bank. After posing, every knee, ankle and toe is tested against the shore with its drawn thickness, and the frog is moved straight off the bank by the largest shortfall. Swimmers' bodies and legs over the bank now measure zero through every soak (L-16).</p>
+    <h3>Spines, wings, perches, slithering and burrowing</h3>
+    <p>A <b>spine-driven swimmer</b> (koi, tadpole, eel) takes its heading from the head's path and the rest of the spine follows it, with a wave running head to tail that grows toward the tail; nothing slides sideways (L-17 to L-19). A <b>flyer</b> banks along a curve, tucks its feet after take-off and reaches with them to land, and holds still in a glide (L-20 to L-23). A <b>percher</b> keeps both feet pinned in the perch's frame so its sway carries the bird, and turns by a hop in place or a shuffle (L-24, L-25). A <b>slitherer</b>'s body follows the head's path, sliding sideways only when sidewinding, when its two short contact segments are pinned (L-26, L-27). A <b>burrower</b> braces against the tunnel while its forelimbs dig, advances only into space it has dug, and shows depth continuously with spoil where it dug (L-28, L-29).</p>
   </article>
 
   <article class="card" id="habitat">
@@ -679,8 +749,75 @@
     <p>Anything floating or raised casts two shadows: a tight contact shadow and a softer shadow on the ground below, offset further the deeper or higher it is. A lily pad over deep water has its ground shadow well away from it; a robin on a low branch has one close by. That offset is the strongest depth cue available. Every effect needs a physical source: a glow needs a light, and a sparkle needs a surface and a sun. Repeating light patterns such as caustics are cheapest drawn once as a tile that repeats without a visible seam, with two copies sliding past each other at different scales and warped slightly by the surface. Both renderers should use the same tile.</p>
   </article>
 
+  <article class="card" id="environment">
+    <p class="kicker">11 / Environment design</p>
+    <h2>Environment design</h2>
+    <p class="lead">The habitat isn't a backdrop. It sets where animals can go, what covers them, what a tap hits, how the picture meets the page, and what gives the animals reasons to move. Every rule here was a real bug or lesson in the frog study.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 300" role="img" aria-label="Left: the pond picture inside its canvas. The picture's outline is a squarish oval; taps outside it, in the faded margin, do nothing. A bank runs along the bottom and up the left; grass overhangs the water and reeds stand in the bay, and taps on either count as the bank. A frog on a pad is drawn over the bank and wins a tap there. A swimmer near the shore is drawn under the bank, and its legs are kept off it. Right: the draw order from the top: the picture's edge, vignette and grain, reeds and their shadows, fireflies and motes, pads and frogs on pads or in the air, the bank, swimmers, the water's surface, shadows on the bed, the bed.">
+        <defs><clipPath id="env-picture"><rect x="30" y="40" width="360" height="220" rx="74"/></clipPath></defs>
+        <rect class="node-normal" x="14" y="24" width="392" height="252" rx="4"/>
+        <text class="node-sub start" x="20" y="18">canvas</text>
+        <g clip-path="url(#env-picture)">
+          <rect class="fill-soft" x="30" y="40" width="360" height="220"/>
+          <path class="fill-ghost" d="M30 40 H78 C 92 92 88 150 130 188 C 172 224 262 214 390 226 V260 H30 Z"/>
+          <path class="edge" d="M112 172 l14 -8 M138 196 l12 -12 M170 209 l6 -16 M205 214 l4 -16 M240 214 l2 -15"/>
+          <path class="bone" d="M104 150 L128 96 M110 154 L142 110 M98 148 L112 92"/>
+          <g transform="translate(250 106)"><circle class="node-key" r="30"/><path class="pad-notch" d="M0 0 L30 -6 L30 6 Z"/><ellipse class="fill-accent" rx="11" ry="7" opacity="0.85"/></g>
+          <g transform="translate(174 164) rotate(-30)"><ellipse class="node-key" rx="15" ry="8"/><path class="bone-key" d="M-12 -4 L-28 -2 M-12 4 L-26 12"/></g>
+        </g>
+        <rect class="outline" x="30" y="40" width="360" height="220" rx="74"/>
+        <text class="node-label" x="370" y="36">×</text>
+        <text class="node-sub" x="330" y="286">faded margin: taps do nothing</text>
+        <text class="edge-label key start" x="286" y="104">frog on a pad</text>
+        <text class="node-sub start" x="286" y="118">over the bank, wins the tap</text>
+        <text class="edge-label start" x="92" y="62">reeds, grass over water</text>
+        <text class="node-sub start" x="92" y="76">count as bank: motes lift</text>
+        <path class="edge" d="M122 80 L120 96"/>
+        <text class="edge-label key start" x="196" y="160">swimmer</text>
+        <text class="node-sub start" x="196" y="174">under the bank, legs kept off it</text>
+        <text class="node-sub start" x="44" y="246">bank</text>
+        <line class="edge" x1="430" y1="20" x2="430" y2="280"/>
+        <text class="node-label start" x="450" y="30">Draw order, top first</text>
+        <g class="node-normal">
+          <rect x="450" y="42" width="236" height="20" rx="5"/><rect x="450" y="66" width="236" height="20" rx="5"/><rect x="450" y="90" width="236" height="20" rx="5"/>
+          <rect x="450" y="114" width="236" height="20" rx="5"/>
+          <rect x="450" y="186" width="236" height="20" rx="5"/><rect x="450" y="210" width="236" height="20" rx="5"/><rect x="450" y="234" width="236" height="20" rx="5"/><rect x="450" y="258" width="236" height="20" rx="5"/>
+        </g>
+        <rect class="node-key" x="450" y="138" width="236" height="20" rx="5"/><rect class="node-key" x="450" y="162" width="236" height="20" rx="5"/>
+        <text class="node-sub start" x="460" y="52">the picture's edge (a CSS mask)</text>
+        <text class="node-sub start" x="460" y="76">vignette and grain</text>
+        <text class="node-sub start" x="460" y="100">reeds and their shadows</text>
+        <text class="node-sub start" x="460" y="124">fireflies or midges, motes</text>
+        <text class="node-sub key start" x="460" y="148">pads; frogs on pads or in the air</text>
+        <text class="node-sub key start" x="460" y="172">the bank: earth, grass over the water</text>
+        <text class="node-sub start" x="460" y="196">swimmers</text>
+        <text class="node-sub start" x="460" y="220">surface, sky, ripples</text>
+        <text class="node-sub start" x="460" y="244">shadows on the bed, caustics</text>
+        <text class="node-sub start" x="460" y="268">the bed (painted once per size)</text>
+      </svg>
+    </div>
+    <p class="caption">A tap goes to the topmost thing drawn at that point, and nothing outside the picture's outline takes one.</p>
+    <h3>Boundaries match what's drawn</h3>
+    <p>One function defines where the animals may go (the frog's <code>shoreDistance</code>), shared by the world, both renderers and the hit test, with the shader's copy generated from it and checked to float precision (E-1). Containment keeps every drawn part off the boundary, not only the centre, and scenery the animals use is kept clear of it too: a drifting lily pad is nudged back off the bank (E-2, E-3). Details that mark the boundary, like pebbles at the waterline, are placed along the shore the world uses (E-4).</p>
+    <h3>Occluders, draw order and taps on them</h3>
+    <p>Write down, per state, what is drawn over what. A frog on a pad or in the air is drawn over the bank, so a leap near the shore passes over the grass; a swimmer is drawn under it (E-6). A tap goes to the topmost thing drawn there: grass leaning out over the water and the reeds count as bank, unless a frog drawn over them is there (E-7). Every tap on scenery shows something: a tap on the grass lifts a few fireflies, or midges by day, and ripples the water if it's close to the edge (E-8). Occluders cast shadows like everything else (E-9).</p>
+    <h3>The picture's edge</h3>
+    <p>The scene has a designed edge where it meets the page: for the frog, a squarish oval made ragged and soft. Nothing outside it takes a tap and the cursor turns back to an arrow there; the keyboard focus ring follows the same outline, a little outside it, as an ink line on a pale halo (E-11 to E-14).</p>
+    <h3>Composition across aspect ratios</h3>
+    <p>The scene works from a 375-pixel phone to a wide screen without horizontal scroll. Positions that matter get a layout per shape, blended by aspect: the frog's pads have a wide and a narrow layout, so on a phone the stages don't crowd, and on a resize they drift to their new homes. Static layers are re-painted only after the size holds, and scenery placed along the shore with its own seeds barely changes when the canvas grows a pixel (E-15 to E-19).</p>
+    <h3>Affordances as motives</h3>
+    <p>The habitat offers what behaviour needs, and behaviour uses it: perches to rest on, water to cross, cover, food. The frog pond has four stages for three frogs, so a swimmer always has somewhere to go, and only pads big enough and near enough count; the rest are scenery the frogs leave alone (E-20 to E-22).</p>
+    <h3>Ambient life</h3>
+    <p>Ambient life has a source and a place: fireflies gather in three clusters and leave the lower pond quiet, and motes rise only where the grass was tapped. It is a small fixed pool, drawn only inside a box around each speck, and the animals notice it (E-23 to E-25).</p>
+    <h3>Wind and weather</h3>
+    <p>Wind is one field owned by the world and read by everything that moves in it; gusts travel, so a meadow shows a wave passing rather than everything bending at once. Weather is a palette plus particles, each with its own brightness target, and animals respond to it with motives (E-26 to E-29). The frog pond has neither yet; its reeds only sway with time.</p>
+    <h3>Time of day</h3>
+    <p>A time of day is a palette on the same scene, geometry and behaviour, with its own copy and a brightness target measured inside the visible picture (E-30 to E-32). The frog's Night and Day are the example; the targets are in section 12.</p>
+  </article>
+
   <article class="card" id="light">
-    <p class="kicker">11 / Light and colour</p>
+    <p class="kicker">12 / Light and colour</p>
     <h2>Lighting, colour and depth</h2>
     <p class="lead">Each lighting version (night, day, overcast, moonlight) is a palette applied to the same scene: the light's colour and direction, the medium's colours and cloudiness, how much sky it reflects, ground materials, the strength of moving light, plant colours, shadow strength and vignette.</p>
 <div class="diagram">
@@ -708,25 +845,51 @@
       </svg>
     </div>
     <p class="caption">One light direction governs every shadow, and each shadow's offset shows how high or deep something is. The depth field also controls how much floor shows and where debris collects.</p>
+<!-- spec:variants:start -->
 <div class="table-wrap">
-      <table>
-        <thead><tr><th>Target</th><th>Bright day</th><th>Night</th></tr></thead>
-        <tbody>
-          <tr><td>Average brightness inside the scene (luma 0–255, on a small downscale)</td><td class="num">85–90</td><td class="num">35–40</td></tr>
-          <tr><td>10th to 90th percentile</td><td class="num">≈ 55–150</td><td class="num">≈ 20–57</td></tr>
-          <tr><td>How much floor shows</td><td>plainly, with moving light</td><td>a hint, lit toward the light source</td></tr>
-          <tr><td>Sky reflection</td><td class="num">0.05–0.1</td><td class="num">0.35–0.55</td></tr>
-          <tr><td>Grain</td><td class="num">± 0.02</td><td class="num">± 0.025</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>Check shadow direction deliberately, because it's an easy mistake to miss: contact shadows, body shadows and ground shadows all fall away from the light, while sheens, rim light and eye highlights face it. Keep every colour in the palette module and none in the renderers. The 2D renderer should be within about 5 brightness points of the GPU renderer in every palette. In low light, let the floor show mostly near the light source, and let raised details like stones or a beetle's wing cases catch warm light on the side facing it. Finish with a light vignette set by the palette, fine grain, and a designed edge where the scene meets the page.</p>
+  <table>
+    <thead><tr><th>Variant</th><th>Mean luma</th><th>10th–90th percentile (frog, measured)</th><th>Floor</th><th>Sky reflection</th><th>Grain</th></tr></thead>
+    <tbody>
+      <tr><td>Night (Night Chorus)</td><td>35 … 40</td><td>19–66 WebGL, 21–57 Canvas</td><td>a hint, lit toward the light</td><td>0.35–0.55</td><td>± 0.025</td></tr>
+      <tr><td>Day (Day Chorus)</td><td>85 … 90</td><td>61–111 WebGL, 63–110 Canvas</td><td>plainly, with moving caustics</td><td>0.05–0.1</td><td>± 0.02</td></tr>
+    </tbody>
+  </table>
+</div>
+<!-- spec:variants:end -->
+    <p>Check shadow direction deliberately, because it's an easy mistake to miss: contact shadows, body shadows and ground shadows all fall away from the light, while sheens, rim light and eye highlights face it. Keep every colour in the palette module and none in the renderers. The 2D renderer should be within about 5 brightness points of the GPU renderer in every palette (E-31; <code>npm run qa:luma</code> measures mean luma inside the visible picture, bank included). In low light, let the floor show mostly near the light source, and let raised details like stones or a beetle's wing cases catch warm light on the side facing it. Finish with a light vignette set by the palette, fine grain, and a designed edge where the scene meets the page.</p>
   </article>
 
   <article class="card" id="performance">
-    <p class="kicker">12 / Performance</p>
-    <h2>Performance budget</h2>
-    <p class="lead">A frame at 60 Hz lasts 16.7 ms, and the scene should finish well within that on a modest laptop GPU. The two largest savings are drawing static layers once and limiting detailed shading to the area around each animal.</p>
+    <p class="kicker">13 / Performance</p>
+    <h2>Performance</h2>
+    <p class="lead">A frame at 60 Hz lasts 16.7 ms, and the scene should finish well within that on a modest laptop GPU. It must also be a good neighbour on an ordinary page: small to download, no stalls while it loads, and nothing running when it can't be seen.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 210" role="img" aria-label="Loading timeline. The page loads with a few kilobytes of script and a still image of the pond's first frame. When the pond comes within 300 pixels of the viewport its code loads. Shaders compile in the background while a worker paints the bank. When the first frame is drawn the canvas replaces the still, at the same moment. Then the loop runs only on screen, pauses when scrolled away or hidden, and steps its resolution down if frames run slow. The Canvas fallback and the on-page painter load only if needed.">
+        <defs><marker id="f-arrow-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev-accent" d="M2 1L8 5L2 9"/></marker></defs>
+        <rect class="node-term" x="10" y="44" width="118" height="60" rx="12"/>
+        <text class="node-label term" x="69" y="64">Page loads</text><text class="node-label term" x="69" y="84">5 KB + a still</text>
+        <rect class="node-normal" x="150" y="44" width="118" height="60" rx="8"/>
+        <text class="node-label" x="209" y="64">Pond near view</text><text class="node-sub" x="209" y="84">code loads · 66 KB</text>
+        <rect class="node-key" x="290" y="44" width="118" height="60" rx="8"/>
+        <text class="node-label key" x="349" y="60">Get ready</text><text class="node-sub key" x="349" y="78">shaders compile</text><text class="node-sub key" x="349" y="92">bank in a worker</text>
+        <rect class="node-key" x="430" y="44" width="118" height="60" rx="8"/>
+        <text class="node-label key" x="489" y="60">First frame</text><text class="node-sub key" x="489" y="78">replaces the still,</text><text class="node-sub key" x="489" y="92">same moment</text>
+        <rect class="node-normal" x="570" y="44" width="120" height="60" rx="8"/>
+        <text class="node-label" x="630" y="60">Run</text><text class="node-sub" x="630" y="78">only on screen</text><text class="node-sub" x="630" y="92">steps down if slow</text>
+        <path class="edge-accent" d="M128 74 H146" marker-end="url(#f-arrow-a)"/>
+        <path class="edge-accent" d="M268 74 H286" marker-end="url(#f-arrow-a)"/>
+        <path class="edge-accent" d="M408 74 H426" marker-end="url(#f-arrow-a)"/>
+        <path class="edge-accent" d="M548 74 H566" marker-end="url(#f-arrow-a)"/>
+        <rect class="node-normal edge-dash" x="290" y="138" width="258" height="40" rx="8"/>
+        <text class="node-sub" x="419" y="158">only if needed: Canvas fallback · painting on the page</text>
+        <path class="edge edge-dash" d="M349 104 V134"/>
+        <text class="node-sub start" x="10" y="130">within 300 px:</text><text class="node-sub start" x="10" y="144">IntersectionObserver</text>
+        <text class="node-sub start" x="570" y="130">pauses scrolled away</text><text class="node-sub start" x="570" y="144">or in a hidden tab</text>
+      </svg>
+    </div>
+    <p class="caption">The frog demo: 4.9 KB of script with the page, 66 KB (26 KB gzipped) as the pond comes near; a WebP still of the first frame shows until the live one is ready. Measured by <code>qa:size</code> and <code>qa:first</code>.</p>
+    <p>Load the scene's code only as its container comes within about 300 pixels of the viewport, and show a still of its first frame until then; the world waits until the first live frame, so the two match (F-1, F-2). Compile shaders in the background with <code>KHR_parallel_shader_compile</code> and paint static layers in a worker with <code>OffscreenCanvas</code>, keeping finished layers for reuse, with a fallback to painting on the page (F-3, F-4). Run the loop only while the scene is on screen and the tab visible (F-5). Cap the pixel ratio at 2 and step the resolution down when frames keep running slow, never back up (F-6). Strip comments and whitespace from shaders at build time, and load the Canvas fallback only when WebGL fails (F-7, F-8).</p>
+    <p><b>Per-pixel loop discipline (F-9).</b> A full-screen loop costs its iterations on every pixel. Adding six rare motes to the frog's two per-pixel firefly loops (8 to 14 iterations) cost three milliseconds a frame; giving the motes their own loop inside a box around them, with each speck skipping its exponentials beyond its reach, won it back. Keep full-screen loops short and box rare effects.</p>
 <div class="diagram">
       <svg viewBox="0 0 700 170" role="img" aria-label="Frame cost before and after: 31 milliseconds with the ground recomputed every pixel, over the 16.7 millisecond budget, and 14 milliseconds once the ground is drawn once and creature detail is limited to the area near each creature.">
         <path class="edge-accent edge-dash" d="M262 16 V142"/>
@@ -745,44 +908,91 @@
       </svg>
     </div>
     <p class="caption">Frog pond at 1520 × 1028 on an entry-level laptop GPU. Drawing the ground once and using a caustic tile recovered more than half the frame.</p>
-    <p>Keep the page visible while measuring, because hidden tabs throttle or skip GPU work. Force the GPU to finish after each draw (reading back one pixel is enough), average about 40 frames, and subtract the fixed overhead measured with the same loop on a tiny canvas. Redraw static layers only when the canvas size changes. Limit each animal's detailed shading to a radius around it, and check that radius against the animal's largest real extent over a long test run: the frog's legs at full push or the robin's open wings should stay under about nine-tenths of it. Cap the pixel ratio around 2, pause when the page is hidden, and release every GPU resource on teardown. To find what's expensive, return early after each layer in turn and time it, then start with the largest.</p>
+    <p>Keep the page visible while measuring, because hidden tabs throttle or skip GPU work. Force the GPU to finish after each draw (reading back one pixel is enough), average about 40 frames, and subtract the fixed overhead measured with the same loop on a tiny canvas. Redraw static layers only when the canvas size changes. Limit each animal's detailed shading to a radius around it, and check that radius against the animal's largest real extent over a long test run: the frog's legs at full push or the robin's open wings should stay under about nine-tenths of it. Keep per-frame garbage out of the hot path (F-11), and release every GPU resource, observer and listener on teardown (F-12). To find what's expensive, return early after each layer in turn and time it, then start with the largest.</p>
   </article>
 
   <article class="card" id="access">
-    <p class="kicker">13 / Interaction</p>
+    <p class="kicker">14 / Interaction</p>
     <h2>Interaction and accessibility</h2>
 
     <p>Every tap should produce a visible response. Tapping the frog makes it leap away from the tap; tapping the water near the koi sends it curving off; tapping the robin's branch makes it flinch or fly; tapping near the beetle makes it change course. Taps are tested against the drawn shapes, so a toe, a fin or a wingtip counts. Touch input gets a slightly larger hit area than a mouse pointer. The scene is reachable by keyboard with a visible focus ring, and Enter or Space triggers a central action, such as dropping a pebble into the pond.</p>
-    <p>With reduced motion turned on, run no animation loop. Draw one finished still, describe it for screen readers as a still image, and hide the tap instructions. Give the live scene a label that points to its instructions, and write the title, caption and labels separately for each lighting version. The layout must work at 375 pixels wide by switching to a taller aspect ratio, without horizontal scrolling. A single self-contained HTML version that works offline, with no external requests, is also worth shipping.</p>
+    <p>With reduced motion turned on, run no animation loop. Draw one finished still, describe it for screen readers as a still image, and hide the tap instructions. Give the live scene a label that points to its instructions, and write the title, caption and labels separately for each lighting version. The layout must work at 375 pixels wide by switching to a taller aspect ratio, without horizontal scrolling. A single self-contained HTML version that works offline, with no external requests, is also worth shipping: it needs a doctype, a language, a charset, a viewport and no body margin, and it should start its own script as its worker so it works as one file, even in a sandboxed frame (I-1 to I-8).</p>
   </article>
 
   <article class="card" id="measure">
-    <p class="kicker">14 / QA</p>
+    <p class="kicker">15 / QA</p>
     <h2>QA metrics</h2>
-    <p class="lead">Step the world frame by frame with a developer hook and compute these values after every change. Then review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a swimming stroke, a steering turn) in both renderers.</p>
+    <p class="lead">Step the world frame by frame and compute these values after every change; each names the script in this repository that measures it and fails when it's out of bounds. Then review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a swimming stroke, a steering turn) in both renderers.</p>
+<!-- spec:qa:start -->
 <div class="table-wrap">
-      <table>
-        <thead><tr><th>What</th><th>How</th><th>Pass</th></tr></thead>
-        <tbody>
-          <tr><td>Planted foot slide</td><td>The foot's position in the surface's own frame, summed over each planted stretch</td><td class="num">≤ 0.06 body lengths</td></tr>
-          <tr><td>Settle slide</td><td>Foot travel in the second after a turn ends</td><td class="num">about 0</td></tr>
-          <tr><td>Turning while still</td><td>Heading change on frames where a swimming or flying body moved less than 1e-4</td><td class="num">noise only</td></tr>
-          <tr><td>Curvature</td><td>Heading change divided by distance moved</td><td class="num">within design</td></tr>
-          <tr><td>Rotation spikes</td><td>Angular acceleration, grouped by state change</td><td>none unexplained (one take-off went from ~1600 to ~300 rad/s²)</td></tr>
-          <tr><td>Pose jumps</td><td>Largest single-frame change per pose value, by state</td><td>only inside deliberate pushes and kicks</td></tr>
-          <tr><td>Mirroring</td><td>Left minus right on straight strokes</td><td class="num">about 0</td></tr>
-          <tr><td>Broken rules</td><td><code>check()</code> through 5 minutes of tapping and 10 minutes left alone</td><td class="num">0</td></tr>
-          <tr><td>Getting stuck</td><td>Longest stretch in any temporary state without input</td><td>bounded</td></tr>
-          <tr><td>Brightness</td><td>Average and percentiles per palette and per painter</td><td>see section 11</td></tr>
-          <tr><td>Frame cost</td><td>The method in section 12</td><td class="num">≲ 15 ms</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <table>
+    <thead><tr><th>ID</th><th>Check</th><th>Measures</th><th>Pass</th><th>Script</th></tr></thead>
+    <tbody>
+      <tr><td>Q-1</td><td>Broken rules</td><td><code>check()</code> issues over 10 min untouched, 5 min tapped, 10 min resizing, aspects 1.48 and 0.91</td><td>= 0</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-2</td><td>Non-finite poses</td><td>frames with NaN or infinite pose values, same soaks</td><td>= 0</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-3</td><td>Scenery clear of the boundary</td><td>frames with a pad under the bank</td><td>= 0</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-4</td><td>Swimmers on the water</td><td>samples with a swimmer's body or any limb over the bank</td><td>= 0 samples</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-5</td><td>Toes on the grass</td><td>deepest toe over the bank from a frog on a pad (drawn over it)</td><td>≤ 0.02 world units</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-6</td><td>Getting stuck</td><td>longest stretch in any temporary state</td><td>≤ 40 s</td><td><code>npm run qa:soak</code></td></tr>
+      <tr><td>Q-7</td><td>Swim length</td><td>median swim over 2 h untouched</td><td>3 … 8 s</td><td><code>npm run qa:swims</code></td></tr>
+      <tr><td>Q-8</td><td>Swim length, long tail</td><td>90th percentile swim</td><td>≤ 12 s</td><td><code>npm run qa:swims</code></td></tr>
+      <tr><td>Q-9</td><td>Longest swim</td><td>longest swim in 2 h</td><td>≤ 30 s</td><td><code>npm run qa:swims</code></td></tr>
+      <tr><td>Q-10</td><td>Hop rate</td><td>pad jumps per frog per minute</td><td>2 … 3.5</td><td><code>npm run qa:swims</code></td></tr>
+      <tr><td>Q-11</td><td>Into the water</td><td>share of pad jumps that end in the water</td><td>0.2 … 0.36</td><td><code>npm run qa:swims</code></td></tr>
+      <tr><td>Q-12</td><td>Planted foot slide</td><td>path a pinned foot travels on its surface per planted stretch, 95th percentile</td><td>≤ 0.06 body lengths · known issue</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-13</td><td>Planted foot at its pin</td><td>distance from the pin, median by state</td><td>≤ 0.01 body lengths</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-14</td><td>Planted foot at its pin, tail</td><td>distance from the pin, 95th percentile by state</td><td>≤ 0.06 body lengths · known issue</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-15</td><td>Settle slide</td><td>foot travel in the second after an on-pad turn ends</td><td>≤ 0.03 body lengths</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-16</td><td>Turning while still</td><td>heading change on frames a swimmer moved &lt; 1e-4</td><td>≤ 0.05 rad</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-17</td><td>Mirroring</td><td>hind left − right a second into straight swimming</td><td>≤ 0.01</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-18</td><td>Curvature</td><td>heading change ÷ distance while swimming, 99th percentile</td><td>≤ 30 per unit distance</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-19</td><td>Pose jumps in pushes</td><td>largest one-frame pose change in the crouch and the air</td><td>≤ 0.4</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-20</td><td>Pose jumps elsewhere</td><td>largest one-frame pose change in sit, turn, land</td><td>≤ 0.1</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-21</td><td>Rotation spikes</td><td>largest angular acceleration, by state</td><td>≤ 400 rad/s²</td><td><code>npm run qa:motion</code></td></tr>
+      <tr><td>Q-22</td><td>Garbage per frame</td><td>bytes allocated per <code>world.step()</code></td><td>≤ 1024 B</td><td><code>npm run qa:alloc</code></td></tr>
+      <tr><td>Q-23</td><td>Download, standalone</td><td>the single file's script, minified</td><td>≤ 100 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-24</td><td>Download, standalone gzip</td><td>the same, gzipped</td><td>≤ 40 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-25</td><td>Download with the page</td><td>the demo's JS before the pond comes near</td><td>≤ 8 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-26</td><td>Download on approach</td><td>the scene's JS as the pond comes near, minified</td><td>≤ 70 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-27</td><td>Download on approach, gzip</td><td>the same, gzipped</td><td>≤ 28 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-28</td><td>Stills</td><td>each first-frame still</td><td>≤ 60 KB</td><td><code>npm run qa:size</code></td></tr>
+      <tr><td>Q-29</td><td>Loads cleanly</td><td>both variants × renderers ready, labelled, no console errors; no dev hooks shipped</td><td>pass</td><td><code>npm run qa:smoke</code></td></tr>
+      <tr><td>Q-30</td><td>Shared geometry</td><td>JS vs GLSL shore and open-water distance, largest difference</td><td>≤ 0.00001</td><td><code>npm run qa:parity</code></td></tr>
+      <tr><td>Q-31</td><td>Shared depth</td><td>bed depth vs <code>shelfDepth()</code>, mean difference</td><td>≤ 0.03</td><td><code>npm run qa:parity</code></td></tr>
+      <tr><td>Q-32</td><td>Night brightness</td><td>mean luma inside the picture, each renderer</td><td>35 … 40</td><td><code>npm run qa:luma</code></td></tr>
+      <tr><td>Q-33</td><td>Day brightness</td><td>mean luma inside the picture, each renderer</td><td>85 … 90</td><td><code>npm run qa:luma</code></td></tr>
+      <tr><td>Q-34</td><td>Renderers match</td><td>WebGL − Canvas mean luma, each variant</td><td>≤ 5</td><td><code>npm run qa:luma</code></td></tr>
+      <tr><td>Q-35</td><td>No taps outside the picture</td><td>taps accepted where the mask is under 0.2</td><td>≤ 0 %</td><td><code>npm run qa:hit</code></td></tr>
+      <tr><td>Q-36</td><td>Visible picture takes taps</td><td>clearly visible picture outside the tap rule</td><td>≤ 0.5 %</td><td><code>npm run qa:hit</code></td></tr>
+      <tr><td>Q-37</td><td>Occluders take taps</td><td>opaque grass over the water counted as bank</td><td>≥ 85 %</td><td><code>npm run qa:hit</code></td></tr>
+      <tr><td>Q-38</td><td>Touch tolerance</td><td>a finger hits a frog a mouse misses</td><td>pass</td><td><code>npm run qa:tol</code></td></tr>
+      <tr><td>Q-39</td><td>Text contrast</td><td>caption, lede, instructions, switch, both variants</td><td>≥ 4.5</td><td><code>npm run qa:a11y</code></td></tr>
+      <tr><td>Q-40</td><td>Outline contrast</td><td>the switch's outline against the page</td><td>≥ 3</td><td><code>npm run qa:a11y</code></td></tr>
+      <tr><td>Q-41</td><td>Phone layout</td><td>sideways overflow at 375 px</td><td>≤ 0 px</td><td><code>npm run qa:a11y</code></td></tr>
+      <tr><td>Q-42</td><td>Reduced motion</td><td>a described still, no loop, not focusable, no instructions</td><td>pass</td><td><code>npm run qa:rm</code></td></tr>
+      <tr><td>Q-43</td><td>Shadow direction</td><td>a midge's shadow falls down-left in both renderers, same place</td><td>≤ 3 px</td><td><code>npm run qa:midge</code></td></tr>
+      <tr><td>Q-44</td><td>Single file</td><td>page basics, no hooks, no requests, worker, switch, sandboxed iframe</td><td>pass</td><td><code>npm run qa:standalone</code></td></tr>
+      <tr><td>Q-45</td><td>Lifecycle</td><td>heap growth over 80 variant switches after the first 20</td><td>≤ 2 MB</td><td><code>npm run qa:lifecycle</code></td></tr>
+      <tr><td>Q-46</td><td>Pause off screen</td><td>animation frames per second scrolled away</td><td>= 0 rAF/s</td><td><code>npm run qa:offscreen</code></td></tr>
+      <tr><td>Q-47</td><td>Runs on screen</td><td>animation frames per second in view</td><td>≥ 20 rAF/s</td><td><code>npm run qa:offscreen</code></td></tr>
+      <tr><td>Q-48</td><td>Context loss</td><td>Canvas at once, WebGL retried twice, then Canvas stays; focus kept</td><td>pass</td><td><code>npm run qa:loss</code></td></tr>
+      <tr><td>Q-49</td><td>Stable scenery</td><td>bank pixels changed by a 1 px wider canvas</td><td>≤ 2 %</td><td><code>npm run qa:reshuffle</code></td></tr>
+      <tr><td>Q-50</td><td>Debounced bakes</td><td>bakes asked for during a 2 s drag-resize</td><td>≤ 1</td><td><code>npm run qa:bake</code></td></tr>
+      <tr><td>Q-51</td><td>No stalls on resize</td><td>long tasks during the drag</td><td>= 0</td><td><code>npm run qa:bake</code></td></tr>
+      <tr><td>Q-52</td><td>No stalls on load</td><td>worst long task, navigation to 4 s, shipped builds, 2×</td><td>≤ 80 ms</td><td><code>npm run qa:first</code></td></tr>
+      <tr><td>Q-53</td><td>Frame cost, GPU</td><td>GPU ms per frame at 1520 × 1027</td><td>≤ 15 ms</td><td><code>npm run qa:gpu</code></td></tr>
+      <tr><td>Q-54</td><td>Frame cost, synced</td><td>CPU + GPU ms per frame with a readback</td><td>≤ 16.7 ms</td><td><code>npm run qa:gpu</code></td></tr>
+      <tr><td>Q-55</td><td>Review by eye</td><td>enlarged crops of each key moment, both variants × renderers</td><td>reviewed</td><td><code>npm run qa:shots</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<!-- spec:qa:end -->
     <p>In the frog study these figures come from, three of the worst problems (feet sliding 30 to 90 percent of a body length, a 29 rad/s spin at take-off, and shadows cast toward the light) were only found once they were measured.</p>
+    <p>A row marked "known issue" is a target the frog doesn't meet yet. Its check reports KNOWN rather than failing, so the debt stays visible without blocking every build. Timing checks (load, frame cost) depend on the machine: compare with a baseline built in the same session.</p>
   </article>
 
   <article class="card" id="adapt">
-    <p class="kicker">15 / Other animals</p>
+    <p class="kicker">16 / Other animals</p>
     <h2>Adapting to other animals and settings</h2>
     <p class="lead">The method stays the same. The body plan and the medium change.</p>
     <div class="table-wrap">
@@ -812,14 +1022,30 @@
     </div>
   </article>
 
+  <article class="card" id="first">
+    <p class="kicker">17 / Your first animal</p>
+    <h2>Your first animal: a beetle in leaf litter</h2>
+    <p class="lead">One ground beetle walking over damp leaf litter under a log, seen from above, by day. It uses every part of the method on a body plan unlike the frog's. The spec's section 14 has the code.</p>
+    <div class="rows">
+      <div class="row"><span class="tag">1</span><span><b>Brief.</b> One beetle (later two, differing in size and sheen); a warm key light from the upper right through a canopy; it walks with a tripod gait, pauses with its antennae sweeping, and steers round twigs. Tap the beetle and it runs off; tap the litter and a leaf shifts; tap the log and the beetle freezes; Enter drops water mid-scene.</span></div>
+      <div class="row"><span class="tag">2</span><span><b>Research notes, in your own words.</b> Two alternating tripods; stance longer than swing when slow (duty factor about 0.6); outside legs stride longer in a turn; antennae touch obstacles first; a startled beetle runs in a burst, then freezes.</span></div>
+      <div class="row"><span class="tag">3</span><span><b>Motion sheet.</b> Head 0.18, thorax 0.24, wing cases 0.58 body lengths; six legs of three parts; a 0.45 s cycle walking, 0.25 s running; keys per leg (lift-off, swing, touch-down, stance); turning only by stepping. Agree it before building.</span></div>
+      <div class="row"><span class="tag">4</span><span><b>Scaffold.</b> Copy <code>packages/frog-pond</code> to <code>packages/beetle-litter</code> and rename its files; keep the scene controller, the builds and the QA wiring. The page, the still, lazy loading, the worker and the pause come with it.</span></div>
+      <div class="row"><span class="tag">5</span><span><b>Habitat geometry.</b> The log's outline as one distance function, shared by the world, the renderers and the hit test, with a parity check. The log is an occluder: a tap on it goes to the log.</span></div>
+      <div class="row"><span class="tag">6</span><span><b>The world.</b> States (walk, pause, run, freeze), a footfall timeline with every stance foot pinned, <code>check()</code> from the first day, and a soak copied from <code>qa/soak.mjs</code>.</span></div>
+      <div class="row"><span class="tag">7</span><span><b>Motion.</b> <code>qa:motion</code> already measures planted-foot slide, turning while still and pose jumps; add duty factor per leg and "both tripods in phase". Fix failures in the world, not the renderer.</span></div>
+      <div class="row"><span class="tag">8</span><span><b>Renderers, palette, interaction, performance, the single file.</b> Then stills, enlarged crops, and a report with numbers and a list of what wasn't checked.</span></div>
+    </div>
+  </article>
+
   <article class="card" id="done">
-    <p class="kicker">16 / Checklist</p>
+    <p class="kicker">18 / Checklist</p>
     <h2>Definition of done</h2>
 
     <ul class="check">
       <li>Research notes and a motion sheet are written and the direction is agreed.</li>
       <li>The simulation is separate from the renderers, seeded, and clean through both long test runs.</li>
-      <li>Every value in section 14 is reported and passes.</li>
+      <li>Every check in section 15 is run and reported; failures are fixed or recorded as known issues with a reason.</li>
       <li>Enlarged frame-by-frame crops of each key moment have been reviewed in both renderers.</li>
       <li>Every palette meets its brightness target, and the 2D renderer is within about 5 points of the GPU renderer.</li>
       <li>Frame time is about 15 ms or less, static layers are drawn once, and the shading radius has been checked.</li>
@@ -831,22 +1057,24 @@
   </article>
 
   <article class="card" id="brief">
-    <p class="kicker">17 / Brief</p>
+    <p class="kicker">19 / Brief</p>
     <h2>Brief template</h2>
 
     <p>Fill this in and send it with the manual. The manual sets the standard, and the brief says what to build.</p>
-    <pre class="brief" id="brief-text">Build an interactive creature study that follows the Creature Study Field Manual. Treat its rules as requirements and report the values from its section 14.
+    <pre class="brief" id="brief-text">Build an interactive creature study that follows docs/CREATURE_STUDY_SPEC.md (illustrated in the Creature Study Field Manual). Treat its MUST rules as requirements, cite rule IDs in commits and reviews, and report every check in its QA table with numbers.
 
 Animal: [species, how many, how the individuals differ; e.g. three frogs, one koi, a pair of robins]
 Habitat: [pond, reef, forest floor, meadow, rock face, sky…]
 Camera: [top-down, side-on, three-quarter]
-Light: [e.g. night and day; where the light comes from; weather]
+Variants: [e.g. night and day; where the light comes from; weather]
+Locomotion: [the modes from the catalogue the animal really uses]
 What it really does: [basking, hopping, swimming strokes, feeding, calling…]
 Idle life: [breathing, blinks, throat or gill pulse, grooming…]
+Environment: [boundaries, occluders, perches and cover, ambient life, wind]
 Interactions: [tap the creature → …; tap the ground or a prop → …; keyboard → …]
 Mood and colour: [described in words, not copied images]
 Platforms: [desktop and phone at 375 px; offline single file?]
-Constraints: [tech stack, no new dependencies, frame budget, fallback required]
+Constraints: [no new runtime dependencies, frame budget, fallback required]
 Deliver: observation notes, a motion sheet, the working study, and a QA report with numbers, stills, and a list of anything unchecked.</pre>
     <div class="actions" style="margin:0">
       <button class="btn primary" id="copy-brief" type="button">Copy the brief</button>
@@ -854,7 +1082,181 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
     </div>
   </article>
 
-  <p class="footer">Example figures come from a frog study measured frame by frame. The koi, robin and beetle show how the same rules apply to other body plans.</p>
+  <article class="card" id="rules">
+    <p class="kicker">20 / Rules index</p>
+    <h2>Rules index</h2>
+    <p class="lead">Every numbered rule in the spec, generated from it. MUST rules are requirements; SHOULD rules need a written reason to skip. Section numbers inside a rule refer to the spec.</p>
+<!-- spec:rules:start -->
+<h3>1. Principles</h3>
+<div class="rows">
+  <div class="row"><span class="tag">P-1</span><span><b>MUST</b> Research the animal before designing any pose: slow-motion footage and locomotion papers, summarised in your own words (copy nothing). A straight-swimming frog kicks both hind legs at once; most people guess they alternate.</span></div>
+  <div class="row"><span class="tag">P-2</span><span><b>MUST</b> Give every action a motive that exists in the world (food, a threat, rest, a destination). Nothing moves to fill time or because the page loaded.</span></div>
+  <div class="row"><span class="tag">P-3</span><span><b>MUST</b> Pin feet that touch a surface. A pinned foot moves only by stepping.</span></div>
+  <div class="row"><span class="tag">P-4</span><span><b>MUST</b> In water or air, change heading only while moving, along a curve.</span></div>
+  <div class="row"><span class="tag">P-5</span><span><b>MUST</b> Ease every pose change over several frames; nothing snaps in one frame except inside a deliberate push or kick.</span></div>
+  <div class="row"><span class="tag">P-6</span><span><b>MUST</b> Keep mirrored motion mirrored. Paired limbs split only for steering, loading or a stumble.</span></div>
+  <div class="row"><span class="tag">P-7</span><span><b>MUST</b> Use one key light per variant. Every shadow falls away from it; every highlight faces it.</span></div>
+  <div class="row"><span class="tag soft">P-8</span><span><b>SHOULD</b> Build depth from physical cues: a visible floor, a medium that hides it with depth, shadows offset by height.</span></div>
+  <div class="row"><span class="tag soft">P-9</span><span><b>SHOULD</b> Keep idle behaviour small (breathing, blinking, looking) and larger actions irregular and individual.</span></div>
+  <div class="row"><span class="tag">P-10</span><span><b>MUST</b> Measure, then review by eye. Every check in section 12 is run and reported before anyone signs off.</span></div>
+</div>
+<h3>2. Architecture</h3>
+<div class="rows">
+  <div class="row"><span class="tag">A-1</span><span><b>MUST</b> The world has no DOM, canvas or timer access. It exposes <code>step(dt)</code>, input methods (<code>tap</code>, a keyboard action), <code>resize(aspect)</code>, geometry for renderers and hit tests, and <code>check()</code>. It runs unchanged in Node.</span></div>
+  <div class="row"><span class="tag">A-2</span><span><b>MUST</b> World units: fractions of the canvas height, y up, x from 0 to the aspect ratio. Animal units: body lengths, head toward +x. Everything then scales with the screen.</span></div>
+  <div class="row"><span class="tag">A-3</span><span><b>MUST</b> Seed all randomness in the world, so a session can be replayed exactly (the QA soaks depend on it).</span></div>
+  <div class="row"><span class="tag">A-4</span><span><b>MUST</b> Clamp the time step (the frog uses 50 ms) so a stalled tab can't throw anything across the scene.</span></div>
+  <div class="row"><span class="tag">A-5</span><span><b>MUST</b> The scene controller is framework-free (plain DOM), so the same code runs in an app, in a plain page and in a single offline HTML file. It is mounted with one call that returns a handle with <code>dispose()</code>.</span></div>
+  <div class="row"><span class="tag">A-6</span><span><b>MUST</b> Colours, looks and all visible copy for every variant live in one theme module that every renderer reads. The GPU shader is generated from it; no renderer holds its own colour literals.</span></div>
+  <div class="row"><span class="tag">A-7</span><span><b>MUST</b> Renderers draw the same world. Shared geometry (shore distance, depth, reed blades, the picture's outline) is written once in TypeScript, and where a shader needs it the GLSL is generated from, or checked against, that code (<code>qa:parity</code>).</span></div>
+  <div class="row"><span class="tag">A-8</span><span><b>MUST</b> A GPU renderer and a Canvas 2D fallback. If the GPU context is lost or a shader fails, switch to the fallback at once and retry the GPU a couple of times later (the frog: after 2.5 s, twice). The fallback's code loads only when it's needed.</span></div>
+  <div class="row"><span class="tag">A-9</span><span><b>MUST</b> The world reports events (ripples, taps and what they hit) instead of drawing them; the controller and renderers respond.</span></div>
+  <div class="row"><span class="tag">A-10</span><span><b>MUST</b> Dev-only tools (frame stepping, forced fallback, fixed resolution, console hooks) are behind a build-time flag (<code>import.meta.env.DEV</code>) and absent from shipped builds (<code>qa:smoke</code>, <code>qa:standalone</code>). Debug information appears on screen only when asked for with a flag.</span></div>
+  <div class="row"><span class="tag">A-11</span><span><b>MUST</b> <code>check()</code> lists every broken rule the world can detect (two animals claiming one perch, a reservation nobody holds, a non-finite pose, an animal outside where it may be). It stays empty through every soak.</span></div>
+  <div class="row"><span class="tag soft">A-12</span><span><b>SHOULD</b> The package exports the scene (<code>mountX</code>), the theme and its types from the main entry, and the world and the shore maths as separate DOM-free entries, so tools and tests can import them in Node.</span></div>
+</div>
+<h3>3. File layout</h3>
+<div class="rows">
+  <div class="row"><span class="tag">A-13</span><span><b>MUST</b> One file per concern, named for the animal or habitat. The world and habitat files import nothing from the DOM.</span></div>
+  <div class="row"><span class="tag soft">A-14</span><span><b>SHOULD</b> A study adds its <code>qa:*</code> checks by extending <code>qa/thresholds.mjs</code> and <code>qa/run.mjs</code> rather than writing separate harnesses.</span></div>
+</div>
+<h3>4. Body and pose</h3>
+<div class="rows">
+  <div class="row"><span class="tag">B-1</span><span><b>MUST</b> Bodies are a few overlapping ellipses blended together; limbs are short chains of tapered capsules rooted at a hip or shoulder, with toes fanning from the end; spines are chains of 8–13 points with a width profile. All dimensions in body lengths.</span></div>
+  <div class="row"><span class="tag">B-2</span><span><b>MUST</b> Draw and hit-test the same shapes. Renderers draw the capsules the world computes; taps are tested against them (<code>animalDistance</code>), so a toe, a fin or a wingtip counts (<code>qa:hit</code>, <code>qa:tol</code>).</span></div>
+  <div class="row"><span class="tag">B-3</span><span><b>MUST</b> Each limb is driven by one extension value (0 folded … 1 extended) that bends every joint together, plus a yaw about its root, plus a spread for toes or feathers. Behaviours set targets; <code>pose()</code> turns values into capsules every frame.</span></div>
+  <div class="row"><span class="tag">B-4</span><span><b>MUST</b> Ease values toward targets with <code>v += (target − v) · (1 − e^(−rate·dt))</code>, or follow an authored curve between key poses. A change may be quick but spans several frames (a landing squash: 20–30 ms). Largest one-frame changes are measured by <code>qa:motion</code>.</span></div>
+  <div class="row"><span class="tag">B-5</span><span><b>MUST</b> The body has three values of its own: stretch (squash along the spine, area kept), lean (weight forward or back) and slip (a small yaw off the heading).</span></div>
+  <div class="row"><span class="tag soft">B-6</span><span><b>SHOULD</b> Keep joints visibly bent from the camera; a straight chain reads as a stick figure. Full extension belongs to the push.</span></div>
+  <div class="row"><span class="tag">B-7</span><span><b>MUST</b> Individuals differ: size, colouring, markings, breathing rate, rhythm. Markings and highlights live in body coordinates so they move with it.</span></div>
+  <div class="row"><span class="tag soft">B-8</span><span><b>SHOULD</b> Small signs of life (a throat pulse, a head tilt, antennae) add more than any large action.</span></div>
+</div>
+<h3>5. Behaviour</h3>
+<div class="rows">
+  <div class="row"><span class="tag">H-1</span><span><b>MUST</b> Each animal is in exactly one named state; each state authors its own pose curves. The frog: <code>sit</code>, <code>turn</code>, <code>crouch</code>, <code>air</code>, <code>land</code>, <code>swim</code>, <code>dive</code>.</span></div>
+  <div class="row"><span class="tag">H-2</span><span><b>MUST</b> Every action has a motive in the world (P-2). Stagger the first actions and give each individual its own jittered timers so they never move in sync.</span></div>
+  <div class="row"><span class="tag">H-3</span><span><b>MUST</b> A committed animal (in the air, mid-strike) may flinch at a tap but can't change course. A cooldown after each tap (the frog: 0.35 s) prevents resets and teleports.</span></div>
+  <div class="row"><span class="tag">H-4</span><span><b>MUST</b> Turns on the spot stay small (the frog: at most ~43°); a larger change of heading finishes in the crouch and during the movement itself.</span></div>
+  <div class="row"><span class="tag soft">H-5</span><span><b>SHOULD</b> Calm animals prefer destinations roughly ahead. Steering away from edges and each other starts early enough that hard boundaries almost never act.</span></div>
+  <div class="row"><span class="tag">H-6</span><span><b>MUST</b> No temporary state lasts forever: a swim, a flight or a search has an end and a way home (<code>qa:soak</code> fails a state that lasts more than 40 s).</span></div>
+  <div class="row"><span class="tag soft">H-7</span><span><b>SHOULD</b> Write down what a viewer should see in 45 seconds of watching, and measure it (the frog: <code>qa:swims</code> for swim lengths and hop rate).</span></div>
+</div>
+<h3>6. Contact and planting</h3>
+<div class="rows">
+  <div class="row"><span class="tag">C-1</span><span><b>MUST</b> A foot touching a surface is pinned to a point stored in the surface's frame, so a floating pad or a swaying branch carries it. Every frame, before drawing, the leg is re-aimed at its pin (yaw) and its reach solved (extension).</span></div>
+  <div class="row"><span class="tag">C-2</span><span><b>MUST</b> A settled animal keeps every touching foot pinned; breathing moves the body over still feet.</span></div>
+  <div class="row"><span class="tag">C-3</span><span><b>MUST</b> A foot moves by stepping: release the pin, work out where it should rest relative to the body when the step ends, carry the pin there on an eased path that curves slightly toward the body (toes closing), set it down (toes spreading), pin again.</span></div>
+  <div class="row"><span class="tag">C-4</span><span><b>MUST</b> Turning on a surface happens by stepping, never by rotating the whole rig. Pivot near the hindquarters so neither end outruns its legs' reach; short legs take two small steps rather than dragging.</span></div>
+  <div class="row"><span class="tag">C-5</span><span><b>MUST</b> Plan steps around reach: a leg whose root is carried away from its foot steps before it straightens. Cap a planted leg's stretch; beyond a compact reach the foot may give slightly rather than the leg being hauled straight — and that give is measured (<code>qa:motion</code>).</span></div>
+  <div class="row"><span class="tag">C-6</span><span><b>MUST</b> At take-off every foot lets go over the first frames of the push, as the body is driven away; at landing the forefeet reach before contact and are pinned on touchdown.</span></div>
+  <div class="row"><span class="tag">C-7</span><span><b>MUST</b> An animal on a moving support inherits the support's movement and rotation in every state, including landing and crouching.</span></div>
+</div>
+<h3>7. Locomotion catalogue</h3>
+<div class="rows">
+  <div class="row"><span class="tag">L-1</span><span><b>MUST</b> Pick the locomotion modes from research (P-1) and write their pose keys and timings into the motion sheet before building them.</span></div>
+  <div class="row"><span class="tag">L-2</span><span><b>MUST</b> Every mode states its contact rule: what is pinned, when a pin is released, where it is set down.</span></div>
+  <div class="row"><span class="tag">L-3</span><span><b>MUST</b> Every mode states its turning rule, and turning is measured (turning while still, curvature, angular acceleration).</span></div>
+  <div class="row"><span class="tag">L-4</span><span><b>MUST</b> Transitions between modes are eased and physical (a frog entering water dips deeper, then rises; leaving, it clears the surface over a few frames).</span></div>
+  <div class="row"><span class="tag">L-5</span><span><b>MUST</b> Stance feet are pinned to the ground (C-1). Speed comes from the stride and the cycle rate, never from sliding stance feet.</span></div>
+  <div class="row"><span class="tag">L-6</span><span><b>MUST</b> Turning on the ground: the body yaws at most as fast as the stance feet can follow; the swing target for each foot is where it will rest relative to the body at the end of its stance. A turn on the spot is a sequence of short steps pivoting near the hips (the frog's on-pad turn is the worked example: forefeet two short steps each, inside first; each hind foot once, the outside one mid-swing).</span></div>
+  <div class="row"><span class="tag soft">L-7</span><span><b>SHOULD</b> Legs on the outside of a turn take longer strides; the body leans into the turn slightly.</span></div>
+  <div class="row"><span class="tag">L-8</span><span><b>MUST</b> Pins: all feet pinned through the sit and the crouch (hind feet grip in the crouch; forefeet ease off as the weight goes back); every pin released over the first frames of the push (C-6); forefeet pinned at touchdown.</span></div>
+  <div class="row"><span class="tag">L-9</span><span><b>MUST</b> Turning: on the ground only by stepping (L-6), up to ~43°; the rest of a larger turn happens in the crouch (≤ 2.2 rad/s) and is spread across the flight with an ease in and out. A committed jump doesn't change course (H-3).</span></div>
+  <div class="row"><span class="tag">L-10</span><span><b>MUST</b> The shadow keeps the ground-sized footprint; height only offsets it along the light, blurs it and fades it.</span></div>
+  <div class="row"><span class="tag">L-11</span><span><b>MUST</b> Straight strokes are mirrored exactly. A steering stroke (wanted heading more than ~15° off) is the only asymmetric one: the outside leg recovers further and drives fully, the inside leg kicks up to 40 ms later and ~30 % shorter.</span></div>
+  <div class="row"><span class="tag">L-12</span><span><b>MUST</b> Heading changes by curvature × distance actually travelled, measured after containment has clamped the position (curvature 3–20 per unit distance for the frog). A stroke pushing against a bank counts its push, or an animal facing the edge could never turn back.</span></div>
+  <div class="row"><span class="tag">L-13</span><span><b>MUST</b> Trailing limbs swing to the outside of a turn from a smoothed turn rate (yaw ≈ −rate × gain, capped near 0.4 rad), and the body lags its path slightly, so a turn reads as a bend.</span></div>
+  <div class="row"><span class="tag">L-14</span><span><b>MUST</b> Nothing is pinned in water. A startled escape is a very short gather and a hard steering stroke curving away from the threat, deeper under the surface.</span></div>
+  <div class="row"><span class="tag">L-15</span><span><b>MUST</b> A swim has an end and a way home: over its last seconds the animal comes round toward its exit and keeps to one target (<b>swim homing</b>, below).</span></div>
+  <div class="row"><span class="tag">L-16</span><span><b>MUST</b> Every part of a swimmer that is drawn stays on the water, not only its centre (<b>leg clearance</b>, below).</span></div>
+  <div class="row"><span class="tag">L-17</span><span><b>MUST</b> Heading comes from the head's path; the rest of the spine follows the path the head took (each point trails the one ahead at a fixed spacing). Nothing slides sideways.</span></div>
+  <div class="row"><span class="tag">L-18</span><span><b>MUST</b> The wave runs head to tail; its frequency rises with speed; its amplitude grows toward the tail.</span></div>
+  <div class="row"><span class="tag">L-19</span><span><b>MUST</b> Fins are flexible flaps driven by the local turn rate and speed; pectoral fins trail in turns and scull when hovering.</span></div>
+  <div class="row"><span class="tag">L-20</span><span><b>MUST</b> Nothing is pinned in the air; feet tuck after take-off and reach before landing, and are pinned on touchdown (C-6).</span></div>
+  <div class="row"><span class="tag">L-21</span><span><b>MUST</b> Heading changes by banking along a curve (P-4); the body rolls into the turn (seen from above: the near wing foreshortens), and the tail fans to steer.</span></div>
+  <div class="row"><span class="tag">L-22</span><span><b>MUST</b> Flap timing comes from research (a robin ~ 10–15 beats/s in climbing flight; glides between bursts). A glide holds still: no flapping in a glide.</span></div>
+  <div class="row"><span class="tag soft">L-23</span><span><b>SHOULD</b> Hovering (hummingbirds, dragonflies) is a figure-of-eight stroke with the body held; yaw in a hover only with a reason (tracking prey).</span></div>
+  <div class="row"><span class="tag">L-24</span><span><b>MUST</b> Both feet are pinned in the perch's frame (C-1), so the perch's sway carries the bird and its tail balances against it.</span></div>
+  <div class="row"><span class="tag">L-25</span><span><b>MUST</b> Turning on a perch is a hop in place or a shuffle of short steps; the body never spins over still feet by more than the legs allow.</span></div>
+  <div class="row"><span class="tag">L-26</span><span><b>MUST</b> In undulation, concertina and rectilinear, the body follows the head's path: no sideways slip. Contact segments (concertina, sidewinding) are pinned to the ground while in contact.</span></div>
+  <div class="row"><span class="tag">L-27</span><span><b>MUST</b> Heading changes only as the head advances; the rest follows.</span></div>
+  <div class="row"><span class="tag">L-28</span><span><b>MUST</b> The bracing parts are pinned to the tunnel wall while the forelimbs dig; the body only advances into space that has been dug.</span></div>
+  <div class="row"><span class="tag">L-29</span><span><b>MUST</b> Depth is shown continuously (the animal sinks under a soil layer that thickens with depth; a raised ridge or spoil appears where digging happened), never by a jump cut.</span></div>
+</div>
+<h3>8. Environment design</h3>
+<div class="rows">
+  <div class="row"><span class="tag">E-1</span><span><b>MUST</b> One function defines the boundary (the frog: <code>shoreDistance(x, y, aspect)</code>, positive on water, negative on the bank), shared by the world, both renderers (GLSL generated from the same numbers) and the hit test. JS and GLSL agree to float precision (<code>qa:parity</code>: ≤ 1e-5, no sign flips).</span></div>
+  <div class="row"><span class="tag">E-2</span><span><b>MUST</b> Containment keeps each animal's body off the boundary with a clearance (the frog: 0.012 plus a margin of 0.8 BL inside the open-water oval), and checks every drawn part, not only the centre (7.3, leg clearance).</span></div>
+  <div class="row"><span class="tag">E-3</span><span><b>MUST</b> Scenery the animals use is kept clear of the boundary too: a drifting pad is nudged back off the bank (clearance 0.015; <code>qa:soak</code>: pad-under-bank frames 0; closest rim measured 0.011).</span></div>
+  <div class="row"><span class="tag">E-4</span><span><b>MUST</b> Anything the world treats as the boundary is visibly the boundary: the painted bank's waterline follows <code>shoreDistance</code>, and details (pebbles at the waterline) are placed along the visible shore, at their intended distance from the water.</span></div>
+  <div class="row"><span class="tag soft">E-5</span><span><b>SHOULD</b> Where the scene continues out of the frame (the frog's water runs off the top and right), the swimmable area ends a little inside the picture's edge so animals never swim into the fade.</span></div>
+  <div class="row"><span class="tag">E-6</span><span><b>MUST</b> Decide per state what is drawn over what, and write it down. An animal in the air or on a raised perch is drawn over ground scenery (a frog's leap near the shore passes over the grass); a swimmer is drawn under the bank.</span></div>
+  <div class="row"><span class="tag">E-7</span><span><b>MUST</b> A tap goes to the topmost thing drawn at that point. Scenery drawn over the animals' layer (grass overhanging the water, reeds) takes the tap as scenery (the frog: bank-layer coverage ≥ 0.35 from a ¼-size mask the painter returns, or <code>reedAt()</code>), unless an animal drawn over that scenery is there (a frog on a pad or in the air still wins). <code>qa:hit</code>: ≥ 85 % of opaque grass over the water counts as bank (measured 92–93 %).</span></div>
+  <div class="row"><span class="tag">E-8</span><span><b>MUST</b> Every tap on scenery produces a visible response (the frog: a tap on the bank or reeds lifts 4 motes — fireflies at night, midges by day — that drift off over ~1.6 s, and ripples the water if within 0.05 of the waterline).</span></div>
+  <div class="row"><span class="tag">E-9</span><span><b>MUST</b> Occluders cast shadows in the key light's direction like everything else (the frog's reeds, both renderers).</span></div>
+  <div class="row"><span class="tag soft">E-10</span><span><b>SHOULD</b> An occluder's geometry is one data layout used by every renderer and the tap test (the frog: <code>reedBlades()</code>, uploaded to the shader as uniforms).</span></div>
+  <div class="row"><span class="tag">E-11</span><span><b>MUST</b> The scene has a designed edge where it meets the page (the frog: a squarish oval, a superellipse with exponent 2/0.6, radii (aspect/2 − 0.05, 0.45), made ragged and soft with turbulence, applied as a CSS mask).</span></div>
+  <div class="row"><span class="tag">E-12</span><span><b>MUST</b> No interaction outside the visible picture: taps where the edge is faded out do nothing and the cursor turns back to the default (<code>pictureEdge(x, y, aspect) ≤ 1</code> accepts; <code>qa:hit</code>: 0 taps accepted where the mask is under 0.2; ≤ 0.5 % of the clearly visible picture outside the rule, the ragged fringe).</span></div>
+  <div class="row"><span class="tag">E-13</span><span><b>MUST</b> The keyboard focus ring follows the same outline, a little outside it (0.03 world units), as an ink line on a halo so it reads over dark water and the page alike (the scene sets <code>--pond-ring</code> and <code>--pond-ring-halo</code> mask images on the container's parent).</span></div>
+  <div class="row"><span class="tag soft">E-14</span><span><b>SHOULD</b> Until the scene applies its edge, the container shows a plain soft oval, so nothing appears with a hard rectangle.</span></div>
+  <div class="row"><span class="tag">E-15</span><span><b>MUST</b> The layout works from a phone (375 px wide, aspect 0.91) to a wide screen (aspect 1.48) with no horizontal scroll (<code>qa:a11y</code>).</span></div>
+  <div class="row"><span class="tag">E-16</span><span><b>MUST</b> Positions that matter (perches, stages) have a layout per shape, blended by aspect, not the same shares of the width stretched (the frog: <code>PAD_HOMES_WIDE</code> at 1.48 and <code>PAD_HOMES_NARROW</code> at 0.91, blended with <code>smoothstep</code>; stages rim to rim ≥ 0.035 apart at 0.91). On resize, things drift to their new homes; before the first frame or in the still they snap there.</span></div>
+  <div class="row"><span class="tag">E-17</span><span><b>MUST</b> Static layers are re-painted for a new size only after the size has held (a true debounce: the frog waits 200 ms; <code>qa:bake</code>: ≤ 1 bake asked for during a drag), and the old layer is shown stretched meanwhile.</span></div>
+  <div class="row"><span class="tag soft">E-18</span><span><b>SHOULD</b> Scenery placement is stable under small resizes: items placed along the shore with per-item seeds (<code>qa:reshuffle</code>: a 1 px wider canvas changes ≤ 2 % of bank pixels, measured 0.8 %; 10 px ≤ 15 %, measured 9.4 %).</span></div>
+  <div class="row"><span class="tag soft">E-19</span><span><b>SHOULD</b> There is a still of the first frame for each shape and variant (section 10).</span></div>
+  <div class="row"><span class="tag">E-20</span><span><b>MUST</b> The habitat offers the things behaviour needs, and behaviour uses them: perches or stages to rest on, water or open ground to move through, cover to hide in, food to catch. The frog: four stages (three occupied, one spare, so a swimmer always has somewhere to go — <code>qa:soak</code> reports frames with no free stage, 0 measured), open water for swims, fireflies to track and catch.</span></div>
+  <div class="row"><span class="tag">E-21</span><span><b>MUST</b> Only usable things count as affordances: a stage must be big enough for the animal and within reach of the swimmable water (the frog: pads beyond 0.8 pond radii are scenery, and frogs leave them alone).</span></div>
+  <div class="row"><span class="tag soft">E-22</span><span><b>SHOULD</b> Scenery that isn't an affordance is visibly different (the frog's small bud pad, pads drifting off the edges).</span></div>
+  <div class="row"><span class="tag">E-23</span><span><b>MUST</b> Ambient life has a source and a place: the frog's fireflies gather in three clusters (near the left stage, right of centre, mid-pond) and leave the lower pond quiet; midges by day; motes only where the grass was tapped.</span></div>
+  <div class="row"><span class="tag">E-24</span><span><b>MUST</b> It is sparse and cheap: a fixed pool (the frog: 8 flies, 6 motes), each drawn only inside a box around it (section 10, the motes regression).</span></div>
+  <div class="row"><span class="tag soft">E-25</span><span><b>SHOULD</b> Animals notice it (eyes follow fireflies; a tongue strike when one drifts within reach, then 6–14 s of rest).</span></div>
+  <div class="row"><span class="tag">E-26</span><span><b>MUST</b> Wind is one field (direction, strength, gusts over time) owned by the world and read by everything that moves in it: grass, reeds, leaves, the water's ripples, an animal's feathers or balance. Nothing sways on its own clock.</span></div>
+  <div class="row"><span class="tag">E-27</span><span><b>MUST</b> Gusts travel: a gust reaches things upwind first, so a meadow shows a wave passing, not everything bending at once.</span></div>
+  <div class="row"><span class="tag">E-28</span><span><b>MUST</b> Weather is a palette plus particles (section 9): rain adds drops and ring ripples on water and darkens the ground; overcast removes hard shadows and caustics; each weather variant has its own brightness target.</span></div>
+  <div class="row"><span class="tag soft">E-29</span><span><b>SHOULD</b> Animals respond to weather with motives (shelter under a leaf in rain, feathers fluffed in cold), not decoration.</span></div>
+  <div class="row"><span class="tag">E-30</span><span><b>MUST</b> A time of day is a palette applied to the same scene, geometry and behaviour (the frog's Night and Day differ only in <code>FROG_PALETTES</code>, copy, and fireflies becoming midges). Copy, title and labels are written for each variant.</span></div>
+  <div class="row"><span class="tag">E-31</span><span><b>MUST</b> Each variant has a brightness target: mean luma (0–255, Rec. 601 weights) inside the visible picture, bank included, where the picture's mask is over half opaque. The renderers stay within 5 of each other (<code>qa:luma</code>).</span></div>
+  <div class="row"><span class="tag">E-32</span><span><b>MUST</b> The key light's direction may change between variants but each variant has one; shadows follow it (P-7). <code>qa:midge</code> checks a small flier's shadow in both renderers.</span></div>
+</div>
+<h3>9. Light, palettes and colour</h3>
+<div class="rows">
+  <div class="row"><span class="tag">V-1</span><span><b>MUST</b> Each variant's palette holds the light's colour and direction, the medium's colours and cloudiness, sky reflection, ground materials, moving light strength, plant and prop colours, ambient life colours, ripple colours, shadow strength and vignette. No colour literals in renderers (A-6).</span></div>
+  <div class="row"><span class="tag">V-2</span><span><b>MUST</b> Build depth physically: a depth field (the frog: <code>shelfDepth()</code>, shallow at the bank, deepest mid-pond, the same in both renderers), a medium that hides the floor more with depth, ground shadows of floating or raised things offset further and softer the deeper or higher they are.</span></div>
+  <div class="row"><span class="tag">V-3</span><span><b>MUST</b> Every effect has a physical source: a glow needs a light, a sparkle a surface and a sun, caustics a sun and clear water.</span></div>
+  <div class="row"><span class="tag">V-4</span><span><b>MUST</b> Static ground is painted once per size (the frog's bed and bank) and never moves; repeating light patterns (caustics) are a seamless tile drawn once, two copies sliding past each other at different scales, faded over deep water, the same tile in both renderers.</span></div>
+  <div class="row"><span class="tag">V-5</span><span><b>MUST</b> Check shadow direction deliberately: contact, body and ground shadows fall away from the light; sheens, rim light and eye highlights face it.</span></div>
+  <div class="row"><span class="tag soft">V-6</span><span><b>SHOULD</b> In low light the floor shows mostly near the light, and raised details catch warm light on the side facing it.</span></div>
+  <div class="row"><span class="tag">V-7</span><span><b>MUST</b> Finish with a light vignette set by the palette, fine grain, and the designed edge (E-11).</span></div>
+</div>
+<h3>10. Performance</h3>
+<div class="rows">
+  <div class="row"><span class="tag">F-10</span><span><b>MUST</b> Limit each animal's detailed shading to a radius around it, and check the radius against the animal's largest real extent over a long run (legs at full push under ~0.9 of it).</span></div>
+  <div class="row"><span class="tag">F-11</span><span><b>MUST</b> No per-frame garbage in the hot path: scratch arrays hoisted, uniforms written by index (<code>qa:alloc</code>: <code>world.step</code> ≤ 1 KB per frame, measured ~0.1–0.5 KB).</span></div>
+  <div class="row"><span class="tag">F-12</span><span><b>MUST</b> Release everything on dispose: the loop, observers, listeners, the canvas and its GPU resources (<code>qa:lifecycle</code>: 80 switches, heap flat, 0 canvases and 0 animation frames after dispose).</span></div>
+  <div class="row"><span class="tag soft">F-13</span><span><b>SHOULD</b> First load has no main-thread task over 50 ms (<code>qa:first</code>, limit 80 ms for noise; measured none on a quiet M1, Phase 1). Frame cost ≲ 15 ms GPU at 1520 × 1027 (<code>qa:gpu</code>; measured 10.3 night, 11.4–13.0 day on the M1 in Phase 1). Timing checks depend on the machine: compare against a baseline built in the same session (<code>qa/tools/baseline.mjs</code>).</span></div>
+</div>
+<h3>11. Interaction and accessibility</h3>
+<div class="rows">
+  <div class="row"><span class="tag">I-1</span><span><b>MUST</b> Every tap produces a visible response: the animal reacts (the frog leaps away from the tap; a swimmer dives and curves away), a prop reacts (a pad dimples, bobs and drifts with a small contact ripple), the medium reacts (a full ripple), scenery reacts (E-8).</span></div>
+  <div class="row"><span class="tag">I-2</span><span><b>MUST</b> Taps are tested against drawn shapes (B-2); touch gets a larger target than a mouse (the frog: 0.022 vs 0.01 world units; <code>qa:tol</code>).</span></div>
+  <div class="row"><span class="tag">I-3</span><span><b>MUST</b> The scene is focusable (<code>tabindex="0"</code>, <code>role="button"</code>), labelled per variant, and points to its instructions (<code>aria-describedby</code>). Enter or Space triggers a central action (the frog: a pebble in the middle), prevents scrolling and ignores key repeat (<code>qa:hit</code>).</span></div>
+  <div class="row"><span class="tag">I-4</span><span><b>MUST</b> A visible focus ring that follows the picture's edge (E-13).</span></div>
+  <div class="row"><span class="tag">I-5</span><span><b>MUST</b> With reduced motion: no loop at all; one finished still; <code>role="img"</code> with the still's own description; not focusable; the instructions hidden (<code>qa:rm</code>).</span></div>
+  <div class="row"><span class="tag">I-6</span><span><b>MUST</b> A variant switch (the frog: Night | Day) is real buttons with <code>aria-pressed</code> (or links with <code>aria-current</code> when each variant has its own address); the variant may also be chosen in the address (<code>#day</code>).</span></div>
+  <div class="row"><span class="tag">I-7</span><span><b>MUST</b> Text contrast ≥ 4.5:1 and non-text (the switch's outline) ≥ 3:1 against the page in every variant (<code>qa:a11y</code>).</span></div>
+  <div class="row"><span class="tag">I-8</span><span><b>MUST</b> A single self-contained HTML file that works offline: a doctype, <code>lang</code>, UTF-8, a viewport meta, <code>body { margin: 0 }</code>, no external requests, the worker started from the page's own script, working in a sandboxed iframe without storage (<code>qa:standalone</code>; the build fails if any basic is missing).</span></div>
+</div>
+<h3>12. QA</h3>
+<div class="rows">
+  <div class="row"><span class="tag">Q-R1</span><span><b>MUST</b> Run <code>npm run check</code> (typecheck, lint, format, docs, build, Node checks) before every commit, and <code>npm run qa:browser</code> before a release or after any visual, input or loading change.</span></div>
+  <div class="row"><span class="tag">Q-R2</span><span><b>MUST</b> A failed measurement is fixed in the simulation or the renderer that causes it, not hidden by adjusting another layer.</span></div>
+  <div class="row"><span class="tag">Q-R3</span><span><b>MUST</b> Report what was verified and what wasn't (machines, browsers, real devices, how the timing was taken and the load average).</span></div>
+  <div class="row"><span class="tag">Q-R4</span><span><b>MUST</b> Review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a stroke, a steering turn) in both renderers (<code>qa:shots</code>, <code>qa:stills</code>).</span></div>
+</div>
+<!-- spec:rules:end -->
+  </article>
+
+  <p class="footer">Example figures come from a frog study measured frame by frame (the frog pond in this repository). The koi, robin and beetle show how the same rules apply to other body plans. The source of truth is docs/CREATURE_STUDY_SPEC.md; the generated regions of this page come from it via npm run docs:write. Text and figures: CC BY 4.0.</p>
 </main>
 
 <script>
@@ -912,7 +1314,7 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
     }
     var manual = document.getElementById('manual');
     document.getElementById('copy-all').addEventListener('click', function () {
-      var intro = 'Creature Study Field Manual. Follow these rules when building an interactive animal study. Each diagram is summarised in the text beneath it.\n\n';
+      var intro = 'Creature Study Field Manual (the illustrated edition of docs/CREATURE_STUDY_SPEC.md, which is the source of truth). Follow these rules when building an interactive animal study. Each diagram is summarised in the text beneath it.\n\n';
       copy(intro + manual.innerText, manual, document.getElementById('copy-status'));
     });
     var brief = document.getElementById('brief-text');
@@ -921,3 +1323,5 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
     });
   })();
 </script>
+</body>
+</html>
