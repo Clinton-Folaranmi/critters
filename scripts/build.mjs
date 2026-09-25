@@ -64,7 +64,8 @@ export async function buildPackage() {
   console.log(`${outdir} (${entries.join(', ')}, types)`);
 }
 
-export async function buildSite({ dev = false } = {}) {
+/** Builds the demo; returns esbuild's outputs (for qa/size.mjs). */
+export async function buildSite({ dev = false, quiet = false } = {}) {
   const outdir = dev ? 'dist/site-dev' : 'dist/site';
   await rm(outdir, { recursive: true, force: true });
   await mkdir(outdir, { recursive: true });
@@ -75,7 +76,7 @@ export async function buildSite({ dev = false } = {}) {
   await cp('studies/frogs/stills', `${frogs}/stills`, { recursive: true });
   // A GitHub Pages site shouldn't be run through Jekyll.
   await writeFile(`${outdir}/.nojekyll`, '');
-  if (!dev) {
+  if (!dev && !quiet) {
     for (const [file, { bytes }] of Object.entries(outputs)) {
       if (!file.endsWith('.js')) continue;
       console.log(
@@ -83,7 +84,8 @@ export async function buildSite({ dev = false } = {}) {
       );
     }
   }
-  console.log(`${outdir}/ (frogs/)`);
+  if (!quiet) console.log(`${outdir}/ (frogs/)`);
+  return { outdir: frogs, outputs };
 }
 
 export async function buildStandalonePages() {
