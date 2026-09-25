@@ -2,8 +2,8 @@
 
 A plain-language tour of what we built, how it works, and where to change
 things. The general method behind it (reusable for any creature, with
-diagrams) is `CREATURE_STUDY_FIELD_MANUAL.html`. For poses, timings and the
-water model, see `FROG_ART_DIRECTION.md`.
+diagrams) is `CREATURE_STUDY_SPEC.md` (illustrated in `CREATURE_STUDY_FIELD_MANUAL.html`).
+For poses, timings and the water model, see `FROG_ART_DIRECTION.md`.
 
 ## What it is
 
@@ -11,13 +11,14 @@ An interactive pond seen from above: three frogs on lily pads, fireflies (or
 midges by day), reeds in the bay by the grassy point, and water you can see
 into. It comes in two lights:
 
-| Version          | Address           | Mood                                                                                                 |
-| ---------------- | ----------------- | ---------------------------------------------------------------------------------------------------- |
-| **Night Chorus** | `/play/frogs`     | The last of a sunset from the top-right as night falls; dark, peaty water; fireflies.                |
-| **Day Chorus**   | `/play/frogs/day` | High sun; clear green water; stones and moving light on the bed; midges. As bright as the koi study. |
+| Version          | Address      | Mood                                                                                  |
+| ---------------- | ------------ | ------------------------------------------------------------------------------------- |
+| **Night Chorus** | `frogs/`     | The last of a sunset from the top-right as night falls; dark, peaty water; fireflies. |
+| **Day Chorus**   | `frogs/#day` | High sun; clear green water; stones and moving light on the bed; midges.              |
 
-Neither is linked from `/play` yet; you reach them by address. There is also
-**one self-contained HTML file** (`dist-standalone/frogs.html`) with both
+The demo (`studies/frogs`, `npm run dev`) shows both with a **Night | Day**
+switch. There is also
+**one self-contained HTML file** (`dist/standalone/frogs.html`) with both
 lights and its own **Night | Day** switch. It works offline and can be shared
 on its own, for example as a claude.ai artifact. `frogs.html#day` opens it in
 daylight.
@@ -40,8 +41,8 @@ and by day a few small flowers. The reeds grow in the bay by the grassy
 point and cast soft shadows. The whole picture fades raggedly into the page.
 Lily pads never touch the bank: if one drifts toward it, it's nudged back off.
 
-Under the caption, **Night | Day** switches between the two lights (on the
-portfolio it's two pages, so each light keeps its own address).
+Under the caption, **Night | Day** switches between the two lights; the
+address follows (`#day`), and the back button switches back.
 
 ## The big idea: one world, two painters
 
@@ -68,26 +69,26 @@ generated from it). That's how the two stay matching.
 
 ## The files
 
-| File                                                     | Job                                                                                                                                                                     |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `components/frogs/frog-world.ts`                         | The brain: behaviour, movement, the frog skeleton ("rig"), foot planting, the pad layouts, motes.                                                                       |
-| `components/frogs/frog-scene.ts`                         | Sets up the canvas, runs the animation loop (only while the pond is on screen), handles taps and keys, switches painters, steps the resolution down if frames run slow. |
-| `components/frogs/frog-shaders.ts`                       | The GPU drawing code: water, riverbed, pads, frogs, fireflies, reeds.                                                                                                   |
-| `components/frogs/frog-webgl.ts`                         | Feeds the world to the GPU each frame, and bakes the riverbed image once per size.                                                                                      |
-| `components/frogs/frog-canvas.ts`                        | The backup painter (same look, simpler drawing).                                                                                                                        |
-| `components/frogs/frog-theme.ts`                         | Night and day palettes, the frogs' looks, and the page text.                                                                                                            |
-| `components/frogs/frog-bank.ts`                          | Where the shore is (one function everyone shares), how deep the water is, where the reeds are, and the page's ragged outer edge.                                        |
-| `components/frogs/frog-bank-paint.ts`                    | Paints the bank (earth, stones, grass, silt in the shallows) for a size.                                                                                                |
-| `components/frogs/frog-bank-layer.ts`                    | Gets the bank (and by day the caustic pattern) painted in a background worker, and keeps finished ones for reuse.                                                       |
-| `components/frogs/frog-bank-worker.ts`                   | That worker.                                                                                                                                                            |
-| `components/frogs/frog-caustics.ts`                      | The daylight "light web" pattern on the bed, shared by both painters.                                                                                                   |
-| `components/frogs/frog-math.ts`                          | Small shared helpers.                                                                                                                                                   |
-| `components/frogs/frog-pond-study.tsx`                   | The React piece: the pond, the caption and the Night \| Day switch.                                                                                                     |
-| `app/play/frogs/page.tsx`, `app/play/frogs/day/page.tsx` | The two pages.                                                                                                                                                          |
-| `public/images/frogs/*.webp`                             | Stills of the first frame, shown until the pond is ready.                                                                                                               |
-| `standalone/frogs/` + `scripts/build-standalone.mjs`     | The offline single-file version.                                                                                                                                        |
-| `scripts/glsl-minify.mjs`                                | Strips comments and spaces from the shaders in production builds.                                                                                                       |
-| `tools/frog-qa/`                                         | The measuring harness (soaks, parity, brightness, hit tests, GPU cost…); see its README.                                                                                |
+| File                                                                             | Job                                                                                                                                                                     |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/frog-pond/src/frog-world.ts`                                           | The brain: behaviour, movement, the frog skeleton ("rig"), foot planting, the pad layouts, motes.                                                                       |
+| `packages/frog-pond/src/frog-scene.ts`                                           | Sets up the canvas, runs the animation loop (only while the pond is on screen), handles taps and keys, switches painters, steps the resolution down if frames run slow. |
+| `packages/frog-pond/src/frog-shaders.ts`                                         | The GPU drawing code: water, riverbed, pads, frogs, fireflies, reeds.                                                                                                   |
+| `packages/frog-pond/src/frog-webgl.ts`                                           | Feeds the world to the GPU each frame, and bakes the riverbed image once per size.                                                                                      |
+| `packages/frog-pond/src/frog-canvas.ts`                                          | The backup painter (same look, simpler drawing).                                                                                                                        |
+| `packages/frog-pond/src/frog-theme.ts`                                           | Night and day palettes, the frogs' looks, and the page text.                                                                                                            |
+| `packages/frog-pond/src/frog-bank.ts`                                            | Where the shore is (one function everyone shares), how deep the water is, where the reeds are, and the page's ragged outer edge.                                        |
+| `packages/frog-pond/src/frog-bank-paint.ts`                                      | Paints the bank (earth, stones, grass, silt in the shallows) for a size.                                                                                                |
+| `packages/frog-pond/src/frog-bank-layer.ts`                                      | Gets the bank (and by day the caustic pattern) painted in a background worker, and keeps finished ones for reuse.                                                       |
+| `packages/frog-pond/src/frog-bank-worker.ts`                                     | That worker (`frog-bank-worker-factory.ts` starts it).                                                                                                                  |
+| `packages/frog-pond/src/frog-caustics.ts`                                        | The daylight "light web" pattern on the bed, shared by both painters.                                                                                                   |
+| `packages/frog-pond/src/frog-math.ts`, `gl-utils.ts`                             | Small shared helpers.                                                                                                                                                   |
+| `packages/frog-pond/src/index.ts`, `world.ts`, `bank.ts`, `theme.ts`, `paint.ts` | What the package exports (the world and bank ones work in Node).                                                                                                        |
+| `studies/frogs/`                                                                 | The demo page: `index.html`, `page.css`, `page.ts` (caption, Night \| Day, instructions), `main.ts` (loads the pond as it comes near).                                  |
+| `studies/frogs/stills/*.webp`                                                    | Stills of the first frame, shown until the pond is ready.                                                                                                               |
+| `standalone/frogs/entry.ts` + `scripts/build-standalone.mjs`                     | The offline single-file version (the demo page with its CSS inlined).                                                                                                   |
+| `scripts/build.mjs`, `scripts/glsl-minify.mjs`                                   | The builds (esbuild), and the step that strips comments and spaces from the shaders.                                                                                    |
+| `qa/`                                                                            | The measuring harness (soaks, motion, parity, brightness, hit tests, GPU cost…), `npm run qa:*`; see its README.                                                        |
 
 ## How a frog "thinks"
 
@@ -149,7 +150,9 @@ pinned** to a spot on that leaf. Every frame the leg re-aims at its pinned
 spot and adjusts its reach, so the foot stays still while the body moves over
 it. That's why a sitting frog's body breathes while its feet stay still, why
 a turn is a few short, low steps, and why the feet grip for the first instant
-of a jump. Planted feet hold within about 6% of a body length.
+of a jump. The aim is for planted feet to hold within 6% of a body length;
+most do, but a front foot pinned a little beyond its reach still moves with
+each breath (a known issue, measured by `npm run qa:motion`).
 
 ### How turning works
 
@@ -202,10 +205,7 @@ every shadow falls down and to the left.**
 murky the water is, how much sky it reflects, how bright the bed is, caustics
 on or off, pad and reed colours, shadow strength, and vignette. Brightness is
 measured, not guessed: mean luma inside the visible picture is about 39 at
-night and 86–87 by day (`tools/frog-qa/t-luma.mjs`).
-
-The page's paper grain and fibres are drawn over the rest of the site but
-not over the pond (they read as faint lines on the water).
+night and 86–87 by day (`npm run qa:luma`).
 
 ## Speed, and being a good neighbour on the page
 
@@ -232,13 +232,14 @@ not over the pond (they read as faint lines on the water).
   drops a pebble.
 - **Screen readers:** the pond has a label and points to the instructions.
 - **Touch:** fingers get a slightly more forgiving hit area than a mouse.
-- The Night | Day pill's border is at least 3:1 against the paper.
+- The Night | Day switch's outline is at least 3:1 against the page, and all
+  text at least 4.5:1, in both lights (`npm run qa:a11y`).
 
 ## Changing common things
 
 | You want…                                        | Look at                                                                                                                                      |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Different colours or brightness for night or day | `FROG_PALETTES` in `frog-theme.ts` (then re-run `t-luma.mjs` and `t-still.mjs`)                                                              |
+| Different colours or brightness for night or day | `FROG_PALETTES` in `frog-theme.ts` (then run `npm run qa:luma` and `npm run qa:stills`)                                                      |
 | Different page title, caption or instructions    | `FROG_COPY` and `FROG_INSTRUCTIONS` in `frog-theme.ts`                                                                                       |
 | Faster or slower jumps or strokes                | Timing constants near the top of `frog-world.ts` (`CROUCH_*`, `PUSH`, `LANDING`, `KICK`, `RECOVER`, `HOMING`)                                |
 | How often frogs hop or turn                      | `sit()` and `startJump()` in `frog-world.ts`                                                                                                 |
@@ -249,10 +250,10 @@ not over the pond (they read as faint lines on the water).
 | The reeds                                        | `reedBlades()` in `frog-bank.ts` (both painters and the tap test use it)                                                                     |
 | The bank's look                                  | `paintBank()` in `frog-bank-paint.ts`; its colours are `soil*`, `grass*`, `moss` and `flowers` in `frog-theme.ts`                            |
 
-After a visual change, regenerate the stills (`node tools/frog-qa/mkcur.mjs`,
-then `node cdp.mjs ./t-still.mjs` in `tools/frog-qa`).
+After a visual change, regenerate the stills (`npm run qa:stills`) and check
+their size (`npm run qa:size`).
 
-## Developer tools (dev server only; never shipped)
+## Developer tools (`npm run dev` only; never shipped)
 
 - `?renderer=canvas`: force the backup painter.
 - `?frogs=1` (or 2): fewer frogs.
@@ -277,8 +278,8 @@ renderer: webgl2`); painting on the page instead of in the worker is logged
 3. **Full motion audit:** planted feet with stepping, turns spread across
    jumps, legs trailing in turns, smooth entry and exit from the water.
 4. **New water and riverbed** for both versions, with correct shadows.
-5. **The day version**, matched in brightness to the koi study.
-6. Committed and merged to `master` (commit `2bf1a18`).
+5. **The day version**, brightness measured and matched to a target.
+6. Committed in the portfolio (`2bf1a18`), where the study began.
 7. A **stretch of shore** at the bottom and left with the water running out of
    the frame, and a switch between the two lights.
 8. **Audit and fixes (2026-09-25):** the lights renamed Night and Day, and
@@ -287,8 +288,11 @@ renderer: webgl2`); painting on the page instead of in the worker is logged
    picture, a focus ring that follows the picture, midge shadows, legs kept off
    the bank, a narrow pad layout for phones, bank taps that show something,
    swims that head home, brighter day, caustics and reeds in the backup
-   painter, the paper lines over the pond, and the loading and speed work
-   above. See the latest `HANDOFF.md` entry.
+   painter, and the loading and speed work above (`docs/audit-report.html`).
+9. **Moved to its own repository (Animal Farm)** as a framework-free package
+   with a plain demo page, the single file built from that page, and the
+   audit harness turned into `npm run qa:*` checks with thresholds, including
+   a new motion check (planted feet, mirroring, pose jumps).
 
 ## Known gaps
 
@@ -297,4 +301,5 @@ frames), a real OS reduce-motion toggle, real touch devices, Safari and
 Firefox, a slow graphics card, and the standalone file running live as an
 artifact. The backup painter's caustics are softer and fade with depth now,
 but still look more regular than the WebGL ones. The shared artifact on
-claude.ai is out of date.
+claude.ai is out of date. Some planted feet sit a little off their pins and
+move with each breath (see Planted feet above).

@@ -10,7 +10,7 @@ const fmt = (value) =>
       : String(+value.toPrecision(4))
     : JSON.stringify(value);
 
-function describe(limit) {
+export function describe(limit) {
   if (!limit) return '';
   const parts = [];
   if ('equals' in limit) parts.push(`= ${fmt(limit.equals)}`);
