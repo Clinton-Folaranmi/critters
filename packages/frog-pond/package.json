@@ -1,0 +1,40 @@
+{
+  "name": "@animal-farm/frog-pond",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An interactive top-down frog pond (WebGL2 with a Canvas 2D fallback), framework-free.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./world": {
+      "types": "./dist/types/world.d.ts",
+      "source": "./src/world.ts",
+      "default": "./dist/world.js"
+    },
+    "./bank": {
+      "types": "./dist/types/bank.d.ts",
+      "source": "./src/bank.ts",
+      "default": "./dist/bank.js"
+    },
+    "./theme": {
+      "types": "./dist/types/theme.d.ts",
+      "source": "./src/theme.ts",
+      "default": "./dist/theme.js"
+    },
+    "./paint": {
+      "types": "./dist/types/paint.d.ts",
+      "source": "./src/paint.ts",
+      "default": "./dist/paint.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

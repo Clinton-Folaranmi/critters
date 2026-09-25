@@ -1,0 +1,60 @@
+{
+  "name": "animal-farm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interactive creature studies (a frog pond first), the method behind them, and the QA harness that measures them.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "build:package": "node scripts/build.mjs package",
+    "build:site": "node scripts/build.mjs site",
+    "build:standalone": "node scripts/build.mjs standalone",
+    "preview": "node scripts/serve.mjs dist/site",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "docs:check": "node scripts/docs.mjs --check",
+    "docs:write": "node scripts/docs.mjs --write",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run docs:check && npm run build && npm run qa:node",
+    "qa": "node qa/run.mjs all",
+    "qa:node": "node qa/run.mjs node",
+    "qa:browser": "node qa/run.mjs browser",
+    "qa:soak": "node qa/soak.mjs",
+    "qa:swims": "node qa/swims.mjs",
+    "qa:alloc": "node --expose-gc --max-semi-space-size=512 qa/alloc.mjs",
+    "qa:size": "node qa/size.mjs",
+    "qa:smoke": "node qa/browser.mjs smoke",
+    "qa:parity": "node qa/browser.mjs parity",
+    "qa:luma": "node qa/browser.mjs luma",
+    "qa:hit": "node qa/browser.mjs hit",
+    "qa:tol": "node qa/browser.mjs tol",
+    "qa:a11y": "node qa/browser.mjs a11y",
+    "qa:rm": "node qa/browser.mjs rm",
+    "qa:gpu": "node qa/browser.mjs gpu",
+    "qa:first": "node qa/browser.mjs first",
+    "qa:bake": "node qa/browser.mjs bake",
+    "qa:reshuffle": "node qa/browser.mjs reshuffle",
+    "qa:lifecycle": "node qa/browser.mjs lifecycle",
+    "qa:offscreen": "node qa/browser.mjs offscreen",
+    "qa:loss": "node qa/browser.mjs loss",
+    "qa:midge": "node qa/browser.mjs midge",
+    "qa:standalone": "node qa/browser.mjs standalone",
+    "qa:stills": "node qa/browser.mjs stills",
+    "qa:shots": "node qa/browser.mjs shots"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.3",
+    "oxfmt": "0.61.0",
+    "oxlint": "1.76.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+packages/*/dist/
+# QA harness outputs (rebuilt or written by the qa/ scripts)
+qa/.out/
+.DS_Store
+*.log
+.claude/
