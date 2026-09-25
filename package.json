@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.18.0"
   },
   "workspaces": [
     "packages/*"
@@ -30,6 +30,7 @@
     "qa:browser": "node qa/run.mjs browser",
     "qa:soak": "node qa/soak.mjs",
     "qa:swims": "node qa/swims.mjs",
+    "qa:motion": "node qa/motion.mjs",
     "qa:alloc": "node --expose-gc --max-semi-space-size=512 qa/alloc.mjs",
     "qa:size": "node qa/size.mjs",
     "qa:smoke": "node qa/browser.mjs smoke",

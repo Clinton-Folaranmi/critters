@@ -29,10 +29,10 @@
   --ground: #466345;
   --ink: #1f2a1e;
   --muted: #56644f;
-  --accent: #5d7f2e;
+  --accent: #4a6a22;
   --dot: #7da23c;
   --dot-glow: none;
-  --rule: rgba(31, 42, 30, 0.5);
+  --rule: rgba(31, 42, 30, 0.58);
   --halo: rgba(250, 247, 238, 0.85);
 }
 html,

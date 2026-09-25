@@ -3,7 +3,7 @@ import { FROG_COPY, FROG_INSTRUCTIONS, FROG_THEMES, type FrogTheme } from '@anim
 
 // The frog pond page, shared by the demo (main.ts) and the single-file
 // standalone (standalone/frogs/entry.ts): the pond in either light, with a
-// Night | Day switch. The light can be picked in the address too (#day). All
+// Night | Day switch. The light follows the address too (#day, #night). All
 // the copy comes from FROG_COPY and FROG_INSTRUCTIONS.
 
 /** Mounts the scene; the demo loads its code first, the standalone has it already. */
@@ -16,7 +16,8 @@ export function startFrogPage(mount: MountPond) {
   if (!container) return;
   const query = window.matchMedia('(prefers-reduced-motion: reduce)');
   let scene: FrogSceneHandle | null = null;
-  let light: FrogTheme = window.location.hash === '#day' ? 'day' : 'night';
+  const fromAddress = (): FrogTheme => (window.location.hash === '#day' ? 'day' : 'night');
+  let light = fromAddress();
   let ticket = 0;
 
   const text = (id: string, value: string) => {
@@ -80,7 +81,14 @@ export function startFrogPage(mount: MountPond) {
       (error: unknown) => console.error('[frog-pond] The pond could not load.', error),
     );
   }
+  // Back, forward, or a light typed into the address.
+  const onHash = () => {
+    if (fromAddress() === light) return;
+    light = fromAddress();
+    start();
+  };
   query.addEventListener('change', start);
+  window.addEventListener('hashchange', onHash);
   start();
 
   if (import.meta.env.DEV) {
@@ -89,6 +97,7 @@ export function startFrogPage(mount: MountPond) {
       __frogPageDispose() {
         ticket += 1;
         query.removeEventListener('change', start);
+        window.removeEventListener('hashchange', onHash);
         scene?.dispose();
         scene = null;
       },
