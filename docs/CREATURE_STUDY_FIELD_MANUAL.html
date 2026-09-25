@@ -1,0 +1,923 @@
+<title>Creature Study Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --card: #ffffff;
+    --soft: #fcfbf8;
+    --ink: #1a1917;
+    --label: #4c4a46;
+    --text: #3a3833;
+    --gray: #706e69;
+    --muted: #a09e99;
+    --border: #e4e1d8;
+    --row: #f0ede6;
+    --accent: #c85f1e;
+    --accent-sub: #d4823e;
+    --accent-light: #fff0e8;
+    --shade: rgba(26, 25, 23, 0.14);
+    --frog: #6f9442; --frog-dark: #587838; --frog-spot: #3f5a2a; --frog-eye: #d8b24c;
+    --koi: #f1ece2; --koi-patch: #e0703a; --koi-fin: #e9c9ad; --koi-edge: #c9b8a2;
+    --robin-back: #8a6b4f; --robin-wing: #6d543f; --robin-head: #7a5e46; --robin-breast: #d9713b; --robin-beak: #c9952f;
+    --beetle-shell: #2f4a3f; --beetle-pro: #25362f; --beetle-leg: #2a2f2c; --beetle-shine: #6f9383;
+    --pad: #c9d7ae; --pad-notch: var(--bg); --branch: #9b7c5c;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171614;
+      --card: #201f1c;
+      --soft: #1c1b19;
+      --ink: #f1efe9;
+      --label: #d6d3cc;
+      --text: #cfccc4;
+      --gray: #a8a59e;
+      --muted: #7d7a73;
+      --border: #34322e;
+      --row: #2a2926;
+      --accent: #e8874a;
+      --accent-sub: #d99a63;
+      --accent-light: #3a2518;
+      --shade: rgba(0, 0, 0, 0.45);
+      --frog: #7fa652; --frog-dark: #688a44; --frog-spot: #3e5a29; --frog-eye: #e0bd57;
+      --koi: #ece6da; --koi-patch: #e8793f; --koi-fin: #b99b82; --koi-edge: #8f8272;
+      --robin-back: #9a7a5c; --robin-wing: #7a5f48; --robin-head: #8a6c52; --robin-breast: #e07b45; --robin-beak: #d7a63c;
+      --beetle-shell: #3d6252; --beetle-pro: #30473d; --beetle-leg: #9aa59f; --beetle-shine: #7fa393;
+      --pad: #3c4a31; --pad-notch: var(--bg); --branch: #8a6e52;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171614;
+    --card: #201f1c;
+    --soft: #1c1b19;
+    --ink: #f1efe9;
+    --label: #d6d3cc;
+    --text: #cfccc4;
+    --gray: #a8a59e;
+    --muted: #7d7a73;
+    --border: #34322e;
+    --row: #2a2926;
+    --accent: #e8874a;
+    --accent-sub: #d99a63;
+    --accent-light: #3a2518;
+    --shade: rgba(0, 0, 0, 0.45);
+    --frog: #7fa652; --frog-dark: #688a44; --frog-spot: #3e5a29; --frog-eye: #e0bd57;
+    --koi: #ece6da; --koi-patch: #e8793f; --koi-fin: #b99b82; --koi-edge: #8f8272;
+    --robin-back: #9a7a5c; --robin-wing: #7a5f48; --robin-head: #8a6c52; --robin-breast: #e07b45; --robin-beak: #d7a63c;
+    --beetle-shell: #3d6252; --beetle-pro: #30473d; --beetle-leg: #9aa59f; --beetle-shine: #7fa393;
+    --pad: #3c4a31; --pad-notch: var(--bg); --branch: #8a6e52;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.6 var(--sans);
+    padding-inline: 16px;
+    padding-block: 32px 56px;
+  }
+  .shell { max-width: 920px; margin: 0 auto; }
+  a { color: var(--accent); font-weight: 500; text-decoration: none; }
+  a:hover { text-decoration: underline dashed; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .eyebrow, .kicker {
+    margin: 0 0 12px;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0 0 12px;
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .intro { margin: 0 0 22px; color: var(--gray); font-size: 15px; line-height: 1.6; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 26px; }
+  .btn {
+    appearance: none;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--card);
+    color: var(--ink);
+    font: 600 12.5px var(--sans);
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .status { color: var(--gray); font-size: 12px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px;
+    margin: 0 0 18px; padding: 13px 18px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--card);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; color: var(--gray); font-size: 11.5px; font-weight: 500; }
+  .legend-item svg { display: block; flex: 0 0 auto; }
+
+  .toc {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 26px;
+  }
+  .toc a {
+    padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--card); color: var(--text); font-size: 11px; font-weight: 600;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  .card {
+    margin: 0 0 14px; padding: 22px 22px 24px;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--card);
+    scroll-margin-top: 16px;
+  }
+  .card h2 { margin: 0 0 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.3; text-wrap: balance; }
+  .card h3 { margin: 18px 0 6px; font-size: 14px; font-weight: 700; }
+  .card p { margin: 0 0 12px; color: var(--text); font-size: 13.5px; line-height: 1.65; }
+  .card p.lead { color: var(--gray); }
+  .card code { font: 12px var(--mono); padding: 1px 5px; border-radius: 5px; background: var(--row); color: var(--ink); }
+
+  .diagram {
+    overflow-x: auto; margin: 16px 0 8px; padding: 16px 8px;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--bg);
+  }
+  .diagram svg { display: block; width: 100%; min-width: 560px; max-width: 720px; margin: 0 auto; height: auto; }
+  .caption { margin: 0 0 14px; color: var(--gray); font-size: 12px; line-height: 1.5; }
+
+  /* Diagram vocabulary, shared by every figure. */
+  svg text { font-family: var(--sans); }
+  .node-normal { fill: var(--card); stroke: var(--border); stroke-width: 0.9; }
+  .node-key { fill: var(--accent-light); stroke: var(--accent); stroke-width: 1.4; }
+  .node-term { fill: var(--ink); }
+  .node-decision { fill: var(--card); stroke: var(--muted); stroke-width: 0.9; }
+  .node-label { fill: var(--label); font-size: 12px; text-anchor: middle; dominant-baseline: middle; }
+  .node-label.key { fill: var(--accent); font-weight: 600; }
+  .node-label.term { fill: var(--bg); font-size: 11.5px; font-weight: 500; }
+  .node-label.start { text-anchor: start; }
+  .node-sub { fill: var(--muted); font-size: 10px; text-anchor: middle; dominant-baseline: middle; }
+  .node-sub.key { fill: var(--accent-sub); }
+  .node-sub.start { text-anchor: start; }
+  .edge { fill: none; stroke: var(--muted); stroke-width: 0.9; }
+  .edge-accent { fill: none; stroke: var(--accent); stroke-width: 1.1; }
+  .edge-dash { stroke-dasharray: 4 4; }
+  .edge-label { fill: var(--gray); font-size: 10.5px; font-weight: 600; }
+  .edge-label.key { fill: var(--accent); }
+  .chev { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .chev-accent { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .fill-accent { fill: var(--accent); }
+  .fill-soft { fill: var(--accent-light); }
+  .fill-shade { fill: var(--shade); }
+  .outline { fill: none; stroke: var(--muted); stroke-width: 0.9; stroke-dasharray: 4 3; }
+  .limb { fill: none; stroke: var(--accent); stroke-linecap: round; opacity: 0.22; }
+  .bone { fill: none; stroke: var(--label); stroke-width: 1.1; }
+  .bone-key { fill: none; stroke: var(--accent); stroke-width: 1.8; }
+  .joint { fill: var(--card); stroke: var(--label); stroke-width: 1.1; }
+
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-top: 14px; }
+  .rule { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--soft); }
+  .rule b { display: block; margin-bottom: 3px; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .rule span { color: var(--gray); font-size: 12.5px; line-height: 1.5; }
+
+  .rows { margin: 10px 0 4px; }
+  .row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px dashed var(--row); color: var(--text); font-size: 13px; line-height: 1.5; }
+  .row:first-child { border-top: 0; }
+  .tag { flex: 0 0 auto; margin-top: 2px; padding: 2px 5px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 9px; font-weight: 700; letter-spacing: 0.04em; }
+  .tag.soft { background: var(--accent); color: #fff; }
+
+  .table-wrap { overflow-x: auto; margin: 10px 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 20px 9px 0; border-bottom: 1px solid var(--border); color: var(--text); }
+  th { font-weight: 600; color: var(--ink); border-bottom-color: color-mix(in srgb, var(--ink) 16%, transparent); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: var(--mono); font-size: 12px; }
+
+  .check { list-style: none; margin: 8px 0 0; padding: 0; }
+  .check li { position: relative; padding: 7px 0 7px 26px; border-top: 1px dashed var(--row); color: var(--text); font-size: 13px; }
+  .check li:first-child { border-top: 0; }
+  .check li::before { content: ""; position: absolute; left: 0; top: 10px; width: 13px; height: 13px; border: 1.4px solid var(--accent); border-radius: 4px; }
+
+  .brief {
+    margin: 12px 0; padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg); color: var(--ink); font: 12.5px/1.65 var(--mono); white-space: pre-wrap; overflow-x: auto;
+  }
+  .footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 11.5px; line-height: 1.6; }
+
+  .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+  .topbar .eyebrow { margin: 0; }
+  .theme { display: inline-flex; padding: 3px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); }
+  .theme button { appearance: none; border: 0; border-radius: 7px; background: transparent; color: var(--gray); cursor: pointer; font: 600 12px var(--sans); padding: 6px 12px; }
+  .theme button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+  .animal-grid { display: grid; gap: 10px; margin-top: 16px; }
+  .grid-head, .animal-row { display: grid; grid-template-columns: 118px repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .grid-head span { color: var(--gray); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  .animal-name { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+  .animal-name b { font-size: 14px; }
+  .animal-name span { color: var(--gray); font-size: 11.5px; line-height: 1.4; }
+  .animal-cell { margin: 0; min-width: 0; }
+  .cell-art { border: 1px solid var(--border); border-radius: 10px; background: var(--bg); padding: 4px; }
+  .cell-art svg { display: block; width: 100%; height: auto; }
+  .animal-cell figcaption { margin-top: 6px; color: var(--gray); font-size: 11.5px; line-height: 1.45; }
+  .animal-cell figcaption b { color: var(--ink); font-weight: 600; }
+  @media (max-width: 760px) {
+    .grid-head { display: none; }
+    .animal-row { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 10px; border-top: 1px solid var(--border); }
+    .animal-name { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 8px; padding-top: 0; }
+  }
+
+  /* Illustration colours. */
+  .frog-limb { stroke: var(--frog-dark); stroke-linecap: round; }
+  .frog-toe { stroke: var(--frog-dark); stroke-width: 1.4; stroke-linecap: round; }
+  .frog-web { fill: var(--frog); opacity: 0.55; }
+  .frog-skin { fill: var(--frog); }
+  .frog-spot { fill: var(--frog-spot); opacity: 0.7; }
+  .frog-eye { fill: var(--frog-eye); stroke: var(--frog-dark); stroke-width: 0.8; }
+  .pupil { fill: #1a1917; }
+  .fill-ghost { fill: color-mix(in srgb, var(--ink) 11%, var(--bg)); }
+  .cell-art .fill-soft { fill: color-mix(in srgb, var(--accent) 16%, var(--bg)); }
+  .koi-skin { fill: var(--koi); }
+  .koi-patch { fill: var(--koi-patch); }
+  .koi-fin { fill: var(--koi-fin); }
+  .koi-edge { fill: none; stroke: var(--koi-edge); stroke-width: 0.8; }
+  .robin-back { fill: var(--robin-back); }
+  .robin-wing { fill: var(--robin-wing); }
+  .robin-head { fill: var(--robin-head); }
+  .robin-breast { fill: var(--robin-breast); }
+  .robin-tail { fill: var(--robin-wing); }
+  .robin-beak { fill: var(--robin-beak); }
+  .robin-edge { fill: none; stroke: var(--robin-back); stroke-width: 0.8; }
+  .robin-quill { stroke: var(--robin-back); stroke-width: 0.8; }
+  .beetle-shell { fill: var(--beetle-shell); stroke: var(--label); stroke-width: 0.6; }
+  .beetle-pro { fill: var(--beetle-pro); stroke: var(--label); stroke-width: 0.6; }
+  .beetle-leg { fill: none; stroke: var(--beetle-leg); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .beetle-leg-thin { fill: none; stroke: var(--beetle-leg); stroke-width: 1.3; stroke-linecap: round; }
+  .beetle-seam { stroke: var(--beetle-pro); stroke-width: 1.2; }
+  .beetle-shine { fill: var(--beetle-shine); opacity: 0.5; }
+  .pad { fill: var(--pad); }
+  .pad-notch { fill: var(--bg); }
+  .branch { fill: none; stroke: var(--branch); stroke-width: 12; stroke-linecap: round; }
+  .branch-twig { fill: none; stroke: var(--branch); stroke-width: 5; stroke-linecap: round; }
+</style>
+
+<main class="shell" id="manual">
+  <div class="topbar">
+    <p class="eyebrow">Interactive animal studies · method</p>
+    <div class="theme" role="group" aria-label="Colour theme">
+      <button type="button" id="theme-light" aria-pressed="false">Light</button>
+      <button type="button" id="theme-dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+  <h1>Creature Study Field Manual</h1>
+  <p class="intro">A method for building interactive, top-down animal scenes that hold up under close inspection. It covers research, body construction, motion, habitat, lighting, performance and QA, with example figures from finished work. It applies to any animal; four reference animals (a frog, a koi, a robin and a ground beetle) serve as examples throughout. Send it with the brief template at the end.</p>
+  <div class="actions">
+    <button class="btn primary" id="copy-all" type="button">Copy manual as a prompt</button>
+    <a class="btn" href="#brief">Go to the brief template</a>
+    <span class="status" id="copy-status" role="status" aria-live="polite"></span>
+  </div>
+
+  <div class="legend" aria-label="How to read the diagrams">
+    <span class="legend-item"><svg width="40" height="20" aria-hidden="true"><rect class="node-term" x="2" y="3" width="36" height="14" rx="7"/></svg>Start or end</span>
+    <span class="legend-item"><svg width="36" height="22" aria-hidden="true"><rect class="node-key" x="1" y="3" width="34" height="16" rx="5"/></svg>Key step</span>
+    <span class="legend-item"><svg width="36" height="22" aria-hidden="true"><rect class="node-normal" x="1" y="3" width="34" height="16" rx="5"/></svg>Other step</span>
+    <span class="legend-item"><svg width="26" height="22" aria-hidden="true"><polygon class="node-decision" points="13,2 24,11 13,20 2,11"/></svg>Check</span>
+    <span class="legend-item"><svg width="30" height="12" aria-hidden="true"><line class="edge-accent" x1="2" y1="6" x2="28" y2="6"/></svg>Main path</span>
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <a href="#polish">Principles</a><a href="#animals">Reference animals</a><a href="#order">Process</a><a href="#structure">Structure</a><a href="#body">Anatomy</a><a href="#pose">Pose</a><a href="#behaviour">Behaviour</a><a href="#contact">Contact</a><a href="#fluid">Water and air</a><a href="#habitat">Habitat</a><a href="#light">Light</a><a href="#performance">Performance</a><a href="#access">Interaction</a><a href="#measure">QA metrics</a><a href="#adapt">Other animals</a><a href="#done">Checklist</a><a href="#brief">Brief</a>
+  </nav>
+  <article class="card" id="polish">
+    <p class="kicker">01 / Principles</p>
+    <h2>Ten rules</h2>
+    <p class="lead">A scene reads as fake because of a small set of errors: a foot sliding while the body turns, a swimmer rotating in place, a pose changing in a single frame, a shadow cast toward the light. These rules target those errors, and the sections after them explain how to meet each one.</p>
+    <div class="rules">
+      <div class="rule"><b>1. Research the animal first</b><span>Watch slow-motion footage before designing any pose. A frog swimming in a straight line kicks both hind legs at once; most people guess they alternate.</span></div>
+      <div class="rule"><b>2. Give every action a motive</b><span>A robin turns toward a sound, a beetle steers around a twig, a koi rises for food. Nothing moves to fill time or because the page loaded.</span></div>
+      <div class="rule"><b>3. Pin feet that touch a surface</b><span>The frog's feet stay on the lily pad while its body turns over them. Feet only move by stepping.</span></div>
+      <div class="rule"><b>4. In water or air, turn only while moving</b><span>A koi changes heading along a curve as it swims. It can't rotate on the spot.</span></div>
+      <div class="rule"><b>5. Ease every pose change</b><span>Pose values move toward their targets over several frames. A landing squash still takes 20 to 30 ms.</span></div>
+      <div class="rule"><b>6. Keep mirrored motion mirrored</b><span>Paired limbs move together until steering, loading or a stumble gives them a reason to split.</span></div>
+      <div class="rule"><b>7. Use one key light</b><span>Every shadow falls away from it and every highlight faces it.</span></div>
+      <div class="rule"><b>8. Build depth from physical cues</b><span>A visible floor, a medium that hides it with depth, and shadows offset by height.</span></div>
+      <div class="rule"><b>9. Keep idle behaviour small</b><span>Breathing, blinking and looking around. Larger actions come at irregular intervals for each animal.</span></div>
+      <div class="rule"><b>10. Measure, then review by eye</b><span>Foot slide, pose jumps, brightness and frame time all get numbers before anyone signs off.</span></div>
+    </div>
+  </article>
+
+  <article class="card" id="animals">
+    <p class="kicker">02 / Reference animals</p>
+    <h2>Four reference animals</h2>
+    <p class="lead">Examples in this manual rotate between four animals that cover the main body plans: a frog (four legs; jumps and swims), a koi (a flexible spine in open water), a robin (wings; perches) and a ground beetle (six legs; walks). Each row shows the finished form, how it's built, its signature motion, and how it touches the world.</p>
+<div class="animal-grid" role="list">
+<div class="grid-head" aria-hidden="true"><span></span><span>Finished form</span><span>Shapes and bones</span><span>Signature motion</span><span>Contact or medium</span></div>
+<div class="animal-row" role="listitem">
+<div class="animal-name"><b>Frog</b><span>Lily pads and open water</span></div>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Frog seen from above, sitting"><line class="frog-limb" x1="65.7" y1="65" x2="100" y2="40.4" stroke-width="19.4"/><line class="frog-limb" x1="100" y1="40.4" x2="61.7" y2="54.9" stroke-width="12.3"/><line class="frog-limb" x1="61.7" y1="54.9" x2="80.4" y2="33.4" stroke-width="7.9"/><line class="frog-limb" x1="65.7" y1="95" x2="100" y2="119.6" stroke-width="19.4"/><line class="frog-limb" x1="100" y1="119.6" x2="61.7" y2="105.1" stroke-width="12.3"/><line class="frog-limb" x1="61.7" y1="105.1" x2="80.4" y2="126.6" stroke-width="7.9"/><line class="frog-limb" x1="113.6" y1="62.8" x2="122" y2="41.7" stroke-width="8.8"/><line class="frog-limb" x1="122" y1="41.7" x2="150.2" y2="32.9" stroke-width="6.6"/><line class="frog-limb" x1="113.6" y1="97.2" x2="122" y2="118.3" stroke-width="8.8"/><line class="frog-limb" x1="122" y1="118.3" x2="150.2" y2="127.1" stroke-width="6.6"/><polygon class="frog-web" points="80.4,33.4 101.3,21.5 99.1,18 96.5,15.3 93.2,12.7 89.7,10.9"/><line class="frog-toe" x1="80.4" y1="33.4" x2="101.3" y2="21.5"/><line class="frog-toe" x1="80.4" y1="33.4" x2="99.1" y2="18"/><line class="frog-toe" x1="80.4" y1="33.4" x2="96.5" y2="15.3"/><line class="frog-toe" x1="80.4" y1="33.4" x2="93.2" y2="12.7"/><line class="frog-toe" x1="80.4" y1="33.4" x2="89.7" y2="10.9"/><polygon class="frog-web" points="80.4,126.6 101.3,138.5 99.1,142 96.5,144.7 93.2,147.3 89.7,149.1"/><line class="frog-toe" x1="80.4" y1="126.6" x2="101.3" y2="138.5"/><line class="frog-toe" x1="80.4" y1="126.6" x2="99.1" y2="142"/><line class="frog-toe" x1="80.4" y1="126.6" x2="96.5" y2="144.7"/><line class="frog-toe" x1="80.4" y1="126.6" x2="93.2" y2="147.3"/><line class="frog-toe" x1="80.4" y1="126.6" x2="89.7" y2="149.1"/><line class="frog-toe" x1="150.2" y1="32.9" x2="162.3" y2="36.9"/><line class="frog-toe" x1="150.2" y1="32.9" x2="162.9" y2="31.7"/><line class="frog-toe" x1="150.2" y1="32.9" x2="161.3" y2="26.7"/><line class="frog-toe" x1="150.2" y1="32.9" x2="157.9" y2="22.8"/><line class="frog-toe" x1="150.2" y1="127.1" x2="162.3" y2="123.1"/><line class="frog-toe" x1="150.2" y1="127.1" x2="162.9" y2="128.3"/><line class="frog-toe" x1="150.2" y1="127.1" x2="161.3" y2="133.3"/><line class="frog-toe" x1="150.2" y1="127.1" x2="157.9" y2="137.2"/><ellipse class="frog-skin" cx="88.6" cy="80" rx="45.8" ry="30.4"/><ellipse class="frog-skin" cx="65.7" cy="80" rx="21.6" ry="26.8"/><ellipse class="frog-skin" cx="127.3" cy="80" rx="27.3" ry="25.5"/><ellipse class="frog-skin" cx="147.1" cy="80" rx="11.4" ry="13.6"/><circle class="frog-eye" cx="130.8" cy="62.4" r="8.8"/><ellipse class="pupil" cx="131.8" cy="62.4" rx="4.8" ry="2.5"/><circle class="frog-eye" cx="130.8" cy="97.6" r="8.8"/><ellipse class="pupil" cx="131.8" cy="97.6" rx="4.8" ry="2.5"/><circle class="frog-spot" cx="82.4" cy="71.2" r="5.3"/><circle class="frog-spot" cx="93.4" cy="91" r="4"/><circle class="frog-spot" cx="75.8" cy="91" r="3.1"/><circle class="frog-spot" cx="104.4" cy="75.6" r="3.1"/></svg></div><figcaption><b>Finished form.</b> Sitting, seen from above</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Frog built from blended ellipses with leg chains and joints"><ellipse class="fill-soft" cx="88.6" cy="80" rx="45.8" ry="30.4"/><ellipse class="fill-soft" cx="65.7" cy="80" rx="21.6" ry="26.8"/><ellipse class="fill-soft" cx="127.3" cy="80" rx="27.3" ry="25.5"/><ellipse class="fill-soft" cx="147.1" cy="80" rx="11.4" ry="13.6"/><ellipse class="outline" cx="88.6" cy="80" rx="45.8" ry="30.4"/><ellipse class="outline" cx="65.7" cy="80" rx="21.6" ry="26.8"/><ellipse class="outline" cx="127.3" cy="80" rx="27.3" ry="25.5"/><ellipse class="outline" cx="147.1" cy="80" rx="11.4" ry="13.6"/><circle class="outline" cx="130.8" cy="62.4" r="8.8"/><circle class="outline" cx="130.8" cy="97.6" r="8.8"/><polyline class="bone-key" points="65.7,65 100,40.4 61.7,54.9 80.4,33.4"/><circle class="joint" cx="65.7" cy="65" r="2.4"/><circle class="joint" cx="100" cy="40.4" r="2.4"/><circle class="joint" cx="61.7" cy="54.9" r="2.4"/><circle class="joint" cx="80.4" cy="33.4" r="2.4"/><polyline class="bone-key" points="65.7,95 100,119.6 61.7,105.1 80.4,126.6"/><circle class="joint" cx="65.7" cy="95" r="2.4"/><circle class="joint" cx="100" cy="119.6" r="2.4"/><circle class="joint" cx="61.7" cy="105.1" r="2.4"/><circle class="joint" cx="80.4" cy="126.6" r="2.4"/><polyline class="bone-key" points="113.6,62.8 122,41.7 150.2,32.9"/><circle class="joint" cx="113.6" cy="62.8" r="2.4"/><circle class="joint" cx="122" cy="41.7" r="2.4"/><circle class="joint" cx="150.2" cy="32.9" r="2.4"/><polyline class="bone-key" points="113.6,97.2 122,118.3 150.2,127.1"/><circle class="joint" cx="113.6" cy="97.2" r="2.4"/><circle class="joint" cx="122" cy="118.3" r="2.4"/><circle class="joint" cx="150.2" cy="127.1" r="2.4"/></svg></div><figcaption><b>Shapes and bones.</b> Four blended ellipses; three-part hind legs, two-part forelegs</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Frog push-off: hind legs extend from folded to straight behind"><ellipse class="fill-ghost" cx="119.4" cy="80" rx="34.3" ry="22.8"/><ellipse class="fill-ghost" cx="102.3" cy="80" rx="16.2" ry="20.1"/><ellipse class="fill-ghost" cx="148.5" cy="80" rx="20.5" ry="19.1"/><ellipse class="fill-ghost" cx="163.3" cy="80" rx="8.6" ry="10.2"/><polyline class="bone" points="102.3,68.8 76.5,50.3 60,76.4 41.9,65.2"/><polyline class="bone" points="102.3,91.2 76.5,109.7 60,83.6 41.9,94.8"/><polyline class="bone" points="138.2,67.1 144.5,51.3 165.6,44.7"/><polyline class="bone" points="138.2,92.9 144.5,108.7 165.6,115.3"/><polyline class="bone edge-dash" points="102.3,68.8 128,50.3 99.3,61.2 113.3,45"/><polyline class="bone edge-dash" points="102.3,91.2 128,109.7 99.3,98.8 113.3,115"/><polyline class="bone-key" points="102.3,68.8 76.5,50.3 60,76.4 41.9,65.2"/><circle class="joint" cx="102.3" cy="68.8" r="2.4"/><circle class="joint" cx="76.5" cy="50.3" r="2.4"/><circle class="joint" cx="60" cy="76.4" r="2.4"/><circle class="joint" cx="41.9" cy="65.2" r="2.4"/><polyline class="bone-key" points="102.3,91.2 76.5,109.7 60,83.6 41.9,94.8"/><circle class="joint" cx="102.3" cy="91.2" r="2.4"/><circle class="joint" cx="76.5" cy="109.7" r="2.4"/><circle class="joint" cx="60" cy="83.6" r="2.4"/><circle class="joint" cx="41.9" cy="94.8" r="2.4"/><path class="edge-accent" d="M168 80 H192"/><path class="chev-accent" d="M188 76 L193 80 L188 84"/></svg></div><figcaption><b>Signature motion.</b> Push-off: hind legs go from folded to straight in about 75 ms</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Frog on a lily pad with its four feet pinned"><circle class="pad" cx="100" cy="80" r="70"/><path class="pad-notch" d="M100 80 L170 64 L170 96 Z"/><ellipse class="fill-ghost" cx="96.2" cy="80" rx="31.2" ry="20.7"/><ellipse class="fill-ghost" cx="80.6" cy="80" rx="14.7" ry="18.3"/><ellipse class="fill-ghost" cx="122.6" cy="80" rx="18.6" ry="17.4"/><ellipse class="fill-ghost" cx="136.1" cy="80" rx="7.8" ry="9.3"/><polyline class="bone" points="80.6,69.8 104,53 77.9,62.9 90.7,48.2"/><polyline class="bone" points="80.6,90.2 104,107 77.9,97.1 90.7,111.8"/><polyline class="bone" points="113.3,68.3 119,53.9 138.2,47.9"/><polyline class="bone" points="113.3,91.7 119,106.1 138.2,112.1"/><circle class="fill-accent" cx="90.7" cy="48.2" r="3.6"/><circle class="fill-accent" cx="90.7" cy="111.8" r="3.6"/><circle class="fill-accent" cx="138.2" cy="47.9" r="3.6"/><circle class="fill-accent" cx="138.2" cy="112.1" r="3.6"/></svg></div><figcaption><b>Contact or medium.</b> All four feet pinned to the pad while the body turns</figcaption></figure>
+</div>
+<div class="animal-row" role="listitem">
+<div class="animal-name"><b>Koi</b><span>Open water, seen from above</span></div>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Koi seen from above, body in a gentle curve"><defs><clipPath id="koi-clip"><path d="M166 70 L154.8 61.8 L143.2 60.2 L131.7 62.4 L120.6 64.9 L110.2 67.3 L100.1 69.3 L90.1 70.6 L79.8 71 L69 70.5 L57.5 69.7 L45.7 69.2 L34 71 L14.6 52.8 L20.2 68.9 L10 82.4 L34 71 L44.3 76.2 L54.5 81.3 L65 86.3 L76.2 90.8 L87.9 94.4 L99.9 96.7 L111.8 98 L123.4 98.7 L134.3 99.4 L144.8 100.3 L155.2 98.1 L166 90 Z"/></clipPath></defs><ellipse class="koi-fin" cx="131.3" cy="57.4" rx="10" ry="4.5" transform="rotate(210.9 131.3 57.4)"/><ellipse class="koi-fin" cx="134.7" cy="104.3" rx="10" ry="4.5" transform="rotate(140.9 134.7 104.3)"/><path class="koi-skin" d="M166 70 L154.8 61.8 L143.2 60.2 L131.7 62.4 L120.6 64.9 L110.2 67.3 L100.1 69.3 L90.1 70.6 L79.8 71 L69 70.5 L57.5 69.7 L45.7 69.2 L34 71 L14.6 52.8 L20.2 68.9 L10 82.4 L34 71 L44.3 76.2 L54.5 81.3 L65 86.3 L76.2 90.8 L87.9 94.4 L99.9 96.7 L111.8 98 L123.4 98.7 L134.3 99.4 L144.8 100.3 L155.2 98.1 L166 90 Z"/><g clip-path="url(#koi-clip)"><ellipse class="koi-patch" cx="132" cy="73" rx="18" ry="11" transform="rotate(-10 132 73)"/><ellipse class="koi-patch" cx="94" cy="87" rx="16" ry="10" transform="rotate(15 94 87)"/><ellipse class="koi-patch" cx="64" cy="78" rx="11" ry="7"/></g><path class="koi-edge" d="M166 70 L154.8 61.8 L143.2 60.2 L131.7 62.4 L120.6 64.9 L110.2 67.3 L100.1 69.3 L90.1 70.6 L79.8 71 L69 70.5 L57.5 69.7 L45.7 69.2 L34 71 L14.6 52.8 L20.2 68.9 L10 82.4 L34 71 L44.3 76.2 L54.5 81.3 L65 86.3 L76.2 90.8 L87.9 94.4 L99.9 96.7 L111.8 98 L123.4 98.7 L134.3 99.4 L144.8 100.3 L155.2 98.1 L166 90 Z"/><circle class="pupil" cx="158" cy="73" r="2"/><circle class="pupil" cx="158" cy="87" r="2"/></svg></div><figcaption><b>Finished form.</b> Cruising, body in a gentle curve</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Koi built as a spine of points with a width set along it"><path class="fill-soft" d="M166 70 L154.8 61.8 L143.2 60.2 L131.7 62.4 L120.6 64.9 L110.2 67.3 L100.1 69.3 L90.1 70.6 L79.8 71 L69 70.5 L57.5 69.7 L45.7 69.2 L34 71 L14.6 52.8 L20.2 68.9 L10 82.4 L34 71 L44.3 76.2 L54.5 81.3 L65 86.3 L76.2 90.8 L87.9 94.4 L99.9 96.7 L111.8 98 L123.4 98.7 L134.3 99.4 L144.8 100.3 L155.2 98.1 L166 90 Z"/><path class="outline" d="M166 70 L154.8 61.8 L143.2 60.2 L131.7 62.4 L120.6 64.9 L110.2 67.3 L100.1 69.3 L90.1 70.6 L79.8 71 L69 70.5 L57.5 69.7 L45.7 69.2 L34 71 L14.6 52.8 L20.2 68.9 L10 82.4 L34 71 L44.3 76.2 L54.5 81.3 L65 86.3 L76.2 90.8 L87.9 94.4 L99.9 96.7 L111.8 98 L123.4 98.7 L134.3 99.4 L144.8 100.3 L155.2 98.1 L166 90 Z"/><circle class="outline" cx="144" cy="80.2" r="20.1"/><circle class="outline" cx="111" cy="82.6" r="15.4"/><circle class="outline" cx="78" cy="80.9" r="10.1"/><polyline class="bone-key" points="166,80 155,80 144,80.2 133,80.9 122,81.8 111,82.6 100,83 89,82.5 78,80.9 67,78.4 56,75.5 45,72.7 34,71"/><circle class="joint" cx="166" cy="80" r="2.2"/><circle class="joint" cx="155" cy="80" r="2.2"/><circle class="joint" cx="144" cy="80.2" r="2.2"/><circle class="joint" cx="133" cy="80.9" r="2.2"/><circle class="joint" cx="122" cy="81.8" r="2.2"/><circle class="joint" cx="111" cy="82.6" r="2.2"/><circle class="joint" cx="100" cy="83" r="2.2"/><circle class="joint" cx="89" cy="82.5" r="2.2"/><circle class="joint" cx="78" cy="80.9" r="2.2"/><circle class="joint" cx="67" cy="78.4" r="2.2"/><circle class="joint" cx="56" cy="75.5" r="2.2"/><circle class="joint" cx="45" cy="72.7" r="2.2"/><circle class="joint" cx="34" cy="71" r="2.2"/></svg></div><figcaption><b>Shapes and bones.</b> A spine of 13 points with width set along it; no limbs</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Koi spine at three moments of the swimming wave, which travels from head to tail"><polyline class="bone" points="166,80 155,80.2 144,80.8 133,81.8 122,82.7 111,83 100,82.2 89,80.2 78,77 67,73.4 56,70.3 45,68.7 34,69.5" opacity="0.45"/><polyline class="bone" points="166,80 155,79.6 144,79 133,78.7 122,79.1 111,80.5 100,82.7 89,85.2 78,87.3 67,88.2 56,87.2 45,83.9 34,78.7" opacity="0.7"/><polyline class="bone-key" points="166,80 155,80.2 144,80.2 133,79.5 122,78.2 111,76.5 100,75.1 89,74.6 78,75.6 67,78.3 56,82.5 45,87.4 34,91.8"/><circle class="joint" cx="166" cy="80" r="2"/><circle class="joint" cx="155" cy="80.2" r="2"/><circle class="joint" cx="144" cy="80.2" r="2"/><circle class="joint" cx="133" cy="79.5" r="2"/><circle class="joint" cx="122" cy="78.2" r="2"/><circle class="joint" cx="111" cy="76.5" r="2"/><circle class="joint" cx="100" cy="75.1" r="2"/><circle class="joint" cx="89" cy="74.6" r="2"/><circle class="joint" cx="78" cy="75.6" r="2"/><circle class="joint" cx="67" cy="78.3" r="2"/><circle class="joint" cx="56" cy="82.5" r="2"/><circle class="joint" cx="45" cy="87.4" r="2"/><circle class="joint" cx="34" cy="91.8" r="2"/><path class="edge-accent" d="M150 132 H48"/><path class="chev-accent" d="M53 128 L47 132 L53 136"/><text class="node-sub" x="100" y="148">wave travels to the tail</text></svg></div><figcaption><b>Signature motion.</b> A bending wave travels from head to tail</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Koi turning: its whole spine follows the curved path its head has taken"><path class="edge edge-dash" d="M13.5 138.5 L16 132.6 L18.8 126.8 L22 121.2 L25.6 115.9 L29.5 110.9 L33.8 106.1 L38.4 101.6 L43.4 97.5 L48.6 93.7 L54 90.3 L59.7 87.3 L65.5 84.7 L71.6 82.5 L77.7 80.7 L84 79.4 L90.4 78.5 L96.8 78.1 L103.2 78.1 L109.6 78.5 L116 79.4 L122.3 80.7 L128.4 82.5 L134.5 84.7 L140.3 87.3 L146 90.3 L151.4 93.7 L156.6 97.5 L161.6 101.6 L166.2 106.1 L170.5 110.9 L174.4 115.9 L178 121.2 L181.2 126.8 L184 132.6"/><path class="fill-soft" d="M177.8 104.1 L177.6 91.9 L171.5 83.7 L162.6 78.9 L153.4 75 L143.9 72.1 L134.4 70.1 L124.8 69.1 L115.4 69.1 L106.1 70.1 L97.1 72 L88.6 75.1 L80.9 80 L56.7 68.8 L67.1 82.3 L61.6 98.4 L80.9 80 L89.5 82.2 L97.5 84 L105.1 86.3 L112.3 89 L119.1 92.3 L125.5 95.9 L131.4 100.1 L136.8 104.6 L141.6 109.5 L145.9 114.6 L152.1 117.6 L163.1 117.6 Z"/><path class="outline" d="M177.8 104.1 L177.6 91.9 L171.5 83.7 L162.6 78.9 L153.4 75 L143.9 72.1 L134.4 70.1 L124.8 69.1 L115.4 69.1 L106.1 70.1 L97.1 72 L88.6 75.1 L80.9 80 L56.7 68.8 L67.1 82.3 L61.6 98.4 L80.9 80 L89.5 82.2 L97.5 84 L105.1 86.3 L112.3 89 L119.1 92.3 L125.5 95.9 L131.4 100.1 L136.8 104.6 L141.6 109.5 L145.9 114.6 L152.1 117.6 L163.1 117.6 Z"/><polyline class="bone-key" points="170.5,110.9 164.9,104.8 158.7,99.2 152.1,94.2 145.1,89.8 137.7,86.1 130,83 122,80.7 113.9,79.1 105.6,78.2 97.3,78 89.1,78.7 80.9,80"/><circle class="fill-accent" cx="184" cy="132.6" r="3"/></svg></div><figcaption><b>Contact or medium.</b> Turning: the spine follows the path the head took</figcaption></figure>
+</div>
+<div class="animal-row" role="listitem">
+<div class="animal-name"><b>Robin</b><span>A branch above a lawn</span></div>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Robin seen from above with wings folded"><polygon class="robin-tail" points="64,73 30,64 26,80 30,96 64,87"/><ellipse class="robin-breast" cx="112" cy="80" rx="26" ry="24"/><ellipse class="robin-wing" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="robin-wing" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><ellipse class="robin-back" cx="96" cy="80" rx="34" ry="21"/><circle class="robin-head" cx="134" cy="80" r="14"/><polygon class="robin-beak" points="146,75 160,80 146,85"/><ellipse class="robin-edge" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="robin-edge" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><circle class="pupil" cx="139" cy="70" r="2"/><circle class="pupil" cx="139" cy="90" r="2"/><line class="robin-quill" x1="62" y1="76.4" x2="32" y2="68"/><line class="robin-quill" x1="62" y1="78.2" x2="32" y2="74"/><line class="robin-quill" x1="62" y1="80" x2="32" y2="80"/><line class="robin-quill" x1="62" y1="81.8" x2="32" y2="86"/><line class="robin-quill" x1="62" y1="83.6" x2="32" y2="92"/></svg></div><figcaption><b>Finished form.</b> Perched with wings folded</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Robin built from body, head and tail shapes, with folded wing chains"><polygon class="fill-soft" points="64,73 30,64 26,80 30,96 64,87"/><ellipse class="fill-soft" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="fill-soft" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><ellipse class="fill-soft" cx="96" cy="80" rx="34" ry="21"/><circle class="fill-soft" cx="134" cy="80" r="14"/><polygon class="fill-soft" points="146,75 160,80 146,85"/><ellipse class="outline" cx="96" cy="80" rx="34" ry="21"/><circle class="outline" cx="134" cy="80" r="14"/><ellipse class="outline" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="outline" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><polyline class="bone-key" points="146,80 122,80 96,80 62,80"/><circle class="joint" cx="146" cy="80" r="2.2"/><circle class="joint" cx="122" cy="80" r="2.2"/><circle class="joint" cx="96" cy="80" r="2.2"/><circle class="joint" cx="62" cy="80" r="2.2"/><polyline class="bone-key" points="112,66 92,58 66,64"/><circle class="joint" cx="112" cy="66" r="2.4"/><circle class="joint" cx="92" cy="58" r="2.4"/><circle class="joint" cx="66" cy="64" r="2.4"/><polyline class="bone-key" points="112,94 92,102 66,96"/><circle class="joint" cx="112" cy="94" r="2.4"/><circle class="joint" cx="92" cy="102" r="2.4"/><circle class="joint" cx="66" cy="96" r="2.4"/></svg></div><figcaption><b>Shapes and bones.</b> Body, head and tail shapes; wings are three-part chains</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Robin wing opening from folded against the body to fully spread"><polygon class="fill-ghost" points="64,73 30,64 26,80 30,96 64,87"/><ellipse class="fill-ghost" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="fill-ghost" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><ellipse class="fill-ghost" cx="96" cy="80" rx="34" ry="21"/><circle class="fill-ghost" cx="134" cy="80" r="14"/><polygon class="fill-ghost" points="146,75 160,80 146,85"/><polyline class="bone edge-dash" points="112,66 92,58 66,64"/><polyline class="bone edge-dash" points="112,94 92,102 66,96"/><line class="bone" x1="100" y1="36" x2="74" y2="42"/><line class="bone" x1="100" y1="124" x2="74" y2="118"/><line class="bone" x1="100" y1="36" x2="69" y2="49"/><line class="bone" x1="100" y1="124" x2="69" y2="111"/><line class="bone" x1="100" y1="36" x2="64" y2="56"/><line class="bone" x1="100" y1="124" x2="64" y2="104"/><line class="bone" x1="82" y1="10" x2="56" y2="16"/><line class="bone" x1="82" y1="150" x2="56" y2="144"/><line class="bone" x1="82" y1="10" x2="51" y2="23"/><line class="bone" x1="82" y1="150" x2="51" y2="137"/><line class="bone" x1="82" y1="10" x2="46" y2="30"/><line class="bone" x1="82" y1="150" x2="46" y2="130"/><polyline class="bone-key" points="112,66 100,36 82,10"/><circle class="joint" cx="112" cy="66" r="2.4"/><circle class="joint" cx="100" cy="36" r="2.4"/><circle class="joint" cx="82" cy="10" r="2.4"/><polyline class="bone-key" points="112,94 100,124 82,150"/><circle class="joint" cx="112" cy="94" r="2.4"/><circle class="joint" cx="100" cy="124" r="2.4"/><circle class="joint" cx="82" cy="150" r="2.4"/></svg></div><figcaption><b>Signature motion.</b> Wing opening from folded to fully spread</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Robin perched on a branch with both feet pinned; the branch sways and carries the bird"><path class="branch" d="M-4 104 Q 100 78 204 64"/><path class="branch-twig" d="M150 72 Q 166 92 186 100"/><polygon class="fill-ghost" points="64,73 30,64 26,80 30,96 64,87"/><ellipse class="fill-ghost" cx="92" cy="67" rx="32" ry="10" transform="rotate(-6 92 67)"/><ellipse class="fill-ghost" cx="92" cy="93" rx="32" ry="10" transform="rotate(6 92 93)"/><ellipse class="fill-ghost" cx="96" cy="80" rx="34" ry="21"/><circle class="fill-ghost" cx="134" cy="80" r="14"/><polygon class="fill-ghost" points="146,75 160,80 146,85"/><circle class="fill-accent" cx="94" cy="86" r="3.6"/><circle class="fill-accent" cx="110" cy="82" r="3.6"/><path class="edge" d="M186 44 A 20 20 0 0 1 196 60"/><path class="chev" d="M191 58 L196 62 L198 55"/></svg></div><figcaption><b>Contact or medium.</b> Both feet pinned; the branch's sway carries the bird</figcaption></figure>
+</div>
+<div class="animal-row" role="listitem">
+<div class="animal-name"><b>Ground beetle</b><span>Leaf litter and a log</span></div>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Ground beetle seen from above"><polyline class="beetle-leg" points="132,66 146,50 160,42"/><polyline class="beetle-leg" points="118,60 116,38 126,24"/><polyline class="beetle-leg" points="100,58 82,40 66,30"/><polyline class="beetle-leg" points="132,94 146,110 160,118"/><polyline class="beetle-leg" points="118,100 116,122 126,136"/><polyline class="beetle-leg" points="100,102 82,120 66,130"/><polyline class="beetle-leg-thin" points="160,73 172,62 181,58"/><polyline class="beetle-leg-thin" points="160,87 172,98 181,102"/><ellipse class="beetle-shell" cx="90" cy="80" rx="36" ry="27"/><ellipse class="beetle-pro" cx="131" cy="80" rx="15" ry="19"/><circle class="beetle-pro" cx="152" cy="80" r="11"/><line class="beetle-seam" x1="126" y1="80" x2="54" y2="80"/><ellipse class="beetle-shine" cx="96" cy="70" rx="22" ry="6" transform="rotate(-4 96 70)"/><ellipse class="beetle-shine" cx="96" cy="90" rx="22" ry="6" transform="rotate(4 96 90)"/></svg></div><figcaption><b>Finished form.</b> Walking, seen from above</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Beetle built from head, thorax and wing-case shapes with six two-part legs"><ellipse class="fill-soft" cx="90" cy="80" rx="36" ry="27"/><ellipse class="fill-soft" cx="131" cy="80" rx="15" ry="19"/><circle class="fill-soft" cx="152" cy="80" r="11"/><ellipse class="outline" cx="90" cy="80" rx="36" ry="27"/><ellipse class="outline" cx="131" cy="80" rx="15" ry="19"/><circle class="outline" cx="152" cy="80" r="11"/><line class="outline" x1="126" y1="80" x2="54" y2="80"/><polyline class="bone-key" points="132,66 146,50 160,42"/><circle class="joint" cx="132" cy="66" r="2"/><circle class="joint" cx="146" cy="50" r="2"/><circle class="joint" cx="160" cy="42" r="2"/><polyline class="bone-key" points="118,60 116,38 126,24"/><circle class="joint" cx="118" cy="60" r="2"/><circle class="joint" cx="116" cy="38" r="2"/><circle class="joint" cx="126" cy="24" r="2"/><polyline class="bone-key" points="100,58 82,40 66,30"/><circle class="joint" cx="100" cy="58" r="2"/><circle class="joint" cx="82" cy="40" r="2"/><circle class="joint" cx="66" cy="30" r="2"/><polyline class="bone-key" points="132,94 146,110 160,118"/><circle class="joint" cx="132" cy="94" r="2"/><circle class="joint" cx="146" cy="110" r="2"/><circle class="joint" cx="160" cy="118" r="2"/><polyline class="bone-key" points="118,100 116,122 126,136"/><circle class="joint" cx="118" cy="100" r="2"/><circle class="joint" cx="116" cy="122" r="2"/><circle class="joint" cx="126" cy="136" r="2"/><polyline class="bone-key" points="100,102 82,120 66,130"/><circle class="joint" cx="100" cy="102" r="2"/><circle class="joint" cx="82" cy="120" r="2"/><circle class="joint" cx="66" cy="130" r="2"/></svg></div><figcaption><b>Shapes and bones.</b> Head, thorax and wing cases; six two-part legs</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Tripod gait: three legs swing forward in orange while the other three stand"><ellipse class="fill-ghost" cx="90" cy="80" rx="36" ry="27"/><ellipse class="fill-ghost" cx="131" cy="80" rx="15" ry="19"/><circle class="fill-ghost" cx="152" cy="80" r="11"/><polyline class="bone" points="132,94 146,110 160,118"/><circle class="joint" cx="132" cy="94" r="2"/><circle class="joint" cx="146" cy="110" r="2"/><circle class="joint" cx="160" cy="118" r="2"/><polyline class="bone" points="118,60 116,38 126,24"/><circle class="joint" cx="118" cy="60" r="2"/><circle class="joint" cx="116" cy="38" r="2"/><circle class="joint" cx="126" cy="24" r="2"/><polyline class="bone" points="100,102 82,120 66,130"/><circle class="joint" cx="100" cy="102" r="2"/><circle class="joint" cx="82" cy="120" r="2"/><circle class="joint" cx="66" cy="130" r="2"/><polyline class="bone-key" points="132,66 146,50 160,42"/><circle class="joint" cx="132" cy="66" r="2"/><circle class="joint" cx="146" cy="50" r="2"/><circle class="joint" cx="160" cy="42" r="2"/><polyline class="bone-key" points="118,100 116,122 126,136"/><circle class="joint" cx="118" cy="100" r="2"/><circle class="joint" cx="116" cy="122" r="2"/><circle class="joint" cx="126" cy="136" r="2"/><polyline class="bone-key" points="100,58 82,40 66,30"/><circle class="joint" cx="100" cy="58" r="2"/><circle class="joint" cx="82" cy="40" r="2"/><circle class="joint" cx="66" cy="30" r="2"/><text class="edge-label key" x="8" y="152">swing</text><text class="edge-label" x="150" y="152">stand</text></svg></div><figcaption><b>Signature motion.</b> Tripod gait: three legs swing while three stand</figcaption></figure>
+<figure class="animal-cell"><div class="cell-art"><svg viewBox="0 0 200 160" role="img" aria-label="Footfall timeline for six legs: the two tripods take turns stepping"><text class="node-sub" x="22" y="22">L1</text><line class="edge" x1="40" y1="22" x2="188" y2="22"/><rect class="node-key" x="44" y="16" width="30" height="12" rx="6"/><rect class="node-key" x="118" y="16" width="30" height="12" rx="6"/><text class="node-sub" x="22" y="42">R1</text><line class="edge" x1="40" y1="42" x2="188" y2="42"/><rect class="node-key" x="80" y="36" width="30" height="12" rx="6"/><rect class="node-key" x="154" y="36" width="30" height="12" rx="6"/><text class="node-sub" x="22" y="62">L2</text><line class="edge" x1="40" y1="62" x2="188" y2="62"/><rect class="node-key" x="80" y="56" width="30" height="12" rx="6"/><rect class="node-key" x="154" y="56" width="30" height="12" rx="6"/><text class="node-sub" x="22" y="82">R2</text><line class="edge" x1="40" y1="82" x2="188" y2="82"/><rect class="node-key" x="44" y="76" width="30" height="12" rx="6"/><rect class="node-key" x="118" y="76" width="30" height="12" rx="6"/><text class="node-sub" x="22" y="102">L3</text><line class="edge" x1="40" y1="102" x2="188" y2="102"/><rect class="node-key" x="44" y="96" width="30" height="12" rx="6"/><rect class="node-key" x="118" y="96" width="30" height="12" rx="6"/><text class="node-sub" x="22" y="122">R3</text><line class="edge" x1="40" y1="122" x2="188" y2="122"/><rect class="node-key" x="80" y="116" width="30" height="12" rx="6"/><rect class="node-key" x="154" y="116" width="30" height="12" rx="6"/><text class="edge-label key" x="40" y="152">bar: swing · line: foot pinned</text></svg></div><figcaption><b>Contact or medium.</b> Each foot is pinned whenever it isn't swinging</figcaption></figure>
+</div>
+</div>
+
+  </article>
+
+  <article class="card" id="order">
+    <p class="kicker">03 / Process</p>
+    <h2>Order of work</h2>
+    <p class="lead">Research and a written motion sheet come before code. The study ships only after the measurements pass.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 250" role="img" aria-label="Work order: observe the animal, write a motion sheet, agree the direction, build the world and rig, then the painters, habitat and interaction, measure, and ship only when the metrics pass. Failed measurements loop back to the world.">
+        <defs>
+          <marker id="p-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev" d="M2 1L8 5L2 9"/></marker>
+          <marker id="p-arrow-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev-accent" d="M2 1L8 5L2 9"/></marker>
+        </defs>
+        <rect class="node-term" x="14" y="36" width="80" height="34" rx="17"/><text class="node-label term" x="54" y="53">Brief</text>
+        <rect class="node-normal" x="120" y="30" width="112" height="46" rx="8"/><text class="node-label" x="176" y="47">Observe</text><text class="node-sub" x="176" y="63">footage · papers</text>
+        <rect class="node-normal" x="258" y="30" width="118" height="46" rx="8"/><text class="node-label" x="317" y="47">Motion sheet</text><text class="node-sub" x="317" y="63">poses · timings</text>
+        <polygon class="node-decision" points="438,15 492,53 438,91 384,53"/><text class="node-label" x="438" y="53">Agreed?</text>
+        <rect class="node-key" x="512" y="30" width="80" height="46" rx="8"/><text class="node-label key" x="552" y="47">World</text><text class="node-sub key" x="552" y="63">rules · state</text>
+        <rect class="node-key" x="604" y="30" width="86" height="46" rx="8"/><text class="node-label key" x="647" y="47">Rig</text><text class="node-sub key" x="647" y="63">body · pose</text>
+        <path class="edge" d="M94 53 H116" marker-end="url(#p-arrow)"/>
+        <path class="edge" d="M232 53 H254" marker-end="url(#p-arrow)"/>
+        <path class="edge" d="M376 53 H380" marker-end="url(#p-arrow)"/>
+        <path class="edge-accent" d="M492 53 H508" marker-end="url(#p-arrow-a)"/>
+        <text class="edge-label key" x="496" y="44">Y</text>
+        <path class="edge" d="M438 91 V104 H317 V80" marker-end="url(#p-arrow)"/>
+        <text class="edge-label" x="446" y="102">N</text>
+        <path class="edge-accent" d="M647 76 V124 H70 V156" marker-end="url(#p-arrow-a)"/>
+        <rect class="node-key" x="14" y="160" width="112" height="46" rx="8"/><text class="node-label key" x="70" y="177">Painters</text><text class="node-sub key" x="70" y="193">GPU + fallback</text>
+        <rect class="node-key" x="150" y="160" width="104" height="46" rx="8"/><text class="node-label key" x="202" y="177">Habitat</text><text class="node-sub key" x="202" y="193">ground to finish</text>
+        <rect class="node-normal" x="278" y="160" width="124" height="46" rx="8"/><text class="node-label" x="340" y="177">Interaction</text><text class="node-sub" x="340" y="193">taps · keys · still</text>
+        <rect class="node-normal" x="426" y="160" width="96" height="46" rx="8"/><text class="node-label" x="474" y="177">Measure</text><text class="node-sub" x="474" y="193">numbers + stills</text>
+        <polygon class="node-decision" points="580,145 630,183 580,221 530,183"/><text class="node-label" x="580" y="183">Pass?</text>
+        <rect class="node-term" x="642" y="166" width="54" height="34" rx="17"/><text class="node-label term" x="669" y="183">Ship</text>
+        <path class="edge-accent" d="M126 183 H146" marker-end="url(#p-arrow-a)"/>
+        <path class="edge" d="M254 183 H274" marker-end="url(#p-arrow)"/>
+        <path class="edge" d="M402 183 H422" marker-end="url(#p-arrow)"/>
+        <path class="edge" d="M522 183 H526" marker-end="url(#p-arrow)"/>
+        <path class="edge-accent" d="M630 183 H638" marker-end="url(#p-arrow-a)"/>
+        <path class="edge edge-dash" d="M580 221 V238 H552 V80" marker-end="url(#p-arrow)"/>
+        <text class="edge-label" x="588" y="240">N: fix the world, measure again</text>
+      </svg>
+    </div>
+    <p class="caption">A failed measurement gets fixed in the simulation. Adjusting the rendering to hide it doesn't count as a fix.</p>
+    <p>Research means slow-motion footage and any locomotion papers you can find, summarised in your own words. Copy nothing. For the robin, that might be how often it hops versus runs across a lawn, and how far it crouches before take-off. The motion sheet turns those notes into a plan: body dimensions in body lengths, a table of key poses with timings for each behaviour, how individuals differ, the layout of the scene, what a viewer should see in 45 seconds of watching, and what each tap does. Someone with authority over the result agrees the sheet before the build starts.</p>
+  </article>
+
+  <article class="card" id="structure">
+    <p class="kicker">04 / Structure</p>
+    <h2>Simulation and rendering are separate</h2>
+    <p class="lead">The simulation decides what happens and the renderers draw it. Keeping them apart lets two renderers show identical scenes, makes tap detection exact, and allows frame-by-frame testing.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 300" role="img" aria-label="The controller steps the world and passes it taps. The world hands state and limb geometry to a GPU painter and a simpler 2D painter, which both read one palette. The world also emits events for ripples.">
+        <defs>
+          <marker id="s-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev" d="M2 1L8 5L2 9"/></marker>
+          <marker id="s-arrow-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev-accent" d="M2 1L8 5L2 9"/></marker>
+        </defs>
+        <rect class="node-normal" x="240" y="20" width="200" height="62" rx="8"/>
+        <text class="node-label" x="340" y="40">Controller</text>
+        <text class="node-sub" x="340" y="58">animation loop · input · resize</text>
+        <text class="node-sub" x="340" y="72">switches to the fallback if the GPU fails</text>
+        <rect class="node-key" x="20" y="118" width="230" height="160" rx="10"/>
+        <text class="node-label key" x="135" y="138">World</text>
+        <text class="node-sub key" x="135" y="156">pure logic · seeded randomness</text>
+        <rect class="node-normal" x="36" y="170" width="198" height="26" rx="6"/><text class="node-label" x="135" y="183">states, timers and motives</text>
+        <rect class="node-normal" x="36" y="202" width="198" height="26" rx="6"/><text class="node-label" x="135" y="215">pose() builds the limbs</text>
+        <rect class="node-normal" x="36" y="234" width="198" height="26" rx="6"/><text class="node-label" x="135" y="247">check() lists broken rules</text>
+        <path class="edge" d="M270 82 V100 H135 V114" marker-end="url(#s-arrow)"/>
+        <text class="edge-label" x="182" y="96">step · tap</text>
+        <rect class="node-key" x="470" y="118" width="210" height="62" rx="8"/>
+        <text class="node-label key" x="575" y="138">GPU painter</text>
+        <text class="node-sub key" x="575" y="156">one shader · static layers baked</text>
+        <rect class="node-normal" x="470" y="216" width="210" height="62" rx="8"/>
+        <text class="node-label" x="575" y="236">2D fallback painter</text>
+        <text class="node-sub" x="575" y="254">same world, palette and layout</text>
+        <path class="edge-accent" d="M250 175 H440 V149 H466" marker-end="url(#s-arrow-a)"/>
+        <path class="edge-accent" d="M440 175 V247 H466" marker-end="url(#s-arrow-a)"/>
+        <text class="edge-label key" x="345" y="168" text-anchor="middle">state + limb geometry</text>
+        <rect class="node-normal" x="300" y="206" width="110" height="34" rx="8"/>
+        <text class="node-label" x="355" y="223">Palette</text>
+        <path class="edge" d="M410 223 H436" marker-end="url(#s-arrow)"/>
+        <path class="edge" d="M410 50 H575 V114" marker-end="url(#s-arrow)"/>
+        <text class="edge-label" x="492" y="44">draw</text>
+        <rect class="node-normal" x="300" y="254" width="110" height="34" rx="8"/>
+        <text class="node-label" x="355" y="271">Events</text>
+        <path class="edge" d="M250 271 H296" marker-end="url(#s-arrow)"/>
+        <text class="edge-label" x="258" y="264">emits</text>
+      </svg>
+    </div>
+    <p class="caption">The simulation never draws. It reports events (ripples, taps), and the controller and renderers respond to them.</p>
+    <p>Measure the world in fractions of the canvas height with y pointing up, and measure each animal in its own body lengths with the head toward +x, so everything scales with the screen. Seed all randomness so a session can be replayed exactly. Clamp the time step to about 50 ms so a stalled tab can't throw anything across the scene. Keep the controller free of any framework; the same code then runs inside an app and as a single offline HTML file. Put the colours and copy for each lighting version in one theme module that both renderers import. If the GPU loses its context, switch to the 2D renderer immediately and retry the GPU a couple of times later. Frame stepping, forced fallback and other developer tools belong in development builds only, and debug information should only appear on screen when requested with a flag.</p>
+  </article>
+
+  <article class="card" id="body">
+    <p class="kicker">05 / Anatomy</p>
+    <h2>Body construction</h2>
+    <p class="lead">Bodies are made of a few overlapping ellipses blended together. Limbs are short chains of tapered capsules rooted at a hip or shoulder, with toes fanning from the end. The frog below is the reference build; the koi replaces limbs with a spine, and the robin adds wing chains.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 360" role="img" aria-label="A four-legged creature seen from above, built from overlapping ellipses for the back, hips, head, snout and eyes. Hind legs are chains of three capsules and forelegs chains of two, each rooted at a hip or shoulder, with webbed toes fanning from the feet.">
+        <g class="limb">
+          <line x1="152" y1="146" x2="230" y2="90" stroke-width="44"/><line x1="230" y1="90" x2="143" y2="123" stroke-width="28"/><line x1="143" y1="123" x2="185.5" y2="74" stroke-width="18"/>
+          <line x1="152" y1="214" x2="230" y2="270" stroke-width="44"/><line x1="230" y1="270" x2="143" y2="237" stroke-width="28"/><line x1="143" y1="237" x2="185.5" y2="286" stroke-width="18"/>
+          <line x1="261" y1="141" x2="280" y2="93" stroke-width="20"/><line x1="280" y1="93" x2="344" y2="73" stroke-width="15"/>
+          <line x1="261" y1="219" x2="280" y2="267" stroke-width="20"/><line x1="280" y1="267" x2="344" y2="287" stroke-width="15"/>
+        </g>
+        <path class="fill-soft" d="M185.5 74 L233 47 L228 39 L222 33 L214.5 27 L206.5 23 z"/>
+        <path class="fill-soft" d="M185.5 286 L233 313 L228 321 L222 327 L214.5 333 L206.5 337 z"/>
+        <g class="bone">
+          <path d="M185.5 74 L233 47 M185.5 74 L228 39 M185.5 74 L222 33 M185.5 74 L214.5 27 M185.5 74 L206.5 23"/>
+          <path d="M185.5 286 L233 313 M185.5 286 L228 321 M185.5 286 L222 327 M185.5 286 L214.5 333 M185.5 286 L206.5 337"/>
+          <path d="M344 73 L371.5 82 M344 73 L372.9 70.3 M344 73 L369.3 58.9 M344 73 L361.6 49.9"/>
+          <path d="M344 287 L371.5 278 M344 287 L372.9 289.7 M344 287 L369.3 301.1 M344 287 L361.6 310.1"/>
+        </g>
+        <g class="fill-soft">
+          <ellipse cx="204" cy="180" rx="104" ry="69"/><ellipse cx="152" cy="180" rx="49" ry="61"/><ellipse cx="292" cy="180" rx="62" ry="58"/><ellipse cx="337" cy="180" rx="26" ry="31"/>
+        </g>
+        <g class="outline">
+          <ellipse cx="204" cy="180" rx="104" ry="69"/><ellipse cx="152" cy="180" rx="49" ry="61"/><ellipse cx="292" cy="180" rx="62" ry="58"/><ellipse cx="337" cy="180" rx="26" ry="31"/><circle cx="300" cy="140" r="20"/><circle cx="300" cy="220" r="20"/>
+        </g>
+        <g class="bone-key">
+          <polyline points="152,146 230,90 143,123 185.5,74"/><polyline points="152,214 230,270 143,237 185.5,286"/>
+          <polyline points="261,141 280,93 344,73"/><polyline points="261,219 280,267 344,287"/>
+        </g>
+        <g>
+          <circle class="joint" cx="152" cy="146" r="5"/><circle class="joint" cx="230" cy="90" r="4"/><circle class="joint" cx="143" cy="123" r="4"/><circle class="joint" cx="185.5" cy="74" r="4"/>
+          <circle class="joint" cx="152" cy="214" r="5"/><circle class="joint" cx="230" cy="270" r="4"/><circle class="joint" cx="143" cy="237" r="4"/><circle class="joint" cx="185.5" cy="286" r="4"/>
+          <circle class="joint" cx="261" cy="141" r="5"/><circle class="joint" cx="280" cy="93" r="4"/><circle class="joint" cx="344" cy="73" r="4"/>
+          <circle class="joint" cx="261" cy="219" r="5"/><circle class="joint" cx="280" cy="267" r="4"/><circle class="joint" cx="344" cy="287" r="4"/>
+        </g>
+        <path class="edge-accent" d="M120 180 H396"/><path class="chev-accent" d="M392 175 L400 180 L392 185"/>
+        <text class="edge-label key" x="406" y="184">head (+x)</text>
+        <g class="edge">
+          <path d="M470 44 H240 L232 40"/><path d="M470 96 H236"/><path d="M470 148 H158"/><path d="M470 200 L330 184"/><path d="M470 250 L318 224"/><path d="M470 300 L267 222"/>
+        </g>
+        <text class="node-label start" x="478" y="40">Toes fan out</text><text class="node-sub start" x="478" y="56">spread is its own value</text>
+        <text class="node-label start" x="478" y="92">Joint</text><text class="node-sub start" x="478" y="108">chains of tapered capsules</text>
+        <text class="node-label start" x="478" y="144">Hip</text><text class="node-sub start" x="478" y="160">the whole leg can swing here</text>
+        <text class="node-label start" x="478" y="196">Body</text><text class="node-sub start" x="478" y="212">ellipses blended together</text>
+        <text class="node-label start" x="478" y="246">Eye</text><text class="node-sub start" x="478" y="262">the pupil follows a target</text>
+        <text class="node-label start" x="478" y="296">Shoulder</text><text class="node-sub start" x="478" y="312">shorter chain, shorter reach</text>
+      </svg>
+    </div>
+    <p class="caption">Dashed outlines are the individual shapes and the tint is their blend. Orange lines are the bones the pose system moves.</p>
+    <p>These are distance shapes, so the GPU renderer shades them per pixel, the 2D renderer traces the same outlines, and taps are tested against exactly what's drawn: touching the frog's toe or the koi's tail fin counts as touching the animal. Author every dimension in body lengths, and give each individual its own size, colouring, markings and rhythm, including breathing rate and voice. The body has three values of its own. Stretch squashes it along the spine while keeping its area, lean shifts the weight forward or back, and slip twists the body slightly away from its heading. Keep joints visibly bent from the camera's angle, since a straight chain reads as a stick figure; full extension belongs to the moment of pushing. Markings and highlights should sit in the body's own coordinates so they move with it. Small signs of life, like a frog's throat pulse, a robin's head tilt or a beetle's twitching antennae, add more than any large action.</p>
+  </article>
+
+  <article class="card" id="pose">
+    <p class="kicker">06 / Pose</p>
+    <h2>Pose values and easing</h2>
+    <p class="lead">Each limb has one value from folded (0) to extended (1) that bends every joint in the chain together, plus a yaw value that swings the whole limb around its root. The robin's wing uses the same idea with a fold value. Behaviours set targets, and the values ease toward them.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 250" role="img" aria-label="The same hind leg at folded, halfway and extended, and the same leg swung by yaw around its hip.">
+        <ellipse class="fill-soft" cx="396" cy="196" rx="88" ry="58"/>
+        <polyline class="bone" points="330,196 396,149 322,176 358,135" opacity="0.5"/>
+        <polyline class="bone" points="330,196 330,115 268,164 260,110"/>
+        <polyline class="bone-key" points="330,196 264,149 222,216 175,186"/>
+        <circle class="joint" cx="330" cy="196" r="6"/>
+        <circle class="joint" cx="396" cy="149" r="3.5"/><circle class="joint" cx="322" cy="176" r="3.5"/>
+        <circle class="joint" cx="330" cy="115" r="3.5"/><circle class="joint" cx="268" cy="164" r="3.5"/>
+        <circle class="joint" cx="264" cy="149" r="3.5"/><circle class="joint" cx="222" cy="216" r="3.5"/>
+        <text class="node-sub start" x="370" y="126">0 · folded</text>
+        <text class="node-sub start" x="272" y="100">0.5</text>
+        <text class="node-label key start" x="82" y="176">1 · extended</text>
+        <text class="node-sub key start" x="82" y="192">the push</text>
+        <text class="node-sub start" x="336" y="220">hip</text>
+        <line class="edge" x1="470" y1="24" x2="470" y2="232"/>
+        <polyline class="bone" points="610,196 610,140.5 568,174 562.6,137" opacity="0.5"/>
+        <polyline class="bone-key" points="610,196 591,144 563,190 545,157"/>
+        <circle class="joint" cx="610" cy="196" r="6"/>
+        <path class="edge-accent" d="M582 124 A 70 70 0 0 0 560 144"/><path class="chev-accent" d="M556 137 L558 147 L566 142"/>
+        <text class="node-label key start" x="590" y="112">yaw</text>
+        <text class="node-sub start" x="494" y="228">used for trailing and for aiming at a planted foot</text>
+      </svg>
+    </div>
+<div class="diagram">
+      <svg viewBox="0 0 700 230" role="img" aria-label="Left: setting a value directly makes it jump, while easing toward it curves smoothly. Right: chasing a mid-air turn puts most of the rotation into take-off, while an ease across the whole flight spreads it evenly.">
+        <path class="edge" d="M40 186 H320 M40 186 V30"/>
+        <text class="node-sub start" x="40" y="206">time</text>
+        <polyline class="edge edge-dash" points="40,166 112,166 112,50 320,50"/>
+        <polyline class="edge-accent" points="40,166 112,166 133,134.9 154,111.9 175,94.8 196,82.1 217,72.8 238,65.8 259,60.7 280,56.9 301,54 320,52"/>
+        <text class="edge-label start" x="118" y="44">set directly: jumps</text>
+        <text class="edge-label key" x="196" y="110">eased: settles</text>
+        <path class="edge" d="M380 186 H660 M380 186 V30"/>
+        <text class="node-sub start" x="380" y="206">take-off → landing</text>
+        <polyline class="edge edge-dash" points="380,166 408,126.4 436,99.9 464,82.1 492,70.2 520,62.2 548,56.9 576,53.3 604,50.9 632,49.2 660,48.2"/>
+        <polyline class="edge-accent" points="380,166 408,161 436,147.3 464,123.8 492,106 520,88.2 548,64.7 576,51.2 604,46 660,46"/>
+        <text class="edge-label start" x="410" y="116">chased: whips round early</text>
+        <text class="edge-label key start" x="520" y="130">spread over the flight</text>
+      </svg>
+    </div>
+    <p class="caption">Dashed lines show what to avoid. Orange lines show the fix.</p>
+    <p>Never set a pose value more than one frame's worth of motion away from where it is. Ease toward targets with an exponential approach, <code>v += (target − v) · (1 − e^(−rate · dt))</code>, or follow an authored curve. The change can be quick as long as it spans a few frames; a landing squash still takes 20 to 30 ms to arrive. Build each behaviour as curves between the key poses in the motion sheet (load, push, gather, reach, contact, settle). Only stagger paired limbs when the real animal does, for example the lead leg of a turning jump pushing about 50 ms ahead of the other, or a beetle's legs moving in two alternating sets of three.</p>
+  </article>
+
+  <article class="card" id="behaviour">
+    <p class="kicker">07 / Behaviour</p>
+    <h2>Behaviour states and motives</h2>
+    <p class="lead">Each animal is in exactly one named state at a time, and each state has its own pose curves. The loop below is generic. For the frog, Load and Act are the crouch and the leap. For the robin they're the crouch before take-off and the flight. For the beetle, Act is a short burst of running.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 280" role="img" aria-label="Behaviour loop: rest, optionally orient toward a goal, load, act, then recover and settle back to rest. An action can also carry the creature into water or air, from which it later climbs back out through load. A startle in the medium triggers an escape. Rest has its own idle loop.">
+        <defs>
+          <marker id="b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev" d="M2 1L8 5L2 9"/></marker>
+          <marker id="b-arrow-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="chev-accent" d="M2 1L8 5L2 9"/></marker>
+        </defs>
+        <rect class="node-term" x="20" y="116" width="100" height="36" rx="18"/><text class="node-label term" x="70" y="134">Rest</text>
+        <polygon class="node-decision" points="220,26 280,58 220,90 160,58"/><text class="node-label" x="220" y="58">Facing it?</text>
+        <rect class="node-key" x="310" y="112" width="100" height="44" rx="8"/><text class="node-label key" x="360" y="127">Load</text><text class="node-sub key" x="360" y="143">crouch · coil</text>
+        <rect class="node-key" x="450" y="112" width="100" height="44" rx="8"/><text class="node-label key" x="500" y="127">Act</text><text class="node-sub key" x="500" y="143">leap · run · fly</text>
+        <rect class="node-key" x="310" y="214" width="100" height="44" rx="8"/><text class="node-label key" x="360" y="229">Recover</text><text class="node-sub key" x="360" y="245">land · settle</text>
+        <rect class="node-normal" x="590" y="112" width="100" height="44" rx="8"/><text class="node-label" x="640" y="127">In medium</text><text class="node-sub" x="640" y="143">swim · fly</text>
+        <path class="edge-accent" d="M94 116 L168 70" marker-end="url(#b-arrow-a)"/>
+        <text class="edge-label key start" x="36" y="80">motive</text>
+        <path class="edge-accent" d="M280 58 H360 V108" marker-end="url(#b-arrow-a)"/>
+        <text class="edge-label key" x="300" y="50">Y</text>
+        <rect class="node-normal" x="130" y="176" width="108" height="36" rx="8"/><text class="node-label" x="184" y="194">Orient</text>
+        <path class="edge" d="M220 90 V172" marker-end="url(#b-arrow)"/>
+        <text class="edge-label" x="228" y="120">N</text>
+        <path class="edge" d="M238 194 H290 V160 L306 150" marker-end="url(#b-arrow)"/>
+        <path class="edge-accent" d="M410 134 H446" marker-end="url(#b-arrow-a)"/>
+        <path class="edge-accent" d="M500 156 V236 H414" marker-end="url(#b-arrow-a)"/>
+        <text class="edge-label key start" x="508" y="200">contact</text>
+        <path class="edge-accent" d="M310 236 H70 V156" marker-end="url(#b-arrow-a)"/>
+        <text class="edge-label key" x="200" y="252">settled</text>
+        <path class="edge" d="M550 134 H586" marker-end="url(#b-arrow)"/>
+        <path class="edge" d="M640 112 V96 H396 V108" marker-end="url(#b-arrow)"/>
+        <text class="edge-label" x="520" y="90">climb out</text>
+        <path class="edge edge-dash" d="M672 156 C 696 196 616 204 630 160" marker-end="url(#b-arrow)"/>
+        <text class="edge-label" x="600" y="214">startle: escape</text>
+        <path class="edge edge-dash" d="M40 152 C 20 196 104 202 94 156" marker-end="url(#b-arrow)"/>
+        <text class="edge-label" x="16" y="212">breathe, blink, watch</text>
+      </svg>
+    </div>
+    <p class="caption">Orient only runs when the animal faces well away from a destination it has already chosen.</p>
+    <p>Every action needs a motive that exists in the world: food, a threat, a need like rest, or a destination. Nothing happens because the page loaded, and nothing is staged for the viewer. Stagger the first actions (for example at 4.5, 7 and 10 seconds) and give each individual its own jittered timers so they never move in sync. In a calm scene an animal might do something larger every 10 to 20 seconds and rest the rest of the time. Keep turning on the spot under about 45 degrees and finish larger turns during the crouch and the movement itself. An animal that has committed, such as a frog in mid-air, can flinch at a tap but can't change course, and a short cooldown after each tap prevents resets and teleports. Calm animals should prefer destinations roughly ahead of them. Steering away from edges and from each other should start early enough that hard boundaries almost never act.</p>
+    <p>Give the world a <code>check()</code> function that lists every broken rule it can detect: two animals claiming one perch, a reservation nobody holds, a non-finite position, an animal outside the visible area. The list should stay empty through every test run.</p>
+  </article>
+
+  <article class="card" id="contact">
+    <p class="kicker">08 / Contact</p>
+    <h2>Contact and foot planting</h2>
+    <p class="lead">A foot touching a surface is pinned to a point on that surface, and the leg re-aims at the pin every frame. The frog does this on the lily pad, the robin on its branch, and the beetle with every foot that isn't mid-step.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 260" role="img" aria-label="Left: as the body moves and turns, the leg re-aims and re-solves its reach so the foot stays on its pinned point. Right: a footfall timeline for a small turn, with the body's swing on top and bars showing when each foot is stepping.">
+        <ellipse class="outline" cx="190" cy="112" rx="88" ry="48"/>
+        <polyline class="bone" points="150,132 220,162 270,192" opacity="0.5"/>
+        <circle class="joint" cx="150" cy="132" r="5" opacity="0.6"/>
+        <g transform="rotate(-14 275 100)"><ellipse class="fill-soft" cx="275" cy="100" rx="88" ry="48"/><ellipse class="edge-accent" cx="275" cy="100" rx="88" ry="48"/></g>
+        <polyline class="bone-key" points="235,125 304,152 270,192"/>
+        <circle class="joint" cx="235" cy="125" r="5"/><circle class="joint" cx="304" cy="152" r="4"/>
+        <circle class="fill-accent" cx="270" cy="192" r="6"/>
+        <text class="edge-label key start" x="282" y="208">pinned point</text>
+        <text class="node-sub start" x="70" y="186">before</text>
+        <text class="node-label key start" x="316" y="58">after the body moved</text>
+        <text class="node-label start" x="316" y="170">leg re-aimed</text>
+        <text class="node-sub start" x="316" y="186">yaw and reach, every frame</text>
+        <line class="edge" x1="430" y1="20" x2="430" y2="244"/>
+        <text class="node-sub start" x="444" y="38">body swing</text>
+        <polyline class="edge-accent" points="530,54 547.6,54 565.2,52.9 582.8,49.7 600.4,44.8 618,39.5 635.6,34.2 653.2,29.3 670.8,26.1 688.4,25 690,25"/>
+        <text class="node-sub start" x="444" y="86">inside fore</text>
+        <text class="node-sub start" x="444" y="118">outside fore</text>
+        <text class="node-sub start" x="444" y="150">outside hind</text>
+        <text class="node-sub start" x="444" y="182">inside hind</text>
+        <g class="edge"><line x1="530" y1="82" x2="690" y2="82"/><line x1="530" y1="114" x2="690" y2="114"/><line x1="530" y1="146" x2="690" y2="146"/><line x1="530" y1="178" x2="690" y2="178"/></g>
+        <g class="node-key">
+          <rect x="536" y="75" width="38" height="14" rx="7"/><rect x="600" y="75" width="38" height="14" rx="7"/>
+          <rect x="565" y="107" width="38" height="14" rx="7"/><rect x="629" y="107" width="42" height="14" rx="7"/>
+          <rect x="578" y="139" width="48" height="14" rx="7"/>
+          <rect x="629" y="171" width="48" height="14" rx="7"/>
+        </g>
+        <path class="edge" d="M530 206 H690"/>
+        <text class="node-sub start" x="530" y="222">0</text><text class="node-sub" x="660" y="222">1 · turn done</text>
+        <text class="edge-label key start" x="530" y="244">bar: stepping · line: planted</text>
+      </svg>
+    </div>
+    <p class="caption">The pinned point never moves and the leg adapts to it. In a turn of about 40 degrees the body's swing eases in and out while the feet step one or two at a time; the frog's short front legs step twice.</p>
+    <p>Store each pin in the surface's own coordinates, so a floating lily pad or a swaying branch carries the foot with it. Each frame, before drawing, swing the leg around its root until it points at the pin and solve how far it has to extend to reach it. The body can then breathe, lean and pivot while the foot stays put.</p>
+    <p>A step has four stages. The foot releases its pin, and at that moment you work out where it should rest relative to the body when this step ends. The pin then moves there along an eased path that curves slightly toward the body, which is how a lifted foot looks from above, and the toes close on the way. Finally the foot lands, the toes spread, and it's pinned again.</p>
+    <p>A settled animal keeps every touching foot pinned, so breathing moves the body over still feet. Turning on a surface happens by stepping, never by rotating the whole rig; pivot near the hindquarters so neither end outruns the reach of its legs. Plan steps around reach: a leg whose root is being carried away from its foot steps during the swing, before it straightens, and short legs take two small steps instead of dragging. While the frog crouches to jump, its back feet keep their grip, its front feet ease off as the weight moves back, and every foot lets go over the first frames of the push. An animal on a moving support, like the robin on a swaying branch, inherits the support's movement and rotation in every state, including landing and crouching. Cap how far a planted leg can stretch; beyond a compact reach, let the foot slip slightly rather than pulling the leg straight.</p>
+  </article>
+
+  <article class="card" id="fluid">
+    <p class="kicker">09 / Water and air</p>
+    <h2>Movement through water and air</h2>
+    <p class="lead">In water or air there's nothing to push against sideways, so heading changes only while the body travels, along a curve. The koi shows this most clearly. The frog follows the same rule when it swims, and so does the robin when it banks in flight.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 250" role="img" aria-label="Left: rotating in place in water or air is ruled out. Right: a body curving along a path with its heading along the path and its hind legs trailing to the outside of the turn. Heading change equals curvature times distance travelled.">
+        <g transform="translate(110 125)">
+          <ellipse class="outline" rx="42" ry="22" transform="rotate(-38)"/>
+          <ellipse class="node-normal" rx="42" ry="22"/>
+          <path class="edge" d="M-8 -44 A 46 46 0 0 1 36 -26"/><path class="chev" d="M30 -33 L40 -24 L28 -21"/>
+        </g>
+        <path class="edge-accent" d="M58 182 L162 70" stroke-width="2.4"/>
+        <text class="node-label key" x="110" y="222">spinning on the spot</text>
+        <line class="edge" x1="230" y1="20" x2="230" y2="236"/>
+        <path class="edge edge-dash" d="M280 196 Q 500 196 620 66"/>
+        <g transform="translate(344 193) rotate(-5)"><ellipse class="node-key" rx="26" ry="14"/><path class="bone-key" d="M-20 -6 L-44 -11 M-20 6 L-44 11"/></g>
+        <g transform="translate(475 158) rotate(-21)"><ellipse class="node-key" rx="26" ry="14"/><path class="bone-key" d="M-20 -6 L-42 -5 M-20 6 L-40 21"/><path class="edge" d="M28 0 H56"/><path class="chev" d="M52 -4 L60 0 L52 4"/></g>
+        <g transform="translate(582 96) rotate(-39)"><ellipse class="node-key" rx="26" ry="14"/><path class="bone-key" d="M-20 -6 L-43 -7 M-20 6 L-40 19"/></g>
+        <text class="node-label start" x="280" y="230">heading change = curvature × distance moved</text>
+        <text class="edge-label key start" x="392" y="112">legs trail outside</text>
+        <path class="edge" d="M450 116 L458 170"/>
+        <text class="node-sub start" x="608" y="164">no speed, no turn</text>
+      </svg>
+    </div>
+    <p class="caption">Left: the thing to avoid. Right: the heading stays along the path, and trailing limbs swing outward in proportion to the turn rate.</p>
+    <p>Change heading by curvature multiplied by the distance actually travelled, measured after any collision or boundary has clamped the position. The exception is a stroke pushing against a wall or bank, which should count its push, or an animal facing the edge can never turn back. Let the stroke set the curvature: straight strokes allow a gentle drift, and a steering stroke allows a tighter turn. For the koi, the rest of the spine then follows the path the head took.</p>
+    <p>Keep mirrored strokes mirrored. A frog swimming straight draws both knees in, kicks both legs back together, and holds a long, still glide. Unevenness only appears when steering: the outside leg drives fully and the inside one kicks a little later and shorter. Spread mid-air turns across the whole flight with an ease in and out, as the robin does when it banks between branches. Ease transitions between media too: a frog entering water dips slightly deeper before rising to swim, and leaving it clears the surface over a few frames. Drive trailing limbs from a smoothed turn rate (leg yaw of roughly minus the rate times a gain, capped near 0.4 radians) and let the body lag its path slightly. A startled escape reads best as a very short gather followed by a hard steering stroke that curves away from the threat.</p>
+  </article>
+
+  <article class="card" id="habitat">
+    <p class="kicker">10 / Habitat</p>
+    <h2>Habitat layers</h2>
+    <p class="lead">The habitat is drawn in physical layers from the ground up. The frog and koi's pond, the lawn under the robin's branch and the beetle's leaf litter all use the same stack. Anything static is drawn once per canvas size.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 360" role="img" aria-label="Layer stack from bottom to top: ground, depth, light on the ground, shadows on the ground, the medium, the surface, props, creatures, and foreground and finish. The ground and depth are drawn once; the rest are drawn every frame.">
+        <rect class="node-normal" x="30" y="318" width="300" height="30" rx="6"/><text class="node-label start" x="44" y="333">Ground</text><text class="node-sub start" x="350" y="333">silt, sand, half-buried stones, grain</text>
+        <rect class="node-normal" x="30" y="282" width="300" height="30" rx="6"/><text class="node-label start" x="44" y="297">Depth</text><text class="node-sub start" x="350" y="297">shallow edges, deep middle, uneven floor</text>
+        <rect class="node-key" x="30" y="246" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="261">Light on the ground</text><text class="node-sub start" x="350" y="261">caustics or dappled sun, moving</text>
+        <rect class="node-key" x="30" y="210" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="225">Shadows on the ground</text><text class="node-sub start" x="350" y="225">offset by depth or height, softer with distance</text>
+        <rect class="node-key" x="30" y="174" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="189">Medium</text><text class="node-sub start" x="350" y="189">tint deepens with depth; slight refraction wobble</text>
+        <rect class="node-key" x="30" y="138" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="153">Surface</text><text class="node-sub start" x="350" y="153">sky reflection, glints, ripples</text>
+        <rect class="node-key" x="30" y="102" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="117">Props</text><text class="node-sub start" x="350" y="117">floating or standing things and their contact shadows</text>
+        <rect class="node-key" x="30" y="66" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="81">Creatures</text><text class="node-sub start" x="350" y="81">with shadows that drift apart as they rise</text>
+        <rect class="node-key" x="30" y="30" width="300" height="30" rx="6"/><text class="node-label key start" x="44" y="45">Foreground and finish</text><text class="node-sub start" x="350" y="45">reeds or leaves, vignette, grain, the edge</text>
+        <rect class="node-normal" x="470" y="8" width="12" height="12" rx="3"/><text class="node-sub start" x="488" y="15">drawn once</text>
+        <rect class="node-key" x="570" y="8" width="12" height="12" rx="3"/><text class="node-sub start" x="588" y="15">drawn every frame</text>
+      </svg>
+    </div>
+    <p class="caption">Read from the bottom. On dry land the medium and surface layers become air: haze and dappled light.</p>
+    <p>The ground needs to be rich and irregular, with no visible grid or repeating tile. Scatter objects on jittered cells, mix a few large ones with many small ones, sink some partway into the ground with ragged edges, and add darker organic patches, fine grain, and tint from the environment: algae on the pond stones, moss on the beetle's log, dry grass under the robin. Small debris should collect where it would in reality, such as pebbles along a bank or leaves against a log.</p>
+    <p>Anything floating or raised casts two shadows: a tight contact shadow and a softer shadow on the ground below, offset further the deeper or higher it is. A lily pad over deep water has its ground shadow well away from it; a robin on a low branch has one close by. That offset is the strongest depth cue available. Every effect needs a physical source: a glow needs a light, and a sparkle needs a surface and a sun. Repeating light patterns such as caustics are cheapest drawn once as a tile that repeats without a visible seam, with two copies sliding past each other at different scales and warped slightly by the surface. Both renderers should use the same tile.</p>
+  </article>
+
+  <article class="card" id="light">
+    <p class="kicker">11 / Light and colour</p>
+    <h2>Lighting, colour and depth</h2>
+    <p class="lead">Each lighting version (night, day, overcast, moonlight) is a palette applied to the same scene: the light's colour and direction, the medium's colours and cloudiness, how much sky it reflects, ground materials, the strength of moving light, plant colours, shadow strength and vignette.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 260" role="img" aria-label="Left: seen from above with the light at the upper right, shadows fall down and to the left, and the ground shadow of something over deep water sits further away and softer than one over shallow water. Right: a cross-section of a basin, shallow at the banks and deep in the middle, with the water hiding more of the floor where it is deep.">
+        <circle class="fill-accent" cx="330" cy="22" r="8"/>
+        <path class="edge-accent" d="M320 30 L282 62"/><path class="chev-accent" d="M281 54 L278 66 L290 63"/>
+        <text class="edge-label key start" x="226" y="26">light</text>
+        <ellipse class="fill-shade" cx="92" cy="162" rx="34" ry="24"/>
+        <ellipse class="node-key" cx="100" cy="154" rx="34" ry="24"/>
+        <text class="node-sub" x="100" y="204">shallow: close</text>
+        <ellipse class="fill-shade" cx="198" cy="152" rx="40" ry="29" opacity="0.75"/>
+        <ellipse class="node-key" cx="226" cy="124" rx="34" ry="24"/>
+        <path class="edge edge-dash" d="M226 124 L198 152"/>
+        <text class="node-sub" x="212" y="204">deep: further, softer</text>
+        <text class="node-label start" x="30" y="240">every shadow falls away from the light</text>
+        <line class="edge" x1="380" y1="20" x2="380" y2="244"/>
+        <path class="fill-soft" d="M410 70 H690 V108 C 652 148 614 198 546 203 C 484 206 446 150 410 108 z"/>
+        <path class="edge" d="M410 70 H690"/>
+        <path class="bone" d="M410 108 C 446 150 484 206 546 203 C 614 198 652 148 690 108"/>
+        <text class="node-sub start" x="410" y="60">surface</text>
+        <text class="node-label key" x="548" y="132">water hides the floor</text>
+        <text class="node-sub start" x="410" y="136">bank: floor clear,</text>
+        <text class="node-sub start" x="410" y="150">pebbles gather</text>
+        <text class="node-sub" x="548" y="226">deep: the water's colour wins</text>
+      </svg>
+    </div>
+    <p class="caption">One light direction governs every shadow, and each shadow's offset shows how high or deep something is. The depth field also controls how much floor shows and where debris collects.</p>
+<div class="table-wrap">
+      <table>
+        <thead><tr><th>Target</th><th>Bright day</th><th>Night</th></tr></thead>
+        <tbody>
+          <tr><td>Average brightness inside the scene (luma 0–255, on a small downscale)</td><td class="num">85–90</td><td class="num">35–40</td></tr>
+          <tr><td>10th to 90th percentile</td><td class="num">≈ 55–150</td><td class="num">≈ 20–57</td></tr>
+          <tr><td>How much floor shows</td><td>plainly, with moving light</td><td>a hint, lit toward the light source</td></tr>
+          <tr><td>Sky reflection</td><td class="num">0.05–0.1</td><td class="num">0.35–0.55</td></tr>
+          <tr><td>Grain</td><td class="num">± 0.02</td><td class="num">± 0.025</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Check shadow direction deliberately, because it's an easy mistake to miss: contact shadows, body shadows and ground shadows all fall away from the light, while sheens, rim light and eye highlights face it. Keep every colour in the palette module and none in the renderers. The 2D renderer should be within about 5 brightness points of the GPU renderer in every palette. In low light, let the floor show mostly near the light source, and let raised details like stones or a beetle's wing cases catch warm light on the side facing it. Finish with a light vignette set by the palette, fine grain, and a designed edge where the scene meets the page.</p>
+  </article>
+
+  <article class="card" id="performance">
+    <p class="kicker">12 / Performance</p>
+    <h2>Performance budget</h2>
+    <p class="lead">A frame at 60 Hz lasts 16.7 ms, and the scene should finish well within that on a modest laptop GPU. The two largest savings are drawing static layers once and limiting detailed shading to the area around each animal.</p>
+<div class="diagram">
+      <svg viewBox="0 0 700 170" role="img" aria-label="Frame cost before and after: 31 milliseconds with the ground recomputed every pixel, over the 16.7 millisecond budget, and 14 milliseconds once the ground is drawn once and creature detail is limited to the area near each creature.">
+        <path class="edge-accent edge-dash" d="M262 16 V142"/>
+        <text class="edge-label key start" x="268" y="26">16.7 ms budget</text>
+        <text class="node-label start" x="20" y="62">before</text>
+        <rect class="node-normal" x="80" y="50" width="450" height="24" rx="5"/>
+        <text class="node-sub start" x="540" y="62">31 ms · ground redrawn per pixel</text>
+        <text class="node-label start" x="20" y="108">after</text>
+        <rect class="node-key" x="80" y="96" width="84" height="24" rx="5"/>
+        <rect class="node-key" x="166" y="96" width="42" height="24" rx="5"/>
+        <rect class="fill-accent" x="210" y="96" width="80" height="24" rx="5" opacity="0.8"/>
+        <text class="node-sub start" x="300" y="108">14 ms · ground drawn once, detail culled</text>
+        <text class="node-sub start" x="80" y="140">water and light</text>
+        <text class="node-sub start" x="160" y="156">props</text>
+        <text class="node-sub start" x="210" y="140">creatures and foreground</text>
+      </svg>
+    </div>
+    <p class="caption">Frog pond at 1520 × 1028 on an entry-level laptop GPU. Drawing the ground once and using a caustic tile recovered more than half the frame.</p>
+    <p>Keep the page visible while measuring, because hidden tabs throttle or skip GPU work. Force the GPU to finish after each draw (reading back one pixel is enough), average about 40 frames, and subtract the fixed overhead measured with the same loop on a tiny canvas. Redraw static layers only when the canvas size changes. Limit each animal's detailed shading to a radius around it, and check that radius against the animal's largest real extent over a long test run: the frog's legs at full push or the robin's open wings should stay under about nine-tenths of it. Cap the pixel ratio around 2, pause when the page is hidden, and release every GPU resource on teardown. To find what's expensive, return early after each layer in turn and time it, then start with the largest.</p>
+  </article>
+
+  <article class="card" id="access">
+    <p class="kicker">13 / Interaction</p>
+    <h2>Interaction and accessibility</h2>
+
+    <p>Every tap should produce a visible response. Tapping the frog makes it leap away from the tap; tapping the water near the koi sends it curving off; tapping the robin's branch makes it flinch or fly; tapping near the beetle makes it change course. Taps are tested against the drawn shapes, so a toe, a fin or a wingtip counts. Touch input gets a slightly larger hit area than a mouse pointer. The scene is reachable by keyboard with a visible focus ring, and Enter or Space triggers a central action, such as dropping a pebble into the pond.</p>
+    <p>With reduced motion turned on, run no animation loop. Draw one finished still, describe it for screen readers as a still image, and hide the tap instructions. Give the live scene a label that points to its instructions, and write the title, caption and labels separately for each lighting version. The layout must work at 375 pixels wide by switching to a taller aspect ratio, without horizontal scrolling. A single self-contained HTML version that works offline, with no external requests, is also worth shipping.</p>
+  </article>
+
+  <article class="card" id="measure">
+    <p class="kicker">14 / QA</p>
+    <h2>QA metrics</h2>
+    <p class="lead">Step the world frame by frame with a developer hook and compute these values after every change. Then review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a swimming stroke, a steering turn) in both renderers.</p>
+<div class="table-wrap">
+      <table>
+        <thead><tr><th>What</th><th>How</th><th>Pass</th></tr></thead>
+        <tbody>
+          <tr><td>Planted foot slide</td><td>The foot's position in the surface's own frame, summed over each planted stretch</td><td class="num">≤ 0.06 body lengths</td></tr>
+          <tr><td>Settle slide</td><td>Foot travel in the second after a turn ends</td><td class="num">about 0</td></tr>
+          <tr><td>Turning while still</td><td>Heading change on frames where a swimming or flying body moved less than 1e-4</td><td class="num">noise only</td></tr>
+          <tr><td>Curvature</td><td>Heading change divided by distance moved</td><td class="num">within design</td></tr>
+          <tr><td>Rotation spikes</td><td>Angular acceleration, grouped by state change</td><td>none unexplained (one take-off went from ~1600 to ~300 rad/s²)</td></tr>
+          <tr><td>Pose jumps</td><td>Largest single-frame change per pose value, by state</td><td>only inside deliberate pushes and kicks</td></tr>
+          <tr><td>Mirroring</td><td>Left minus right on straight strokes</td><td class="num">about 0</td></tr>
+          <tr><td>Broken rules</td><td><code>check()</code> through 5 minutes of tapping and 10 minutes left alone</td><td class="num">0</td></tr>
+          <tr><td>Getting stuck</td><td>Longest stretch in any temporary state without input</td><td>bounded</td></tr>
+          <tr><td>Brightness</td><td>Average and percentiles per palette and per painter</td><td>see section 11</td></tr>
+          <tr><td>Frame cost</td><td>The method in section 12</td><td class="num">≲ 15 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>In the frog study these figures come from, three of the worst problems (feet sliding 30 to 90 percent of a body length, a 29 rad/s spin at take-off, and shadows cast toward the light) were only found once they were measured.</p>
+  </article>
+
+  <article class="card" id="adapt">
+    <p class="kicker">15 / Other animals</p>
+    <h2>Adapting to other animals and settings</h2>
+    <p class="lead">The method stays the same. The body plan and the medium change.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Body plan</th><th>How to build it</th><th>Contact and movement</th></tr></thead>
+        <tbody>
+          <tr><td>Four legs (frog; also lizard, cat)</td><td>Blended ellipse body, two- or three-part leg chains, fanned toes</td><td>Pinned feet, turns by stepping, a loading crouch, eased mid-air turns</td></tr>
+          <tr><td>Spine (koi; also tadpole, eel)</td><td>A spine of 8 to 13 points with width set along it; fins as flexible flaps</td><td>Nothing pinned; heading comes from the path; the wave runs head to tail; fins trail in turns</td></tr>
+          <tr><td>Wings (robin; also bat)</td><td>Body ellipse, wing chains with a fold value, a tail fan</td><td>Feet pinned when perched; a crouch before take-off; banked turns along a curve; glides hold still</td></tr>
+          <tr><td>Six or eight legs (beetle; also spider)</td><td>Segmented body; six or eight legs of two or three parts</td><td>Tripod or wave gaits planned on a footfall timeline; every foot pinned between steps</td></tr>
+          <tr><td>No limbs (snake, worm)</td><td>A spine with no limbs</td><td>The body follows the head's path, so it never slides sideways except when sidewinding</td></tr>
+        </tbody>
+      </table>
+    </div>
+<div class="table-wrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Medium and light</th><th>Depth cue</th></tr></thead>
+        <tbody>
+          <tr><td>Pond or stream, from above</td><td>Water column, refraction, caustics by day, sky reflection</td><td>Ground shadows offset by depth</td></tr>
+          <tr><td>Reef or underwater</td><td>Blue falloff with distance, shafts of light, drifting particles</td><td>Haze with distance, shadows on sand</td></tr>
+          <tr><td>Forest floor</td><td>Air, dappled light through a canopy, leaf litter</td><td>Shadows offset by height, moving dapples</td></tr>
+          <tr><td>Meadow</td><td>Wind bending the grass in waves</td><td>Blades overlapping the animal, cast shadows</td></tr>
+          <tr><td>Rock, sand, desert</td><td>Hard sun, heat shimmer, sharp shadows</td><td>Long crisp shadows, relief lighting</td></tr>
+          <tr><td>Night</td><td>Moon or firefly light, low saturation, stronger reflections</td><td>Rim light facing the source</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card" id="done">
+    <p class="kicker">16 / Checklist</p>
+    <h2>Definition of done</h2>
+
+    <ul class="check">
+      <li>Research notes and a motion sheet are written and the direction is agreed.</li>
+      <li>The simulation is separate from the renderers, seeded, and clean through both long test runs.</li>
+      <li>Every value in section 14 is reported and passes.</li>
+      <li>Enlarged frame-by-frame crops of each key moment have been reviewed in both renderers.</li>
+      <li>Every palette meets its brightness target, and the 2D renderer is within about 5 points of the GPU renderer.</li>
+      <li>Frame time is about 15 ms or less, static layers are drawn once, and the shading radius has been checked.</li>
+      <li>Losing the GPU context falls back and recovers, and the console shows no errors.</li>
+      <li>Reduced motion, keyboard use, the focus ring and a 375-pixel layout all work.</li>
+      <li>The offline single-file version works.</li>
+      <li>A written change log lists what was checked and what wasn't.</li>
+    </ul>
+  </article>
+
+  <article class="card" id="brief">
+    <p class="kicker">17 / Brief</p>
+    <h2>Brief template</h2>
+
+    <p>Fill this in and send it with the manual. The manual sets the standard, and the brief says what to build.</p>
+    <pre class="brief" id="brief-text">Build an interactive creature study that follows the Creature Study Field Manual. Treat its rules as requirements and report the values from its section 14.
+
+Animal: [species, how many, how the individuals differ; e.g. three frogs, one koi, a pair of robins]
+Habitat: [pond, reef, forest floor, meadow, rock face, sky…]
+Camera: [top-down, side-on, three-quarter]
+Light: [e.g. night and day; where the light comes from; weather]
+What it really does: [basking, hopping, swimming strokes, feeding, calling…]
+Idle life: [breathing, blinks, throat or gill pulse, grooming…]
+Interactions: [tap the creature → …; tap the ground or a prop → …; keyboard → …]
+Mood and colour: [described in words, not copied images]
+Platforms: [desktop and phone at 375 px; offline single file?]
+Constraints: [tech stack, no new dependencies, frame budget, fallback required]
+Deliver: observation notes, a motion sheet, the working study, and a QA report with numbers, stills, and a list of anything unchecked.</pre>
+    <div class="actions" style="margin:0">
+      <button class="btn primary" id="copy-brief" type="button">Copy the brief</button>
+      <span class="status" id="brief-status" role="status" aria-live="polite"></span>
+    </div>
+  </article>
+
+  <p class="footer">Example figures come from a frog study measured frame by frame. The koi, robin and beetle show how the same rules apply to other body plans.</p>
+</main>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var light = document.getElementById('theme-light');
+    var dark = document.getElementById('theme-dark');
+    function current() {
+      var set = root.getAttribute('data-theme');
+      if (set === 'light' || set === 'dark') return set;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function show() {
+      var mode = current();
+      light.setAttribute('aria-pressed', String(mode === 'light'));
+      dark.setAttribute('aria-pressed', String(mode === 'dark'));
+    }
+    function apply(mode) {
+      root.setAttribute('data-theme', mode);
+      try { localStorage.setItem('field-manual-theme', mode); } catch (error) {}
+      show();
+    }
+    try {
+      var saved = localStorage.getItem('field-manual-theme');
+      if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved);
+    } catch (error) {}
+    light.addEventListener('click', function () { apply('light'); });
+    dark.addEventListener('click', function () { apply('dark'); });
+    show();
+  })();
+  (function () {
+    function selectNode(node) {
+      try {
+        var range = document.createRange();
+        range.selectNodeContents(node);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    function copy(text, node, status) {
+      var done = function () { status.textContent = 'Copied.'; };
+      var fallback = function () {
+        status.textContent = selectNode(node) ? 'Selected. Press Ctrl+C or ⌘C to copy.' : 'Select the text to copy it.';
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (error) {
+        fallback();
+      }
+    }
+    var manual = document.getElementById('manual');
+    document.getElementById('copy-all').addEventListener('click', function () {
+      var intro = 'Creature Study Field Manual. Follow these rules when building an interactive animal study. Each diagram is summarised in the text beneath it.\n\n';
+      copy(intro + manual.innerText, manual, document.getElementById('copy-status'));
+    });
+    var brief = document.getElementById('brief-text');
+    document.getElementById('copy-brief').addEventListener('click', function () {
+      copy(brief.textContent, brief, document.getElementById('brief-status'));
+    });
+  })();
+</script>

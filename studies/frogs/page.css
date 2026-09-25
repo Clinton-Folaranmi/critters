@@ -1,0 +1,240 @@
+/* The frog pond page, shared by the demo (studies/frogs/index.html) and the
+   single-file standalone build, which inlines this file.
+   One page, two lights: a night pond on a dark page, a sunlit one on a
+   pale page (html[data-light]). Painted explicitly for every host theme.
+   No web fonts, just the reader's own serif and sans faces, so it works
+   offline. The pond sits in a bank of earth, stones and grass, whose outer
+   edge fades into the page. */
+:root {
+  color-scheme: dark;
+  --page: #0d1018;
+  --page-deep: #080a10;
+  --glow: rgba(240, 168, 119, 0.16);
+  --ground: #080a10;
+  --ink: #efe6d8;
+  --muted: #9d97aa;
+  --accent: #f0a877;
+  --dot: #f3e7a0;
+  --dot-glow: 0 0 10px 2px rgba(243, 231, 160, 0.45);
+  --rule: rgba(239, 230, 216, 0.4);
+  --halo: rgba(8, 10, 16, 0.8);
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+:root[data-light='day'] {
+  color-scheme: light;
+  --page: #f1efe6;
+  --page-deep: #e7e6da;
+  --glow: rgba(255, 244, 205, 0.7);
+  --ground: #466345;
+  --ink: #1f2a1e;
+  --muted: #56644f;
+  --accent: #5d7f2e;
+  --dot: #7da23c;
+  --dot-glow: none;
+  --rule: rgba(31, 42, 30, 0.5);
+  --halo: rgba(250, 247, 238, 0.85);
+}
+html,
+body {
+  background: var(--page);
+}
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-inline: 16px;
+  background:
+    radial-gradient(120% 70% at 85% -10%, var(--glow), transparent 60%),
+    linear-gradient(180deg, var(--page) 0%, var(--page-deep) 100%);
+  min-height: 100vh;
+}
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-block: clamp(20px, 5vh, 56px) 40px;
+  display: grid;
+  gap: clamp(18px, 3vh, 28px);
+}
+.stage {
+  position: relative;
+}
+.pond {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.48 / 1;
+  overflow: hidden;
+  background: var(--ground);
+  /* Until the scene applies the bank-shaped edge, a plain soft oval. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 82%, transparent);
+  mask-image: radial-gradient(closest-side, #000 82%, transparent);
+}
+.animal-study__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: manipulation;
+  transition: opacity 0.3s ease;
+}
+.animal-study__canvas:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -22px;
+}
+/* Keyboard focus: a ring just outside the picture's ragged edge, following
+   its shape (the scene sets --pond-ring and --pond-ring-halo on .stage),
+   on a halo so it reads against the water and the page alike. */
+.stage::before,
+.stage::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.stage::before {
+  z-index: 1;
+  background: var(--halo);
+  -webkit-mask-image: var(--pond-ring-halo, linear-gradient(transparent, transparent));
+  mask-image: var(--pond-ring-halo, linear-gradient(transparent, transparent));
+}
+.stage::after {
+  z-index: 2;
+  background: var(--ink);
+  -webkit-mask-image: var(--pond-ring, linear-gradient(transparent, transparent));
+  mask-image: var(--pond-ring, linear-gradient(transparent, transparent));
+}
+@supports selector(:has(*)) {
+  .animal-study__canvas:focus-visible {
+    outline: none;
+  }
+  .stage:has(.animal-study__canvas:focus-visible)::before,
+  .stage:has(.animal-study__canvas:focus-visible)::after {
+    opacity: 1;
+  }
+}
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px 40px;
+  padding-inline: clamp(0px, 3vw, 28px);
+}
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(40px, 7vw, 68px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 36ch;
+}
+.note {
+  margin: 0;
+  color: var(--muted);
+}
+/* Night | Day */
+.lights {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+.lights button {
+  min-height: 28px;
+  padding: 3px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 600 11px/1 var(--sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.lights button:hover {
+  color: var(--ink);
+}
+.lights button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--page);
+}
+.lights button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0 clamp(0px, 3vw, 28px);
+  list-style: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+.hint li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: var(--dot-glow);
+}
+kbd {
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animal-study__canvas,
+  .lights button {
+    transition: none;
+  }
+}
+@media (max-width: 640px) {
+  .stage {
+    margin-inline: -16px;
+  }
+  .pond {
+    aspect-ratio: 0.91 / 1;
+  }
+  .caption {
+    flex-direction: column;
+    align-items: start;
+  }
+}
