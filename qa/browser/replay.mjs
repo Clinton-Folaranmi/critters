@@ -9,11 +9,11 @@ export default async ({ page, site, report }) => {
     await page.ready();
     await page.freeze();
     const url = await page.eval(`(() => {
-      const s = ${state}; const w = __frogWorld;
+      const s = ${state}; const w = __critterWorld;
       s.frogs.forEach((f, i) => Object.assign(w.frogs[i], f));
       s.pads.forEach((p, i) => Object.assign(w.pads[i], p));
       w.capsules.set(s.capsules);
-      __frogAdvance(0);
+      __critterAdvance(0);
       return document.querySelector('canvas').toDataURL('image/png');
     })()`);
     writeFileSync(`qa/.out/shots/replay-${light}.png`, Buffer.from(url.split(',')[1], 'base64'));

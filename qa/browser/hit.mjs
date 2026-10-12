@@ -65,15 +65,15 @@ export default async ({ page, pages, site, report }) => {
   );
   const toPx = (x, y) => [rect[0] + x * rect[3], rect[1] + (1 - y) * rect[3]];
   const probe = async (px, py) => {
-    const before = await page.eval('__frogTaps()');
-    const motes = await page.eval('__frogWorld.motes.filter((m) => m.life > 0).length');
+    const before = await page.eval('__critterTaps()');
+    const motes = await page.eval('__critterWorld.motes.filter((m) => m.life > 0).length');
     await page.click(px, py);
     await page.sleep(120);
-    const after = await page.eval('__frogTaps()');
+    const after = await page.eval('__critterTaps()');
     const moved = Object.keys(after).filter((k) => after[k] !== (before[k] ?? 0));
     return {
       results: moved.join(',') || 'nothing',
-      motes: (await page.eval('__frogWorld.motes.filter((m) => m.life > 0).length')) > motes,
+      motes: (await page.eval('__critterWorld.motes.filter((m) => m.life > 0).length')) > motes,
     };
   };
   for (const [label, fx, fy] of [
@@ -93,7 +93,7 @@ export default async ({ page, pages, site, report }) => {
   const reed = await page.eval(`(() => {
     const a = ${rect[2] / rect[3]};
     for (let y = 0.4; y < 0.75; y += 0.002) for (let x = 0.02; x < 0.4; x += 0.002)
-      if (__frogBank.reedAt(x, y, a, -0.002) && !__frogBank.reedAt(x, y - 0.03, a, 0)) return [x, y];
+      if (__critterBank.reedAt(x, y, a, -0.002) && !__critterBank.reedAt(x, y - 0.03, a, 0)) return [x, y];
     return null;
   })()`);
   report.expect('found a reed blade to click', Boolean(reed));
@@ -106,8 +106,8 @@ export default async ({ page, pages, site, report }) => {
     );
   }
   const cool =
-    await page.eval(`(() => { const f = __frogWorld.frogs[0]; __frogAdvance(1); const before = __frogTaps().frog ?? 0;
-    __frogTap(f.x, f.y); const state = f.state; const time = f.time; __frogTap(f.x, f.y);
+    await page.eval(`(() => { const f = __critterWorld.frogs[0]; __critterAdvance(1); const before = __critterTaps().frog ?? 0;
+    __critterTap(f.x, f.y); const state = f.state; const time = f.time; __critterTap(f.x, f.y);
     return { state, same: f.state === state && Math.abs(f.time - time) < 1e-9 }; })()`);
   report.expect(
     'a second tap on a frog within its cooldown changes nothing',

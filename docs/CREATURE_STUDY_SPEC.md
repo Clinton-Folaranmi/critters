@@ -1,6 +1,6 @@
 # Creature Study Spec
 
-Version 1.1 · 2026-09-26 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
+Version 1.2 · 2026-10-11 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
 
 This is the **single source of truth** for building an interactive, top-down
 creature study: a small living scene (a frog pond, a koi pool, a robin on a
@@ -65,9 +65,10 @@ how.
 A scene also fails when every measurement passes but a visitor can't find
 the animal. The habitat outshines it, and close-up crops hide the problem
 because each crop is already centred on the animal. P-11 to P-14 prevent
-that: evidence first, an approved picture before code, a creature-first
-hierarchy for every variant and shape, and full-scene review before crops
-(Q-R4 to Q-R7).
+that: evidence first, an approved picture before code (for a small build,
+right after the first one), a creature-first hierarchy for every variant and
+shape, and full-scene review before crops (Q-R4 to Q-R7). P-15 and P-16 size
+the work and say which route to approval it takes.
 
 - **P-1 (MUST)** Research the animal before designing any pose: slow-motion footage and locomotion papers, summarised in your own words (copy nothing). A straight-swimming frog kicks both hind legs at once; most people guess they alternate.
 - **P-2 (MUST)** Give every action a motive that exists in the world (food, a threat, rest, a destination). Nothing moves to fill time or because the page loaded.
@@ -80,9 +81,11 @@ hierarchy for every variant and shape, and full-scene review before crops
 - **P-9 (SHOULD)** Keep idle behaviour small (breathing, blinking, looking) and larger actions irregular and individual.
 - **P-10 (MUST)** Measure, then review by eye. Every check in section 12 is run and reported before anyone signs off.
 - **P-11 (MUST)** Before designing poses, make `docs/<ANIMAL>_FOOTAGE_LOG.md`. For each source, record a stable URL, the observed time range, and a short **Observation** written only about what is visible; put any proposed explanation, timing generalisation or design decision in a separately labelled **Inference**. Link anatomy or locomotion sources alongside the footage when they support an inference. Every key-pose timing, contact rule and turning rule in the motion sheet cites the log entry or source it comes from; one with no source is marked as a guess.
-- **P-12 (MUST)** Before production scene code (world, habitat or renderer) is written, make `docs/<ANIMAL>_VISUAL_DIRECTION.md` and obtain an explicit human approval recorded there: reviewer, date, decision and the approved revision or link. The board states the intended creature, action, environmental motive, camera, palette and reference frames for every variant and required aspect. The same applies to a later change to an existing study's composition (habitat layers, palette, camera, scale, where the animals sit): it needs an approved board revision that covers it. Only a person can approve; an agent or an automated check may prepare the board, not approve it. Throwaway sketches that illustrate the board may be made outside `packages/` and are labelled as sketches.
+- **P-12 (MUST)** For a Study (P-15), before production scene code (world, habitat or renderer) is written, make `docs/<ANIMAL>_VISUAL_DIRECTION.md` and obtain an explicit human approval recorded there: reviewer, date, decision and the approved revision or link. The board states the intended creature, action, environmental motive, camera, palette and reference frames for every variant and required aspect. The same applies to a later change to an existing study's composition (habitat layers, palette, camera, scale, where the animals sit): it needs an approved board revision that covers it. Only a person can approve; an agent or an automated check may prepare the board, not approve it. Throwaway sketches that illustrate the board may be made outside `packages/` and are labelled as sketches.
 - **P-13 (MUST)** A generated image is optional art direction only. Label it as generated in its caption and its file name (`generated-…`), name the prompt or tool, and use it only to discuss composition, palette or material. It is never footage, anatomy evidence or motion evidence: it never appears in the footage log, never supplies a pose, proportion or timing, never replaces the research sources required by P-1 and P-11, and is never shipped in a study, its stills or its page.
 - **P-14 (MUST)** The visual direction board includes a creature-first hierarchy plan for every variant and target aspect: where the intended creature reads at normal page size, what separates it from its ground (value, colour, edge, sheen or shadow), the action silhouette or cue that makes it legible, the environmental motive that explains it, and which habitat layers must stay subordinate and how.
+- **P-15 (MUST)** Size the work before any other step, and say the size and a time estimate to the person asking. A **Specimen** is one animal with an idle and one locomotion mode on a plain ground, with one key light and one variant. A **Vignette** is one to three individuals with two or more modes and the transitions between them, in a small habitat whose one affordance supplies the motive, in one variant. A **Study** is anything larger: several modes, a habitat with occluders, depth and ambient life, more than one variant (the frog pond is a Study). A Study is started only when a person chooses it over a proposed Vignette that keeps its core. Sections 12 and 16 describe a Study in full; a Specimen or a Vignette runs every check that applies to what it has (always the motion and soak checks, and the full-scene review) and records the rest as not applicable.
+- **P-16 (MUST)** A Specimen or a Vignette doesn't wait for a board: its first build is the board. Evidence still comes first (P-11). After the first full-scene review (Q-R4, Q-R5, at the default desktop and phone page sizes of `qa:shots` unless others are named), stop and show a person the desktop and phone frames with the creature, action and motive written down, and record their decision in `docs/<ANIMAL>_VISUAL_DIRECTION.md` as its first revision, with those frames as its reference frames and the hierarchy plan (P-14) and habitat jobs (E-34) filled in from the build. From then on P-12 applies as for a Study: a composition change, or growing into a Study, needs an approved revision that covers it. Only a person approves.
 
 ## 2. Architecture
 
@@ -709,9 +712,9 @@ crops. They are recorded in `docs/<ANIMAL>_COMPOSITION_REVIEW.md` (section
 
 Follow these steps in order for a new study. Each step names its output.
 
-1. **Brief.** Fill in the brief template (section 17). Output: the brief.
+1. **Brief.** Fill in the brief template (section 17), including the size (P-15). Output: the brief.
 2. **Evidence log.** Watch slow-motion footage; read locomotion papers; make `docs/<ANIMAL>_FOOTAGE_LOG.md` using the P-11 split between URLs/time ranges, observations and inferences. Output: the evidence log.
-3. **Direction board and motion sheet.** Make the human-readable visual direction board with its creature-first hierarchy plan and habitat jobs, and the motion sheet: body dimensions in body lengths; for each behaviour a key-pose table with timings (section 7's format); locomotion contact and turning rules; individuals; what a viewer sees in 45 s; and every tap and key. Output: `docs/<ANIMAL>_VISUAL_DIRECTION.md` and `docs/<ANIMAL>_ART_DIRECTION.md`. Get the board explicitly approved under P-12 before production code.
+3. **Direction board and motion sheet.** Make the human-readable visual direction board with its creature-first hierarchy plan and habitat jobs, and the motion sheet: body dimensions in body lengths; for each behaviour a key-pose table with timings (section 7's format); locomotion contact and turning rules; individuals; what a viewer sees in 45 s; and every tap and key. Output: `docs/<ANIMAL>_VISUAL_DIRECTION.md` and `docs/<ANIMAL>_ART_DIRECTION.md`. Get the board explicitly approved under P-12 before production code (a Study; a Specimen or a Vignette follows P-16).
 4. **Scaffold.** Copy `packages/frog-pond` to `packages/<study>`, rename files (section 3), empty the world, keep the scene controller, the build and the harness wiring. Add the study to `scripts/build.mjs`, `studies/<study>/`, `standalone/<study>/entry.ts`. Output: a page that mounts an empty scene in both renderers.
 5. **Habitat geometry.** Write the boundary, depth, occluders and picture edge as pure functions (section 8), with generated GLSL, and a parity check. Implement only habitat elements with a recorded E-34 job. Output: `<habitat>.ts`, `qa:parity` passing.
 6. **World.** States, timers, motives, containment, `check()`, seeded; the rig and `pose()`; pins and steps. Step it in Node from the first day. Output: `<animal>-world.ts`, `qa:soak` passing.
@@ -807,8 +810,10 @@ Inference: a tripod gait; stance longer than swing when slow (duty factor
 Used in: motion sheet, gait and turning rows
 ```
 
-**3. Direction board and motion sheet (excerpts).** The board is approved
-by a person before step 4 (P-12). A dark beetle on dark litter is exactly
+**3. Direction board and motion sheet (excerpts).** The walkthrough
+builds the beetle as a Study, so the board is approved by a person before
+step 4 (P-12); as a Specimen, the first build would serve as the board
+(P-16). A dark beetle on dark litter is exactly
 the case where the habitat can bury the animal, so the hierarchy plan is
 specific (P-14, E-34):
 
@@ -952,7 +957,7 @@ crops, what wasn't checked.
 ## 16. Definition of done
 
 - A footage log separates linked, timed observations from inferences; the motion sheet is grounded in it.
-- A human has approved the visual direction board before production code, including the creature-first hierarchy plan and every prominent habitat element's behavioural job.
+- A human has approved the visual direction board before production code (a Study) or after the first build (a Specimen or a Vignette, P-16), including the creature-first hierarchy plan and every prominent habitat element's behavioural job.
 - The world is separate from the renderers, seeded, steppable in Node, and `check()` stays empty through the soaks.
 - Every check in section 12 is run and reported; failures are fixed or recorded as known issues with a reason.
 - Full-scene desktop and phone frames and a short real-time session are signed off before any crop review; the reviewer could identify creature, action and environmental motive, matching the board. No composition defect is open unless the owner has accepted it in writing. Enlarged crops of each key moment are then reviewed in both renderers and every variant.
@@ -970,6 +975,7 @@ Build an interactive creature study that follows docs/CREATURE_STUDY_SPEC.md.
 Treat its MUST rules as requirements, cite rule IDs in commits and reviews,
 and report every check in its section 12 with numbers.
 
+Size: [Specimen / Vignette / Study (P-15), and the time estimate]
 Animal: [species, how many, how the individuals differ]
 Habitat: [pond, reef, forest floor, meadow, rock face, sky…]
 Camera: [top-down, side-on, three-quarter]
@@ -1006,7 +1012,8 @@ detail crops, numbers and a list of anything unchecked.
 - **Picture edge** — the designed outline where the scene fades into the page; nothing outside it is interactive.
 - **Pin (anchor)** — a foot's fixed point in a surface's frame.
 - **Prominent habitat element** — scenery a viewer notices at normal page size before, or as soon as, the creature; it needs a behavioural job (E-34).
+- **Specimen, Vignette, Study** — the three sizes of work (P-15): one animal and one mode on a plain ground; a few individuals, several modes and one affordance; anything larger.
 - **Stage** — a perch big enough and near enough to be an affordance (the frog: pads 0–3).
 - **Variant** — one palette of the same scene (Night, Day).
-- **Visual direction board** — `docs/<ANIMAL>_VISUAL_DIRECTION.md`: the intended creature, action, motive, camera, palette, hierarchy plan and habitat jobs, approved by a person before production code (P-12).
+- **Visual direction board** — `docs/<ANIMAL>_VISUAL_DIRECTION.md`: the intended creature, action, motive, camera, palette, hierarchy plan and habitat jobs, approved by a person before production code for a Study (P-12), or after the first build for a Specimen or a Vignette (P-16).
 - **World unit** — one canvas height.

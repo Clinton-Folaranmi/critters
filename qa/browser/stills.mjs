@@ -17,7 +17,7 @@ export default async ({ page, pages, report }) => {
       await page.ready();
       await page.sleep(900); // a settled size, and its bank
       const [w, h, url] = await page.eval(
-        `(() => { __frogResolution(0); __frogAdvance(0); const c = document.querySelector('canvas'); return [c.width, c.height, c.toDataURL('image/webp', ${quality})]; })()`,
+        `(() => { __critterResolution(0); __critterAdvance(0); const c = document.querySelector('canvas'); return [c.width, c.height, c.toDataURL('image/webp', ${quality})]; })()`,
       );
       const file = `studies/frogs/stills/${light}-${shape}.webp`;
       const bytes = Buffer.from(url.split(',')[1], 'base64');

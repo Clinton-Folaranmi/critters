@@ -9,8 +9,9 @@
 
 Start with the spec. The frog pond (packages/frog-pond) is its worked example.
 Every study also needs a footage log (URLs, time ranges, observations kept
-apart from inferences), a visual direction board approved by a person before
-production code, and a full-scene composition review at desktop and phone
+apart from inferences), a visual direction board approved by a person (before
+production code for a Study; after the first build for a Specimen or a
+Vignette, spec P-15 and P-16), and a full-scene composition review at desktop and phone
 size before any detail crop (spec P-11 to P-14, E-33 to E-35, Q-R4 to Q-R7).
 Generated images are optional art direction, never evidence. No sound
 anywhere. The frog study has two variants, Night and Day (theme keys

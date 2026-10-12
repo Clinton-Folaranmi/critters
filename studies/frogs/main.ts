@@ -30,5 +30,5 @@ startFrogPage(async (container, options) => {
 
 if (import.meta.env.DEV) {
   // Dev-only, for the QA harness: the shore maths in the page.
-  void import('@critters/frog-pond/bank').then((bank) => Object.assign(window, { __frogBank: bank }));
+  void import('@critters/frog-pond/bank').then((bank) => Object.assign(window, { __critterBank: bank }));
 }

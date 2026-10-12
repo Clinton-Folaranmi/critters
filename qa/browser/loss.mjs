@@ -8,14 +8,14 @@ export default async ({ page, site, report }) => {
     await page.eval(`document.querySelector('canvas').focus()`);
     const expectAfter = ['webgl2', 'webgl2', 'canvas'];
     for (let i = 0; i < 3; i++) {
-      const lost = await page.eval('__frogLoseContext()');
+      const lost = await page.eval('__critterLoseContext()');
       await page.sleep(400);
       const now = await page.eval(
-        `[__frogMode(), document.querySelectorAll('canvas').length, document.activeElement.tagName]`,
+        `[__critterMode(), document.querySelectorAll('canvas').length, document.activeElement.tagName]`,
       );
       await page.sleep(3200);
       const later = await page.eval(
-        `[__frogMode(), document.querySelectorAll('canvas').length, document.activeElement.tagName, __frogCheck().length]`,
+        `[__critterMode(), document.querySelectorAll('canvas').length, document.activeElement.tagName, __critterCheck().length]`,
       );
       report.expect(
         `${light}, loss ${i + 1}: Canvas at once, then ${expectAfter[i]}; one canvas; focus kept; world sound`,

@@ -397,8 +397,8 @@ export function mountFrogScene(container: HTMLElement, options: FrogSceneOptions
     // Dev-only: inspect the world and step frames by hand, even while the
     // tab is hidden and requestAnimationFrame is paused.
     Object.assign(window, {
-      __frogWorld: world,
-      __frogAdvance(seconds: number) {
+      __critterWorld: world,
+      __critterAdvance(seconds: number) {
         for (let t = 0; t < seconds - 1e-6; t += 1 / 60) {
           clock += 1 / 60;
           world.step(1 / 60);
@@ -407,21 +407,21 @@ export function mountFrogScene(container: HTMLElement, options: FrogSceneOptions
         renderer.draw(clock);
         reveal();
       },
-      __frogTap(x: number, y: number, tolerance?: number) {
+      __critterTap(x: number, y: number, tolerance?: number) {
         return disturb(x, y, tolerance);
       },
       /** What taps have done so far, by result. */
-      __frogTaps: () => ({ ...taps }),
-      __frogCheck: () => world.check(),
-      __frogMode: () => mode,
-      __frogReady: () => revealed,
-      __frogLoseContext() {
+      __critterTaps: () => ({ ...taps }),
+      __critterCheck: () => world.check(),
+      __critterMode: () => mode,
+      __critterReady: () => revealed,
+      __critterLoseContext() {
         const gl = canvas.getContext('webgl2');
         gl?.getExtension('WEBGL_lose_context')?.loseContext();
         return Boolean(gl);
       },
       /** Reads the resolution step, or sets one (0 = full) and stops it changing. */
-      __frogResolution(set?: number) {
+      __critterResolution(set?: number) {
         if (set !== undefined) {
           step = Math.max(0, Math.min(RESOLUTION_STEPS.length - 1, Math.round(set)));
           locked = true;

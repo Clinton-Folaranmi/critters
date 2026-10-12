@@ -1,5 +1,5 @@
 // The demo with the dev-only helpers on (?renderer=canvas, ?dpr=fixed,
-// ?frogs=N, the __frog* console hooks), rebuilt on every change:
+// ?frogs=N, the __critter* console hooks), rebuilt on every change:
 //
 //   npm run dev     →   http://127.0.0.1:5173/frogs/
 //

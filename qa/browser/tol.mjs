@@ -12,7 +12,7 @@ export default async ({ page, site, report }) => {
     await page.ready();
     await page.freeze();
     const p = await page.eval(`(() => {
-      const w = __frogWorld; const i = 1; const f = w.frogs[i];
+      const w = __critterWorld; const i = 1; const f = w.frogs[i];
       let x = f.x, y = f.y; const dx = Math.cos(f.heading + Math.PI / 2), dy = Math.sin(f.heading + Math.PI / 2);
       let d = w.frogDistance(i, x, y); let k = 0;
       while (d < 0.016 && k++ < 400) { x += dx * 0.0005; y += dy * 0.0005; d = w.frogDistance(i, x, y); }

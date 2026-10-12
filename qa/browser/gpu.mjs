@@ -26,19 +26,19 @@ const resize = `(() => {
 })()`;
 
 const timerQueries = `(async () => {
-  __frogResolution(0);
+  __critterResolution(0);
   ${resize};
-  __frogAdvance(0);
+  __critterAdvance(0);
   await new Promise((r) => setTimeout(r, 1200)); // the bank re-bakes for the new size
   const c = document.querySelector('canvas'); const gl = c.getContext('webgl2');
   const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
   if (!ext) return null;
   const px = new Uint8Array(4);
-  for (let i = 0; i < 5; i++) { __frogAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+  for (let i = 0; i < 5; i++) { __critterAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
   const gpu = [];
   for (let i = 0; i < 30; i++) {
     const q = gl.createQuery();
-    gl.beginQuery(ext.TIME_ELAPSED_EXT, q); __frogAdvance(1 / 60); gl.endQuery(ext.TIME_ELAPSED_EXT);
+    gl.beginQuery(ext.TIME_ELAPSED_EXT, q); __critterAdvance(1 / 60); gl.endQuery(ext.TIME_ELAPSED_EXT);
     gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     for (let k = 0; k < 200 && !gl.getQueryParameter(q, gl.QUERY_RESULT_AVAILABLE); k++) await new Promise((r) => setTimeout(r, 1));
     gpu.push(gl.getQueryParameter(q, gl.QUERY_RESULT) / 1e6); gl.deleteQuery(q);
@@ -53,9 +53,9 @@ const synced = `(async () => {
     wrap.style.width = w + 'px';
     await new Promise((r) => setTimeout(r, 900));
     const c = document.querySelector('canvas'); const gl = c.getContext('webgl2'); const px = new Uint8Array(4);
-    for (let i = 0; i < 5; i++) { __frogAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+    for (let i = 0; i < 5; i++) { __critterAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
     const times = [];
-    for (let i = 0; i < 40; i++) { const t = performance.now(); __frogAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); times.push(performance.now() - t); }
+    for (let i = 0; i < 40; i++) { const t = performance.now(); __critterAdvance(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); times.push(performance.now() - t); }
     return times.reduce((a, b) => a + b) / 40;
   };
   const big = await measure(1520);

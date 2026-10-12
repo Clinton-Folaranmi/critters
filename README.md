@@ -29,9 +29,9 @@ npm run dev        # the demo with dev helpers at http://127.0.0.1:5173/frogs/ (
 ```
 
 Dev helpers (never shipped): `?renderer=canvas`, `?dpr=fixed`, `?frogs=1`,
-and in the console `__frogWorld`, `__frogAdvance(s)`, `__frogTap(x, y)`,
-`__frogCheck()`, `__frogMode()`, `__frogLoseContext()`,
-`__frogResolution(step)`.
+and in the console `__critterWorld`, `__critterAdvance(s)`, `__critterTap(x, y)`,
+`__critterCheck()`, `__critterMode()`, `__critterLoseContext()`,
+`__critterResolution(step)`.
 
 ## Scripts
 

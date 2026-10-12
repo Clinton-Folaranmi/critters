@@ -49,7 +49,7 @@ export default async ({ page, site, report }) => {
       const a = r[2] / r[3];
       const at = (x, y, w, h) => ({ x: r[0] + x * r[3], y: r[1] + (1 - y) * r[3], width: w * r[3], height: h * r[3] });
       const box = await page.eval(
-        `(() => { const e = new Float32Array(40), s = new Float32Array(40), box = new Float32Array(4); __frogBank.reedBlades(${a}, 0, e, s, box); __frogAdvance(0); return [...box]; })()`,
+        `(() => { const e = new Float32Array(40), s = new Float32Array(40), box = new Float32Array(4); __critterBank.reedBlades(${a}, 0, e, s, box); __critterAdvance(0); return [...box]; })()`,
       );
       files.push(
         await page.shot(
@@ -57,10 +57,10 @@ export default async ({ page, site, report }) => {
           at(box[0] - 0.08, box[3] + 0.05, box[2] - box[0] + 0.2, box[3] - box[1] + 0.12),
         ),
       );
-      await page.eval(`(() => { __frogTap(${a * 0.42}, 0.12); __frogAdvance(0.45); })()`);
+      await page.eval(`(() => { __critterTap(${a * 0.42}, 0.12); __critterAdvance(0.45); })()`);
       files.push(await page.shot(`qa/.out/shots/motes-${tag}.png`, at(a * 0.42 - 0.12, 0.28, 0.24, 0.24)));
-      await page.eval(`(() => { const w = __frogWorld; w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; f.glow = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
-        const f = w.flies[0]; f.x = 0.62 * ${a}; f.y = 0.52; f.height = 0.08; f.vx = f.vy = 0; __frogAdvance(0); })()`);
+      await page.eval(`(() => { const w = __critterWorld; w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; f.glow = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
+        const f = w.flies[0]; f.x = 0.62 * ${a}; f.y = 0.52; f.height = 0.08; f.vx = f.vy = 0; __critterAdvance(0); })()`);
       files.push(await page.shot(`qa/.out/shots/midge-${tag}.png`, at(0.62 * a - 0.08, 0.6, 0.16, 0.16)));
       if (light === 'day') files.push(await page.shot(`qa/.out/shots/caustics-${tag}.png`, at(0.6, 0.72, 0.4, 0.26)));
     }

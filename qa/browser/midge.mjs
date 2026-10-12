@@ -9,13 +9,13 @@ export default async ({ page, site, report }) => {
     await page.ready();
     await page.freeze();
     const r = await page.eval(`(() => {
-      const w = __frogWorld; const c = document.querySelector('canvas'); const H = c.height;
+      const w = __critterWorld; const c = document.querySelector('canvas'); const H = c.height;
       // One midge, high up, over open water; the others parked far away.
       w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; f.glow = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
       const f = w.flies[0]; f.x = 0.62 * c.width / H; f.y = 0.52; f.height = 0.08;
       const grab = () => {
-        __frogAdvance(0);
-        if (__frogMode() === 'canvas') return c.getContext('2d').getImageData(0, 0, c.width, H).data;
+        __critterAdvance(0);
+        if (__critterMode() === 'canvas') return c.getContext('2d').getImageData(0, 0, c.width, H).data;
         const gl = c.getContext('webgl2'); const px = new Uint8Array(c.width * H * 4);
         gl.readPixels(0, 0, c.width, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
         const data = new Uint8Array(px.length);

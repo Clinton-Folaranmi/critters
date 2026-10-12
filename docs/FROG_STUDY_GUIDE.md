@@ -265,12 +265,12 @@ Q-R4 to Q-R6).
 - `?renderer=canvas`: force the backup painter.
 - `?frogs=1` (or 2): fewer frogs.
 - `?dpr=fixed`: keep full resolution (no stepping down when frames run slow).
-- In the browser console: `__frogWorld` (inspect everything), `__frogAdvance(s)`
-  (step time by hand), `__frogTap(x, y)`, `__frogTaps()` (what taps have done,
-  by result), `__frogCheck()` (lists anything broken, such as a frog outside
-  the pond or two frogs on one pad), `__frogMode()` (which painter),
-  `__frogReady()` (whether the first frame is up), `__frogLoseContext()`
-  (simulate the graphics card dropping WebGL), `__frogResolution(step?)`
+- In the browser console: `__critterWorld` (inspect everything), `__critterAdvance(s)`
+  (step time by hand), `__critterTap(x, y)`, `__critterTaps()` (what taps have done,
+  by result), `__critterCheck()` (lists anything broken, such as a frog outside
+  the pond or two frogs on one pad), `__critterMode()` (which painter),
+  `__critterReady()` (whether the first frame is up), `__critterLoseContext()`
+  (simulate the graphics card dropping WebGL), `__critterResolution(step?)`
   (read or fix the resolution step).
 - The renderer in use is logged to the console on load (`[frog-pond]
 renderer: webgl2`); painting on the page instead of in the worker is logged

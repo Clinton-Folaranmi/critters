@@ -141,7 +141,7 @@ export async function withPage(task, { width = 1600, height = 1100, dsf = 1, fla
       for (let waited = 0; waited < ms; waited += 150) {
         const shown = await page
           .eval(
-            `(() => { const c = document.querySelector('canvas'); return !!c && c.style.opacity === '' && (window.__frogReady?.() ?? true); })()`,
+            `(() => { const c = document.querySelector('canvas'); return !!c && c.style.opacity === '' && (window.__critterReady?.() ?? true); })()`,
           )
           .catch(() => false);
         if (shown) return true;
@@ -188,7 +188,7 @@ export async function withPage(task, { width = 1600, height = 1100, dsf = 1, fla
       writeFileSync(path, Buffer.from(result.data, 'base64'));
       return path;
     },
-    /** Freezes the loop (the scene pauses while the tab is "hidden"), so __frogAdvance() alone moves time. */
+    /** Freezes the loop (the scene pauses while the tab is "hidden"), so __critterAdvance() alone moves time. */
     async freeze() {
       await page.eval(
         `(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); })()`,

@@ -40,7 +40,7 @@ export default async ({ page, site, report }) => {
   report.measure('workers running', live.workers.made - live.workers.terminated, { max: 1 });
   report.info('WebGL contexts made in all', live.glContexts);
 
-  await page.eval('__frogPageDispose()');
+  await page.eval('__critterPageDispose()');
   await page.sleep(500);
   const a = await page.eval('__audit.raf');
   await page.sleep(1000);

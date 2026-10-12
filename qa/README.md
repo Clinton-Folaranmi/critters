@@ -58,7 +58,7 @@ Options: `npm run qa:soak -- --aspect=0.91 --mode=tap --minutes=30 --seed=3`,
 ## Browser checks (headless shell over the DevTools protocol)
 
 They build and serve the demo twice, with the dev helpers (`dist/site-dev`,
-which has `?renderer=canvas`, `?dpr=fixed` and the `__frog*` hooks) and as
+which has `?renderer=canvas`, `?dpr=fixed` and the `__critter*` hooks) and as
 shipped (`dist/site`), and build the standalone page with and without the
 helpers into `qa/.out/pages`.
 

@@ -14,9 +14,9 @@ export default async ({ page, site, prodSite, report }) => {
       report.expect(`${tag}: ready within 10 s`, await page.ready());
       const info = await page.eval(`(() => {
         const c = document.querySelector('canvas');
-        return { mode: __frogMode(), canvases: document.querySelectorAll('canvas').length, role: c.getAttribute('role'),
+        return { mode: __critterMode(), canvases: document.querySelectorAll('canvas').length, role: c.getAttribute('role'),
           label: c.getAttribute('aria-label'), describedBy: c.getAttribute('aria-describedby'), tabIndex: c.tabIndex,
-          title: document.title, light: document.documentElement.dataset.light, check: __frogCheck() };
+          title: document.title, light: document.documentElement.dataset.light, check: __critterCheck() };
       })()`);
       report.measure(`${tag}: renderer`, info.mode, { equals: renderer });
       report.measure(`${tag}: canvases`, info.canvases, { equals: 1 });
@@ -33,14 +33,14 @@ export default async ({ page, site, prodSite, report }) => {
       const problems = page.problems(from).filter((line) => !/forced by \?renderer=canvas/.test(line));
       report.measure(`${tag}: console errors and warnings`, problems.length, { equals: 0 });
       for (const line of problems) console.log('   ', line);
-      await page.eval('__frogAdvance(0)');
+      await page.eval('__critterAdvance(0)');
       await page.shot(`qa/.out/shots/smoke-${light}-${renderer}.png`);
     }
   }
   const from = page.console.length;
   await page.goto(prodSite);
   report.expect('shipped build: ready', await page.ready());
-  report.measure('shipped build: dev helpers present', await page.eval(`typeof window.__frogWorld`), {
+  report.measure('shipped build: dev helpers present', await page.eval(`typeof window.__critterWorld`), {
     equals: 'undefined',
   });
   report.measure('shipped build: console errors and warnings', page.problems(from).length, { equals: 0 });

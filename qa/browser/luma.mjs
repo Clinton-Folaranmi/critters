@@ -16,9 +16,9 @@ export default async ({ page, site, report }) => {
       await page.freeze();
       const r = await page.eval(`(async () => {
         const c = document.querySelector('canvas'); const w = c.width, h = c.height;
-        __frogAdvance(0);
+        __critterAdvance(0);
         let data;
-        if (__frogMode() === 'webgl2') {
+        if (__critterMode() === 'webgl2') {
           const gl = c.getContext('webgl2');
           const px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
           data = new Uint8Array(w * h * 4);
@@ -37,7 +37,7 @@ export default async ({ page, site, report }) => {
           if (mask[o + 3] < 128) continue;
           const l = data[o] * .299 + data[o + 1] * .587 + data[o + 2] * .114;
           vals.push(l);
-          (__frogBank.shoreDistance((x + .5) / h, 1 - (y + .5) / h, w / h) > 0 ? water : bank).push(l);
+          (__critterBank.shoreDistance((x + .5) / h, 1 - (y + .5) / h, w / h) > 0 ? water : bank).push(l);
         }
         vals.sort((a, b) => a - b);
         const avg = (a) => a.reduce((p, q) => p + q, 0) / a.length;

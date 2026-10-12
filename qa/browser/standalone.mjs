@@ -20,7 +20,7 @@ export default async ({ page, report }) => {
   const head =
     await page.eval(`(() => ({ compat: document.compatMode, lang: document.documentElement.lang, charset: document.characterSet,
     viewport: document.querySelector('meta[name=viewport]')?.content ?? '', bodyMargin: getComputedStyle(document.body).margin,
-    hooks: typeof window.__frogWorld, label: document.querySelector('canvas').getAttribute('aria-label'), steps: document.querySelectorAll('#hint li').length }))()`);
+    hooks: typeof window.__critterWorld, label: document.querySelector('canvas').getAttribute('aria-label'), steps: document.querySelectorAll('#hint li').length }))()`);
   report.measure('standards mode', head.compat, { equals: 'CSS1Compat' });
   report.measure('language', head.lang, { equals: 'en' });
   report.measure('charset', head.charset, { equals: 'UTF-8' });

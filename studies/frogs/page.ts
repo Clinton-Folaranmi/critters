@@ -94,7 +94,7 @@ export function startFrogPage(mount: MountPond) {
   if (import.meta.env.DEV) {
     // Dev-only, for the QA harness: take the pond off the page for good.
     Object.assign(window, {
-      __frogPageDispose() {
+      __critterPageDispose() {
         ticket += 1;
         query.removeEventListener('change', start);
         window.removeEventListener('hashchange', onHash);

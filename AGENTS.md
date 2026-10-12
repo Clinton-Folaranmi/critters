@@ -35,6 +35,12 @@ here) and for people.
   prepare frames; it may not approve, and it may not treat its own review as
   sign-off. Fixes that restore an existing measured rule (a shadow's
   direction, a parity error) are allowed.
+- **Size it first** (P-15, P-16). Say whether the work is a Specimen, a
+  Vignette or a Study, with an estimate, before anything else. A Study needs
+  the approved board before production code; a Specimen or a Vignette is
+  built first (after the footage log), and its first full-scene frames go to
+  a person, whose decision becomes the board's first revision. After that the
+  rule above applies to both.
 - **Evidence is footage, not pictures of the idea** (P-11, P-13). Poses and
   timings come from the footage log. Generated images are optional,
   labelled `generated-…`, used only to discuss composition, palette or
