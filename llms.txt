@@ -26,6 +26,7 @@ CC BY 4.0.
 - [Frog study guide](docs/FROG_STUDY_GUIDE.md): a plain tour of the frog pond's code and how to change common things
 - [Critter skill (draft)](skills/critter/SKILL.md): the Claude Code skill that turns one line into a creature study
 - [Critter kit plan](docs/CRITTER_KIT_PLAN.md): what moves out of the frog pond into a generic kit, and in what order
+- [Footage brief](docs/FOOTAGE_BRIEF.md): how to source openly licensed slow-motion clips for the test roster
 - [Prior work](docs/CRITTER_PRIOR_WORK.md): physics, procedural animation, locomotion biology, video tools and motion metrics, with sources
 - [Audit report](docs/audit-report.html): the 2026-09-25 frog pond audit (26 findings, all addressed or superseded)
 
