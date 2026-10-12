@@ -1,0 +1,43 @@
+{
+  "clip": "Weihmann, Brun and Pycroft 2017, Frontiers in Zoology 14:54, doi 10.1186/s12983-017-0232-y, Additional file 3 (Nauphoeta cinerea, 250 fps, file at 1/10 speed)",
+  "frameMs": 4,
+  "pxPerMm": 7.6,
+  "bodyLengthMm": 27,
+  "measured": "2026-10-13, Claude, with qa/tools/footage (track.mjs --band 292:506 --near 120; footfalls.mjs --floor 290; defaults otherwise). Each stance is a footfall from footfalls.json (ids given), chained into a leg by where it lands relative to the body at touch-down and by successive footholds lying one body displacement apart, then checked on sheets drawn with sheet.mjs --boxes --stances.",
+  "sides": "U = upper side of the image, L = lower side. Which is the animal's left is not established (a mirrored top view would swap them), so the legs are named R (upper) and L (lower) only so that gait.mjs can pair them; read R/L as upper/lower.",
+  "stance": "A stance here is the time the foot is still on the floor as seen from above. From above, a foot hovering just over its footprint as it lifts or lands looks planted, so this is longer than true ground contact (the authors report contact duty factors of 0.52, then 0.45, for this clip, from the side view).",
+  "legs": {
+    "R1": [
+      { "td": 11, "lo": 19, "x": 487, "footfall": 7 },
+      { "td": 37, "lo": 44, "x": 420, "footfall": 20 },
+      { "td": 64, "lo": 76, "x": 333, "footfall": 30, "note": "footfalls 30 and 33, one foothold" },
+      { "td": 88, "lo": 98, "x": 238, "footfall": 42 },
+      { "td": 109, "lo": 122, "x": 132, "footfall": 52 },
+      { "td": 130, "lo": 140, "x": 49, "footfall": 64 }
+    ],
+    "R2": [
+      { "td": 23, "lo": 42, "x": 493, "footfall": 10 },
+      { "td": 49, "lo": 67, "x": 414, "footfall": 24 },
+      { "td": 77, "lo": 89, "x": 328, "footfall": 36 },
+      { "td": 99, "lo": 109, "x": 234, "footfall": 48 },
+      { "td": 123, "lo": 133, "x": 127, "footfall": 60 },
+      { "td": 142, "lo": 153, "x": 43, "footfall": 70, "note": "may run past the clip's end (frame 154)" }
+    ],
+    "L2": [
+      { "td": 9, "lo": 25, "x": 537, "footfall": 6 },
+      { "td": 34, "lo": 52, "x": 452, "footfall": 18 },
+      { "td": 64, "lo": 78, "x": 379, "footfall": 31 },
+      {
+        "td": 109,
+        "lo": 121,
+        "x": 181,
+        "footfall": 53,
+        "missedBefore": true,
+        "note": "the stance before it (touch-down near frame 86) was not detected"
+      },
+      { "td": 131, "lo": 142, "x": 90, "footfall": 65 }
+    ]
+  },
+  "notFound": "R3 (upper hind), L1 (lower front) and L3 (lower hind) do not chain consistently from this pass: the lower front foot lands under the head and beside the lower antenna, the hind feet often land in the middle feet's footprints (follow the leader), and several of their footfalls are below the size cut. They need a closer pass.",
+  "excluded": "Footfalls 5, 9, 11, 27 and 55 (touching down 114–142 px ahead of the body centre) are antennae resting on the floor, checked on frames 14–30 and 58–62."
+}
