@@ -138,14 +138,58 @@ Each step must leave the frog's motion exactly as it is.
    have nothing to extract; they are written new, each with a Node check of
    its own (a gait's measured duty factor and phase match what was asked; a
    chain point never slides sideways off the head's path).
-8. **Then the beetle Specimen** (skill plan step 4), built from the kit and a
-   plain ground only. Anything it has to copy from the frog is a gap in the
-   kit.
+8. **Then the test roster** (below), one Specimen at a time, built from the
+   kit and a plain ground only. Anything a Specimen has to copy from the frog,
+   or from an earlier Specimen, is a gap in the kit.
 
 The frog's known planted-foot issue (spec section 15, Q-12 and Q-14) stays
 until the extraction is done, because fixing it changes the golden replay. It
 is the first fix afterwards, made once in `contact.ts`, so every animal gets
 it.
+
+## Test roster
+
+A kit is general only if animals that differ in every way pass the same
+checks; Spore proved its animation system the same way, on a grid of about a
+thousand animations against several hundred creatures
+(`docs/CRITTER_PRIOR_WORK.md`). The roster covers every limb count from none
+to many and every locomotion mode in spec section 7, and each animal is
+chosen for what it adds to the kit. Each is built as a **Specimen** (P-15)
+first: one animal, an idle and one mode on a plain ground. Its second mode
+comes later, as a Vignette.
+
+| #   | Animal           | Limbs              | First mode (later)                              | What it proves in the kit                                                                 | Evidence so far (`docs/CRITTER_PRIOR_WORK.md`)                 |
+| --- | ---------------- | ------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 0   | Frog (exists)    | 4                  | hopping, limb-driven swimming                   | pins on moving surfaces, a synchronous kick; the reference the extraction must not change | kick and landing sourced; crouch and push timings not          |
+| 1   | Ground beetle    | 6                  | tripod walk                                     | `gait.ts` with three leg pairs, duty factor and phase, turning by stepping on flat ground | cockroach and fruit-fly gait papers                            |
+| 2   | Spider           | 8                  | alternating walk                                | the same gait code at four leg pairs, with no change but its numbers                      | none yet                                                       |
+| 3   | Millipede        | many (60+)         | metachronal wave                                | a gait across dozens of legs on a body chain; per-frame cost with many pins               | wave duty factor unverified                                    |
+| 4   | Koi              | 0 (fins)           | spine-driven swimming                           | `chain.ts`, `wave.ts`; fins as `secondary.ts`; no feet at all                             | carangiform amplitude envelope, Bainbridge's rule (above 5 Hz) |
+| 5   | Grass snake      | 0                  | lateral undulation (concertina)                 | the chain and wave on the ground, where the body must never slip sideways                 | modes chosen by the surface (Jayne)                            |
+| 6   | Gecko or newt    | 4, sprawling       | slow walk with a bending spine                  | `gait.ts` and `chain.ts` together: legs that ride a bending spine                         | slow walkers' phase 0.4–0.5 (Usherwood and Self Davies)        |
+| 7   | Sparrow or robin | 2 legs and 2 wings | hopping on the ground (flap-bounding, perching) | a two-legged synchronous hop; wings as limbs with a fold value                            | zebra finch wingbeat and flap-bounding; no robin rate          |
+| 8   | Dragonfly        | 6 legs and 4 wings | perched (hovering)                              | two wing pairs out of phase; legs gripping a moving perch                                 | none yet                                                       |
+| 9   | Turtle           | 4, rigid shell     | slow walk (paddling)                            | a body that can't bend; a swimming stroke unlike the frog's                               | none yet                                                       |
+| 10  | Earthworm        | 0                  | burrowing (crawling by peristalsis)             | a body that changes length; depth shown continuously                                      | none yet                                                       |
+
+Between them: limb counts 0, 2 (with wings), 4, 6, 8 and many; all eight
+modes of spec section 7 (walking, hopping, limb-driven and spine-driven
+swimming, flying, perching, slithering, burrowing). Each animal adds one new
+thing: the beetle introduces gaits, the spider and millipede stretch them to
+more legs, the koi introduces spines, the snake puts a spine on the ground,
+the gecko joins legs to a spine, and the rest add wings, a rigid body and a
+body that changes length.
+
+**The roster becomes a check.** Every finished Specimen joins a zoo page that
+shows them side by side, and the motion and soak checks run over every animal
+in it, not only the frog. That needs the QA probe (step 5) to work for any
+body, so the probe is written against the beetle and the koi as well as the
+frog before step 7 ends.
+
+**Footage for each one.** Each Specimen needs a footage log before its
+motion sheet (P-11). Clips come from the owner, or are openly licensed
+(journal supplementary videos, Wikimedia Commons), found by search and
+downloaded only with the owner's OK each time.
 
 ## Decided
 
