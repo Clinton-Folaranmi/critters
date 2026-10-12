@@ -128,3 +128,34 @@ npm run qa:first -- --compare=base-frogs-prod
 
 and report the load average (`qa:gpu` prints it). Close other WebGL pages
 (including an in-app browser pane showing the pond) before measuring.
+
+## Footage tools (measuring real animals)
+
+`qa/tools/footage/` turns a clip into the numbers a footage log needs (spec
+P-11). They need `ffmpeg` and `ffprobe` on the PATH (not an npm
+dependency). Clips live in `footage/` (git-ignored); the reviewed results
+are committed (`docs/<ANIMAL>_FOOTAGE_LOG.md`, `docs/footage/*.stances.json`).
+
+| Tool                      | Does                                                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sheet.mjs <clip>`        | contact sheets: 30 frames over the clip for screening, or `--from/--to/--step`; `--follow` a track or body path, `--grid`, `--boxes` footfalls (coloured by leg with `--stances`)   |
+| `track.mjs <clip>`        | follows bright markers (`--band y0:y1`, `--near` px) → `frame,x,y,pixels` CSV                                                                                                       |
+| `footfalls.mjs <clip>`    | planted feet in a top view: per-frame body outline, pixels still for 5+ frames outside it, grouped into footfalls with touch-down, lift-off and position → JSON, plus the body path |
+| `gait.mjs <stances.json>` | from reviewed stances per leg: stride period and length, still fraction, phases between legs (`--split` frame for a speed change), and a gait diagram (`--png`)                     |
+
+The workflow, as used for `docs/BEETLE_FOOTAGE_LOG.md`:
+
+```bash
+node qa/tools/footage/sheet.mjs footage/1-beetle/clip.avi --out sheet.png
+node qa/tools/footage/track.mjs footage/1-beetle/clip.avi --band 292:506 --out track.csv
+node qa/tools/footage/footfalls.mjs footage/1-beetle/clip.avi --track track.csv --floor 290 --out footfalls.json
+node qa/tools/footage/sheet.mjs footage/1-beetle/clip.avi --out check.png --from 0 --to 60 --step 2 --follow footfalls-body.csv --boxes footfalls.json
+node qa/tools/footage/gait.mjs docs/footage/clip.stances.json --split 80 --png gait.png
+```
+
+Between the last two steps a person or agent assigns footfalls to legs and
+writes the stances file; the detector can't tell an antenna resting on the
+floor from a foot, or two feet sharing a footprint, by itself. Check every
+assignment on a sheet with `--stances` before computing. A top view also
+can't see height, so its stances (a foot still on the floor) run longer than
+ground contact; say which one a number is.

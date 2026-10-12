@@ -23,7 +23,8 @@ what it finds. Every animal needs a footage log before its motion is designed
    URL and timestamp and study them in the source player. `footage/` is
    git-ignored: clips are never committed, only the measurements taken from
    them.
-5. Tell Claude which files are in. It reads each clip's actual file frame rate
+5. Tell Claude which files are in. With the footage tools (`qa/tools/footage`,
+   described in `qa/README.md`) it reads each clip's actual file frame rate
    with `ffprobe`, cuts the time range into frames, lays them out as numbered
    contact sheets, marks when each foot touches down and lifts off, and writes
    the footage log and the measured numbers (duty factor, phase, stroke and

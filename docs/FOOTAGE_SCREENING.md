@@ -2,7 +2,7 @@
 
 Which downloaded candidates (`footage/candidates.md`, sourced with
 `docs/FOOTAGE_BRIEF.md`) actually show measurable motion. A clip is screened
-from contact sheets made with `ffmpeg`: 30 frames spread over the whole clip,
+from contact sheets made with `qa/tools/footage/sheet.mjs`: 30 frames spread over the whole clip,
 then every frame of the useful range at full resolution. Screening decides
 only whether a clip is worth measuring; the measurements themselves go in
 each animal's footage log (`docs/<ANIMAL>_FOOTAGE_LOG.md`, spec P-11).
