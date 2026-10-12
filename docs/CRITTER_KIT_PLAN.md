@@ -123,7 +123,7 @@ Each step must leave the frog's motion exactly as it is.
    frog timing fails all four sessions. Every later step must reproduce it bit
    for bit: moving a function without reordering its arithmetic keeps floating
    point identical, so any difference is a real change.
-1. **Pure helpers:** `frog-math.ts`, the easing helpers and `gl-utils.ts` into
+1. **Pure helpers** (done 2026-10-12: `packages/critter-kit` holds `math.ts`, `motion.ts` and `gl.ts`; golden replay identical, `npm run check` and all 16 browser checks pass): `frog-math.ts`, the easing helpers and `gl-utils.ts` into
    the kit; the frog imports them. Golden replay matches.
 2. **Rig:** `limbEnd`, `limbReach` and the chain part of `pose()` take a
    `LimbSpec`; the frog passes its four. Golden replay matches.

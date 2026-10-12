@@ -49,6 +49,7 @@ and in the console `__critterWorld`, `__critterAdvance(s)`, `__critterTap(x, y)`
 ## Layout
 
 ```
+packages/critter-kit/ the kit every study is built from (maths, easing, WebGL helpers so far)
 packages/frog-pond/   the study (world, scene, renderers, bank, theme)
 studies/frogs/        the demo page (plain HTML + TypeScript), its CSS and first-frame stills
 studies/index.html    the site's index

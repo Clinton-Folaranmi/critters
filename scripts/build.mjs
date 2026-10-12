@@ -1,7 +1,7 @@
 // Builds everything, or one part:
 //
 //   node scripts/build.mjs                 package + site + standalone
-//   node scripts/build.mjs package         packages/frog-pond/dist (ESM, types)
+//   node scripts/build.mjs package         packages/critter-kit/dist, packages/frog-pond/dist (ESM, types)
 //   node scripts/build.mjs site [--dev]    dist/site (dist/site-dev: dev helpers on)
 //   node scripts/build.mjs standalone      dist/standalone/frogs.html
 //
@@ -20,6 +20,7 @@ import { buildStandalone } from './build-standalone.mjs';
 import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
 
 const PACKAGE = 'packages/frog-pond';
+const KIT = 'packages/critter-kit';
 const WORKER = `${PACKAGE}/src/frog-bank-worker.ts`;
 
 const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
@@ -55,7 +56,23 @@ async function buildModules(entryPoints, outdir, dev) {
   return { ...modules.metafile.outputs, ...worker.metafile.outputs };
 }
 
+/** The kit: ESM and declarations (the frog package's declarations refer to them). */
+async function buildKit() {
+  const outdir = `${KIT}/dist`;
+  await rm(outdir, { recursive: true, force: true });
+  await build({
+    ...browserOptions(false),
+    entryPoints: { index: `${KIT}/src/index.ts` },
+    outdir,
+    format: 'esm',
+    plugins: [glslMinify],
+  });
+  execFileSync('npx', ['tsc', '-p', `${KIT}/tsconfig.build.json`], { stdio: 'inherit' });
+  console.log(`${outdir} (index, types)`);
+}
+
 export async function buildPackage() {
+  await buildKit();
   const outdir = `${PACKAGE}/dist`;
   await rm(outdir, { recursive: true, force: true });
   const entries = ['index', 'world', 'bank', 'theme', 'paint'];

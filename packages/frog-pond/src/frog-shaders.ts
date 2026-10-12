@@ -1,6 +1,6 @@
 import { BANK_GLSL, REED_BLADES, REED_HEADS, REED_SHADOW } from './frog-bank';
 import { CAUSTIC_CELL, CAUSTIC_CELLS } from './frog-caustics';
-import { glslFloat } from './frog-math';
+import { glslFloat } from '@critters/critter-kit';
 import { FROG_LOOKS, FROG_PALETTES, FROG_TONGUE, SUN_GLOW, type FrogTheme } from './frog-theme';
 import { FORE_TOE, FROG_LIFT, HIND_TOE, MAX_FLIES, MAX_MOTES, MAX_PADS } from './frog-world';
 

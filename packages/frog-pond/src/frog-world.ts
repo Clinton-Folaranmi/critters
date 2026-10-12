@@ -11,7 +11,7 @@
 // FROG_ART_DIRECTION.md describes what each pose is meant to read as.
 
 import { WATER_CX, WATER_CY, openDistance, shoreDistance } from './frog-bank';
-import { TAU, clamp, smoothstep } from './frog-math';
+import { TAU, angleDelta, approach, clamp, mix, smooth, smoothstep } from '@critters/critter-kit';
 
 const HIND_SEGMENTS = 3;
 const FORE_SEGMENTS = 2;
@@ -288,11 +288,6 @@ const STAGE_REACH = 0.8;
 const MOTE_LIFE = 1.6;
 const MOTES_PER_TAP = 4;
 
-const angleDelta = (to: number, from: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
-const approach = (value: number, target: number, rate: number, dt: number) =>
-  value + (target - value) * (1 - Math.exp(-rate * dt));
-const smooth = (t: number) => smoothstep(0, 1, t);
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 /** Left then right, for per-side loops (hoisted so a frame allocates nothing). */
 const SIDES = [1, -1] as const;
 const YAWS = ['yawHL', 'yawHR', 'yawFL', 'yawFR'] as const;

@@ -1,4 +1,4 @@
-import { makeCanvas, seeded } from './frog-math';
+import { makeCanvas, seeded } from '@critters/critter-kit';
 
 // Sunlight focused by a rippled surface into a bright web on the pond bed.
 

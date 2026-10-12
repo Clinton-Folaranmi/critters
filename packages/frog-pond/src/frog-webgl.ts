@@ -1,4 +1,4 @@
-import { startProgram } from './gl-utils';
+import { startProgram } from '@critters/critter-kit';
 import { REED_BLADES, reedBlades } from './frog-bank';
 import { bakeCaustics, trackBank, type BakedBank } from './frog-bank-layer';
 import { MAX_SPECKS, frogBedShader, frogFragmentShader, frogVertexShader } from './frog-shaders';

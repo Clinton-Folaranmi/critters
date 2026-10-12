@@ -1,0 +1,20 @@
+{
+  "name": "@critters/critter-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Building blocks for interactive creature studies: maths, easing, WebGL helpers (more to come).",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

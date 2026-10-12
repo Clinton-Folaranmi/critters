@@ -23,6 +23,7 @@ export async function buildNodeModules() {
     bundle: true,
     format: 'esm',
     platform: 'node',
+    conditions: ['source'],
     define: { 'import.meta.env.DEV': 'false' },
     logLevel: 'warning',
   };

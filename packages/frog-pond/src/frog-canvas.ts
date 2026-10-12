@@ -1,7 +1,7 @@
 import { REED_BLADES, REED_HEADS, REED_SHADOW, WATER_CX, WATER_CY, reedBlades, shelfDepth } from './frog-bank';
 import { bakeCaustics, trackBank } from './frog-bank-layer';
 import { CAUSTIC_CELL, CAUSTIC_CELLS } from './frog-caustics';
-import { TAU, seeded, smoothstep } from './frog-math';
+import { TAU, seeded, smoothstep } from '@critters/critter-kit';
 import { FROG_LOOKS, FROG_PALETTES, FROG_TONGUE, SUN_GLOW, type FrogTheme } from './frog-theme';
 import type { FrogRenderer, FrogRendererHooks } from './frog-webgl';
 import { FORE_TOE, FROG_CAPSULES, HIND_TOE, type Frog, type FrogWorld, type Pad } from './frog-world';

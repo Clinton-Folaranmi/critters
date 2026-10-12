@@ -8,7 +8,7 @@
 //
 // World units: canvas heights, y up, x from 0 to the aspect ratio.
 
-import { glslFloat, smoothstep } from './frog-math';
+import { glslFloat, smoothstep } from '@critters/critter-kit';
 
 // The bottom bank's height along the canvas (u is a share of the width):
 // deepest at the left, running out below the frame toward the right.

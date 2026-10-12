@@ -234,18 +234,20 @@ real fault in the frog study, and most are measured.
 
 ## Setup
 
-Until the kit is extracted, each piece lives in the frog pond:
+Until the kit is extracted, most pieces live in the frog pond (paths under
+`packages/frog-pond/src` unless marked); extracted ones are in
+`packages/critter-kit/src`:
 
-| Piece                                                          | Today (`packages/frog-pond/src`)                       | Kit module (planned)             |
+| Piece                                                          | Today                                                  | Kit module (planned)             |
 | -------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
-| Clamp, smoothstep, seeded random, per-item seeds, GLSL floats  | `frog-math.ts`                                         | `kit/math.ts`                    |
-| Easing, angle deltas, springs                                  | top of `frog-world.ts` (`approach`, `angleDelta`)      | `kit/motion.ts`                  |
+| Clamp, smoothstep, seeded random, per-item seeds, GLSL floats  | `critter-kit/src/math.ts` (extracted)                  | `kit/math.ts`                    |
+| Easing, angle deltas, springs                                  | `critter-kit/src/motion.ts` (extracted)                | `kit/motion.ts`                  |
 | Limb chains: end point, reach, capsules from channels          | `limbEnd`, `limbReach`, `pose()` in `frog-world.ts`    | `kit/rig.ts`                     |
 | Pins and steps: anchor, re-aim and solve reach, step on an arc | `anchorFoot`, `pose()`, `turnOnPad` in `frog-world.ts` | `kit/contact.ts`                 |
 | Hit test against drawn capsules and ellipses                   | `frogDistance` in `frog-world.ts`                      | `kit/hit.ts`                     |
 | Containment and boundary clearance for every drawn part        | `contain`, `keepLegsOffBank` in `frog-world.ts`        | `kit/contain.ts`                 |
 | Scene controller: canvas, loop, input, fallback, resolution    | `frog-scene.ts`                                        | `kit/scene.ts`                   |
-| Shader compile without stalling                                | `gl-utils.ts`                                          | `kit/gl.ts`                      |
+| Shader compile without stalling                                | `critter-kit/src/gl.ts` (extracted)                    | `kit/gl.ts`                      |
 | Static layers painted in a worker, cached and debounced        | `frog-bank-layer.ts`, `frog-bank-worker*.ts`           | `kit/bake.ts`                    |
 | Picture edge, its mask and focus ring                          | `pictureEdge`, `bankMaskUrl`, `pictureRingUrl`         | `kit/edge.ts`                    |
 | Motion and soak checks                                         | `qa/motion.mjs`, `qa/soak.mjs` (frog-specific)         | `scripts/motion.mjs`, `soak.mjs` |

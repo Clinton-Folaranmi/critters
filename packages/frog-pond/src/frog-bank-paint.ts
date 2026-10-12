@@ -1,6 +1,6 @@
 import { bottomBank, leftBank, shoreDistance } from './frog-bank';
 import { makeCausticTile } from './frog-caustics';
-import { TAU, itemSeed, makeCanvas, seeded, smoothstep as smooth } from './frog-math';
+import { TAU, itemSeed, makeCanvas, seeded, smoothstep as smooth } from '@critters/critter-kit';
 import { FROG_PALETTES, type FrogTheme } from './frog-theme';
 
 // The bank along the bottom and left of the pond (frog-bank.ts), painted

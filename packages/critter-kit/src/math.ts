@@ -1,5 +1,5 @@
-// Small helpers shared by the frog pond's modules: maths, and a canvas to
-// paint on that works in a worker too.
+// Small helpers every study shares: maths, seeded randomness, GLSL literals,
+// and a canvas to paint on that works in a worker too.
 
 export const TAU = Math.PI * 2;
 

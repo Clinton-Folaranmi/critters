@@ -1,4 +1,4 @@
-// WebGL helpers shared by the studies (only what they use).
+// WebGL helpers every study shares (only what they use).
 
 /**
  * Compiles and links a program without waiting for it. With
