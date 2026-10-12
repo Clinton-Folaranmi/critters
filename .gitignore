@@ -6,3 +6,7 @@ qa/.out/
 .DS_Store
 *.log
 .claude/
+
+# Deep-research working files (the report is docs/CRITTER_PRIOR_WORK.md)
+research_notes/
+reports/

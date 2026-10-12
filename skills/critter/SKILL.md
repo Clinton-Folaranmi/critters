@@ -28,19 +28,21 @@ destination. Nothing moves to fill time or because the page loaded (P-1, P-2).
 
 What the footage shows is often not what people guess:
 
-| Animal and action      | What gets guessed                      | What the real one does                                                                                      |
-| ---------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Frog swimming straight | The hind legs alternate                | Both kick at once, mirrored to within 0.01 (L-11, measured)                                                 |
-| Frog turning on a pad  | The whole body rotates in place        | The feet stay planted; the forefeet patter two short steps each, inside first, pivoting near the hips (L-6) |
-| Frog take-off          | Both legs push together                | The lead hind leg drives 52 ms before the other; the forefeet reach forward before touchdown (7.2)          |
-| Frog landing           | It stops                               | It squashes to 0.81 over 20–30 ms, bounces once to about 1.03 and settles, never snapping (7.2)             |
-| Beetle walking         | Legs move one at a time, or feet slide | A tripod: L1 R2 L3 together, then R1 L2 R3; stance feet pinned; about half the cycle on the ground (7.1)    |
-| Koi turning            | A stiff shape rotates                  | The head leads round a curve and every spine point follows the head's path; nothing slides sideways (7.4)   |
-| Robin in flight        | It flaps all the time                  | Bursts of 10–15 beats a second between glides, and a glide holds still (7.5)                                |
-| Grass snake            | It slides sideways                     | The body follows the head's path; only a sidewinder lifts sections of itself (7.7)                          |
+| Animal and action      | What gets guessed                      | What the real one does                                                                                                                            |
+| ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frog swimming straight | The hind legs alternate                | Both kick at once; alternating kicks swim measurably slower (Nauwelaerts and Aerts)                                                               |
+| Toad or frog landing   | It lands on all fours at once          | The forelimbs take the landing, aimed along the flight path well before touchdown (Cox and Gillis 2017)                                           |
+| Beetle walking         | Legs move one at a time, or feet slide | A tripod at speed: three legs down, three swinging; slow insects drift toward tetrapod and wave patterns (Full and Tu 1991; Wosnitza et al. 2013) |
+| Lizard walking         | It walks like a dog                    | A slow walk with the forefoot lagging the hind foot by 40–50 % of the stride; dogs and cats lag about 25 % (Usherwood and Self Davies 2017)       |
+| Koi swimming           | The whole body wiggles evenly          | The front fifth barely moves; the sideways sweep grows to about 0.10 body lengths at the tail, one wave per body length (carangiform)             |
+| Songbird in flight     | It flaps steadily, or glides           | It flap-bounds: bursts of wingbeats with the wings folded between them (zebra finch about 28.5 beats/s)                                           |
+| Snake moving           | It picks a mode by speed               | The surface picks the mode (undulation, concertina, rectilinear, sidewinding); in undulation the body follows the head's path (Jayne 1986)        |
 
-The frog rows are measured in the frog pond. The others are the spec's
-targets, still to be confirmed against footage for each new study.
+Sources, links and caveats are in `docs/CRITTER_PRIOR_WORK.md`. Most of these
+come from abstracts and surveys; confirm them against footage for each new
+study. The frog pond's own timings (its crouch, its push, the 52 ms between
+its hind legs) are design values that no source backs yet (spec section 15):
+don't copy them as facts.
 
 A study fails in two ways, both seen in practice:
 
@@ -91,6 +93,14 @@ code: most of the quality is decided there.
    and a separate **Inference** (P-11). You can't watch a video in a browser:
    extract frames with `ffmpeg` from a clip the user provides, or rely on
    papers and frame-by-frame studies with published timings, and record which.
+   Mark touchdown and lift-off on a contact sheet of frames, or track the feet
+   with DeepLabCut or SLEAP after labelling a few dozen frames. Record the
+   capture frame rate and the slow-motion factor: ratios such as duty factor
+   and phase survive an unknown factor, but absolute times don't, and a 75 ms
+   event needs at least 120 fps (240 for insect steps and wingbeats). Use
+   clips the user supplies or that carry a Creative Commons licence (YouTube's
+   terms forbid downloading), and keep measurements, URLs and time ranges in
+   the log rather than the frames.
    Then write the motion sheet as a small pure module, `<animal>-motion.ts`:
    body dimensions in body lengths, and for each mode its key poses with
    timings, its contact rule and its turning rule. The world and the motion
@@ -194,7 +204,8 @@ real fault in the frog study, and most are measured.
   outside leg drives fully, the inside one up to 40 ms later and about 30 %
   shorter (L-11).
 - **No rotation spikes.** Angular acceleration stays under 400 rad/s²; a frog
-  take-off once measured 1,600 before its fix (Q-21).
+  take-off once measured 1,600 before its fix (Q-21). The limit is hand-tuned,
+  not from the literature.
 - **Bent, not straight.** Keep joints visibly bent from the camera; a straight
   chain reads as a stick figure. Full extension belongs to the push (B-6).
 - **Trailing limbs show the turn.** Limbs that aren't planted swing to the

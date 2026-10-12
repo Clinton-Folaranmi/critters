@@ -1,6 +1,6 @@
 # Creature Study Spec
 
-Version 1.2 · 2026-10-11 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
+Version 1.3 · 2026-10-12 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
 
 This is the **single source of truth** for building an interactive, top-down
 creature study: a small living scene (a frog pond, a koi pool, a robin on a
@@ -350,12 +350,24 @@ Pose keys (per leg): **lift-off** (foot unpinned, toes close), **swing**
 **touch-down** (toes spread, pinned), **stance** (pinned; the body moves over
 it). The gait is a footfall timeline:
 
-| Gait                              | Animals                           | Order                                                 | Duty factor (share of the cycle on the ground) |
-| --------------------------------- | --------------------------------- | ----------------------------------------------------- | ---------------------------------------------- |
-| Tripod                            | beetles, ants (6 legs)            | L1 R2 L3 together, then R1 L2 R3                      | ≈ 0.5 (0.6 when slow)                          |
-| Wave (metachronal)                | millipedes, slow insects, spiders | back to front on each side, sides offset half a cycle | 0.7–0.9                                        |
-| Quadruped walk (lateral sequence) | lizards, cats, dogs slow          | LH, LF, RH, RF                                        | 0.6–0.75                                       |
-| Trot                              | dogs, horses, fast lizards        | diagonal pairs: LF+RH, then RF+LH                     | ≈ 0.5                                          |
+| Gait                              | Animals                             | Order                                                 | Duty factor (share of the cycle on the ground) |
+| --------------------------------- | ----------------------------------- | ----------------------------------------------------- | ---------------------------------------------- |
+| Tripod                            | beetles, ants (6 legs)              | L1 R2 L3 together, then R1 L2 R3                      | ≈ 0.5 (0.6 when slow)                          |
+| Wave (metachronal)                | millipedes, slow insects, spiders   | back to front on each side, sides offset half a cycle | 0.7–0.9 (unverified)                           |
+| Quadruped walk (lateral sequence) | cats, dogs slow                     | LH, LF, RH, RF; phase ≈ 0.25                          | 0.6–0.75                                       |
+| Slow quadruped walk               | lizards, salamanders, frogs walking | LH, LF, RH, RF; phase ≈ 0.4–0.5                       | high (above 0.5)                               |
+| Trot                              | dogs, horses, fast lizards          | diagonal pairs: LF+RH, then RF+LH                     | ≈ 0.5                                          |
+
+Two numbers describe any symmetrical gait (Hildebrand): the **duty factor**,
+the share of the stride a foot is on the ground, and the **phase**, the share
+of the stride by which a forefoot's footfall lags the hind foot's on the same
+side. Walks have a duty factor above 0.5; a phase below 0.5 is a
+lateral-sequence gait. A video survey across species puts reptiles,
+amphibians and mice in a slow group with phase ≈ 0.4–0.5 and most mammals
+near 0.25 (Usherwood & Self Davies 2017, eLife 29495; qualitative, from
+online video). The tripod's 0.5 follows from three of six legs swinging at
+once; the wave gait's range has no source yet. Sources and caveats:
+`docs/CRITTER_PRIOR_WORK.md`.
 
 - **L-5 (MUST)** Stance feet are pinned to the ground (C-1). Speed comes from the stride and the cycle rate, never from sliding stance feet.
 - **L-6 (MUST)** Turning on the ground: the body yaws at most as fast as the stance feet can follow; the swing target for each foot is where it will rest relative to the body at the end of its stance. A turn on the spot is a sequence of short steps pivoting near the hips (the frog's on-pad turn is the worked example: forefeet two short steps each, inside first; each hind foot once, the outside one mid-swing).
@@ -364,7 +376,12 @@ it). The gait is a footfall timeline:
 
 ### 7.2 Hopping and jumping (worked example: the frog)
 
-Pose keys, from `docs/FROG_ART_DIRECTION.md` and `frog-world.ts`:
+Pose keys, from `docs/FROG_ART_DIRECTION.md` and `frog-world.ts`. The
+timings are the frog study's design values: no footage log or paper backs
+them yet (P-11; section 15), so treat every millisecond below as a guess until
+one does. The forelimb landing is sourced (toads land on their forelimbs,
+aligned with the velocity well before touchdown: Cox & Gillis 2017); the
+52 ms stagger between the hind legs is not.
 
 | Key                 | Timing (frog)                                      | Reads as                                                                                                               |
 | ------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -378,7 +395,7 @@ Pose keys, from `docs/FROG_ART_DIRECTION.md` and `frog-world.ts`:
 - **L-8 (MUST)** Pins: all feet pinned through the sit and the crouch (hind feet grip in the crouch; forefeet ease off as the weight goes back); every pin released over the first frames of the push (C-6); forefeet pinned at touchdown.
 - **L-9 (MUST)** Turning: on the ground only by stepping (L-6), up to ~43°; the rest of a larger turn happens in the crouch (≤ 2.2 rad/s) and is spread across the flight with an ease in and out. A committed jump doesn't change course (H-3).
 - **L-10 (MUST)** The shadow keeps the ground-sized footprint; height only offsets it along the light, blurs it and fades it.
-- QA (frog, `qa:motion`): largest one-frame pose change in `crouch` and `air` ≤ 0.4 (the push), in `land` ≤ 0.1; angular acceleration ≤ 400 rad/s² (a take-off once measured 1600 before its fix); `qa:swims`: 2–3.5 pad jumps per frog per minute, 20–36 % into the water.
+- QA (frog, `qa:motion`): largest one-frame pose change in `crouch` and `air` ≤ 0.4 (the push), in `land` ≤ 0.1; angular acceleration ≤ 400 rad/s², a hand-tuned engineering limit with no basis in the literature (a take-off once measured 1600 before its fix); `qa:swims`: 2–3.5 pad jumps per frog per minute, 20–36 % into the water.
 
 ### 7.3 Limb-driven swimming (worked example: the frog)
 
@@ -444,7 +461,7 @@ wings forward, tail fanned, feet reaching).
 
 - **L-20 (MUST)** Nothing is pinned in the air; feet tuck after take-off and reach before landing, and are pinned on touchdown (C-6).
 - **L-21 (MUST)** Heading changes by banking along a curve (P-4); the body rolls into the turn (seen from above: the near wing foreshortens), and the tail fans to steer.
-- **L-22 (MUST)** Flap timing comes from research (a robin ~ 10–15 beats/s in climbing flight; glides between bursts). A glide holds still: no flapping in a glide.
+- **L-22 (MUST)** Flap timing comes from research, for the species named (American robin _Turdus migratorius_ and European robin _Erithacus rubecula_ differ). Small passerines flap-bound: bursts of wingbeats with the wings folded against the body between them, not glides (zebra finch: about 28.5 beats/s, flapping about half the time at 6 m/s, Tobalske lab). No robin wingbeat rate is sourced yet. Birds that do glide hold the wings still: no flapping in a glide.
 - **L-23 (SHOULD)** Hovering (hummingbirds, dragonflies) is a figure-of-eight stroke with the body held; yaw in a hover only with a reason (tracking prey).
 - QA: turning while still ≤ 0.05 rad per frame outside a hover; wing fold one-frame change large only in the downstroke; flap rate within ±10 % of design; shadow offset grows with height (section 8.2).
 
@@ -919,6 +936,13 @@ say. Then the crops (Q-R6), and the report: numbers, the composition review,
 crops, what wasn't checked.
 
 ## 15. Known issues in the frog study
+
+- **Unsourced motion numbers (P-11).** A literature search on 2026-10-12
+  (`docs/CRITTER_PRIOR_WORK.md`) found no source for the frog's crouch
+  timings (190 / 75 / 160 ms), its 75 ms push or the 52 ms stagger between
+  hind legs, nor for any robin wingbeat rate. They stay as design values
+  until a footage log or paper backs them. The synchronous swimming kick and
+  the forelimb landing are sourced.
 
 - **Planted feet off their pins (Q-12, Q-14).** Measured 2026-09-25 by
   `qa:motion`: per planted stretch, the 95th percentile foot slide is

@@ -78,26 +78,36 @@ dependency), and a script copies a built version into `skills/critter/kit/`
 so the skill works outside this repository, the way Anatomy ships
 `iso-kit.ts` and `iso-kit.mjs`.
 
-| Module       | Exports (first draft)                                                                                                                                                                                                                  |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `math.ts`    | `TAU`, `clamp`, `smoothstep`, `seeded`, `itemSeed`, `glslFloat`, `makeCanvas`, `noise`, `fbm`                                                                                                                                          |
-| `motion.ts`  | `approach(v, target, rate, dt)`, `angleDelta`, `mix`, `smooth`, `blendByAspect(wide, narrow, aspect)`, a critically damped `spring`                                                                                                    |
-| `rig.ts`     | `LimbSpec { root, lengths, folded, extended, range, toe }`, `limbEnd(spec, side, t, yaw, lean)`, `limbReach`, `poseChain(spec, …) → capsules`, `easeChannel`                                                                           |
-| `contact.ts` | `FootPin`, `Surface { x, y, angle }` (a static ground is the identity), `toSurface`, `fromSurface`, `pinFoot`, `solvePin(spec, pin, body) → { t, yaw }`, `stepArc(pin, w, centre, lift)`, `restAfterStep`, `trailYaw(spin, gain, cap)` |
-| `hit.ts`     | `bodyDistance(ellipses, capsules, toes, point)`, `topmost(animals, point, tolerance)`                                                                                                                                                  |
-| `contain.ts` | `contain(point, distance, centre, margin)`, `pushOff(disc, boundary, clearance)`, `clearParts(parts, boundary, clearance)`, `separate(discs, gap)`                                                                                     |
-| `scene.ts`   | `mountScene({ createWorld, renderers: { webgl2, canvas }, edge, coveredAt, onTap, copy, name })` returning `{ mode, dispose }`                                                                                                         |
-| `gl.ts`      | `startProgram`, a full-screen pass, `GLSL_NOISE` (hash, noise, fbm), constants from a palette                                                                                                                                          |
-| `bake.ts`    | `createBaker(paint, { keep: 3, settleMs: 200, idleMs: 15000 })`: worker, cache and debounce over any layer                                                                                                                             |
-| `edge.ts`    | `pictureEdge`, `picturePath`, `edgeMaskUrl`, `edgeRingUrl` (the superellipse and its turbulence as parameters)                                                                                                                         |
-| `draw2d.ts`  | `drawChain(ctx, capsules, radii, palette)`, `drawToeFan`                                                                                                                                                                               |
-| `types.ts`   | `AnimalState`, `LimbPose`, `FootPin`, `Habitat`, `CreatureRenderer`, hooks, `SceneOptions`, `Palette`, `VariantCopy` (spec section 2.1)                                                                                                |
+| Module         | Exports (first draft)                                                                                                                                                                                                                                                                                                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `math.ts`      | `TAU`, `clamp`, `smoothstep`, `seeded`, `itemSeed`, `glslFloat`, `makeCanvas`, `noise`, `fbm`                                                                                                                                                                                                                                                                                       |
+| `motion.ts`    | `approach(v, target, rate, dt)`, `angleDelta`, `mix`, `smooth`, `blendByAspect(wide, narrow, aspect)`, a critically damped `spring`                                                                                                                                                                                                                                                 |
+| `rig.ts`       | `LimbSpec { root, lengths, folded, extended, range, toe }`, `limbEnd(spec, side, t, yaw, lean)`, `limbReach`, `poseChain(spec, …) → capsules`, `easeChannel`                                                                                                                                                                                                                        |
+| `contact.ts`   | `FootPin`, `Surface { x, y, angle }` (a static ground is the identity), `toSurface`, `fromSurface`, `pinFoot`, `solvePin(spec, pin, body) → { t, yaw }`, `stepArc(pin, w, centre, lift)`, `restAfterStep`, `trailYaw(spin, gain, cap)`                                                                                                                                              |
+| `gait.ts`      | new, not in the frog: a footfall timeline. Leg groups, each foot's duty factor and phase offset (Hildebrand), small whole-number frequency ratios between groups of different leg length (Spore), the phase advanced by distance travelled rather than time, and a per-channel phase vector whose amplitude falls to zero at rest so idle-to-walk needs no special case (DeepPhase) |
+| `chain.ts`     | new: a follow-the-leader spine with a bend limit and a width per vertebra for the outline (argonaut), for koi, snakes, tadpoles and tails                                                                                                                                                                                                                                           |
+| `wave.ts`      | new: a travelling lateral wave with an amplitude envelope along the body (carangiform: near zero over the front fifth, about 0.10 body lengths at the tail; Miller's snakes)                                                                                                                                                                                                        |
+| `secondary.ts` | new: passive, damped motion for parts nothing drives (antennae, a tongue, fins), a short constraint chain that never feeds back into the driven body (Spore's jiggles)                                                                                                                                                                                                              |
+| `hit.ts`       | `bodyDistance(ellipses, capsules, toes, point)`, `topmost(animals, point, tolerance)`                                                                                                                                                                                                                                                                                               |
+| `contain.ts`   | `contain(point, distance, centre, margin)`, `pushOff(disc, boundary, clearance)`, `clearParts(parts, boundary, clearance)`, `separate(discs, gap)`                                                                                                                                                                                                                                  |
+| `scene.ts`     | `mountScene({ createWorld, renderers: { webgl2, canvas }, edge, coveredAt, onTap, copy, name })` returning `{ mode, dispose }`                                                                                                                                                                                                                                                      |
+| `gl.ts`        | `startProgram`, a full-screen pass, `GLSL_NOISE` (hash, noise, fbm), constants from a palette                                                                                                                                                                                                                                                                                       |
+| `bake.ts`      | `createBaker(paint, { keep: 3, settleMs: 200, idleMs: 15000 })`: worker, cache and debounce over any layer                                                                                                                                                                                                                                                                          |
+| `edge.ts`      | `pictureEdge`, `picturePath`, `edgeMaskUrl`, `edgeRingUrl` (the superellipse and its turbulence as parameters)                                                                                                                                                                                                                                                                      |
+| `draw2d.ts`    | `drawChain(ctx, capsules, radii, palette)`, `drawToeFan`                                                                                                                                                                                                                                                                                                                            |
+| `types.ts`     | `AnimalState`, `LimbPose`, `FootPin`, `Habitat`, `CreatureRenderer`, hooks, `SceneOptions`, `Palette`, `VariantCopy` (spec section 2.1)                                                                                                                                                                                                                                             |
 
 Checks move with it: `qa/motion.mjs` today re-derives a foot's position with
 the frog's capsule layout and a hard-coded lift of 0.35. Instead the world
 exposes a small probe (each animal's state and channels, each pin's world
 position and whether it is planted, the drawn parts), and the motion metrics
-and the generic soak rows read only the probe. The dev hooks the browser
+and the generic soak rows read only the probe. The prior-work survey
+(`docs/CRITTER_PRIOR_WORK.md`) suggests five checks to add once the probe
+exists: a skating ratio for feet near a surface that aren't pinned, a
+ballistic check in the air (constant horizontal velocity, constant gravity),
+smoothness (SPARC) per single movement, phase error and a left-right
+symmetry index for walkers, and the centre of mass over the planted feet when
+slow. Per-frame limits should be restated per second. The dev hooks the browser
 checks drive are already generic: `__critterWorld`, `__critterAdvance` and
 the rest (renamed from `__frog*` on 2026-10-11, no aliases kept).
 
@@ -122,7 +132,11 @@ Each step must leave the frog's motion exactly as it is.
    probe and report the same numbers as before.
 6. **Scene controller and baker.** `mountFrogScene` becomes a thin wrapper
    over `mountScene`. The full `npm run qa:browser` passes.
-7. **Then the beetle Specimen** (skill plan step 4), built from the kit and a
+7. **New primitives:** `gait.ts`, `chain.ts`, `wave.ts` and `secondary.ts`
+   have nothing to extract; they are written new, each with a Node check of
+   its own (a gait's measured duty factor and phase match what was asked; a
+   chain point never slides sideways off the head's path).
+8. **Then the beetle Specimen** (skill plan step 4), built from the kit and a
    plain ground only. Anything it has to copy from the frog is a gap in the
    kit.
 
@@ -143,6 +157,14 @@ it.
 - **Hook names:** `__critter*`, renamed now, no aliases (owner, 2026-10-11).
 
 ## Open decisions
+
+- **Footage before more kit code?** The prior-work survey recommends making
+  the first real footage log before writing more kit code, because the
+  frog's headline timings have no source. Extraction under the golden replay
+  doesn't change any motion, so it can go ahead in parallel; the new
+  primitives in step 7 should wait for a footage log to test against. A
+  footage log needs clips: ones the owner supplies, or ones with a Creative
+  Commons licence.
 
 - **Time estimates:** the skill's sizes (Specimen 1–2 h, Vignette 3–6 h, Study
   days) are guesses. Replace them with measured times once the beetle and one
