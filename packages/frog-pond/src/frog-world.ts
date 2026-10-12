@@ -11,7 +11,19 @@
 // FROG_ART_DIRECTION.md describes what each pose is meant to read as.
 
 import { WATER_CX, WATER_CY, openDistance, shoreDistance } from './frog-bank';
-import { TAU, angleDelta, approach, clamp, mix, smooth, smoothstep } from '@critters/critter-kit';
+import {
+  TAU,
+  angleDelta,
+  approach,
+  clamp,
+  limbEnd,
+  limbReach,
+  mix,
+  poseChain,
+  smooth,
+  smoothstep,
+  type LimbSpec,
+} from '@critters/critter-kit';
 
 const HIND_SEGMENTS = 3;
 const FORE_SEGMENTS = 2;
@@ -292,39 +304,6 @@ const MOTES_PER_TAP = 4;
 const SIDES = [1, -1] as const;
 const YAWS = ['yawHL', 'yawHR', 'yawFL', 'yawFR'] as const;
 const HIND_THEN_FORE = [false, true] as const;
-const limbScratch: [number, number] = [0, 0];
-/**
- * End of a limb chain (ankle or wrist) in frog-local body lengths, for a
- * pose-channel value t and a yaw about the hip or shoulder. Written into
- * `out` (a shared scratch pair unless given), which is returned.
- */
-function limbEnd(
-  side: number,
-  fore: boolean,
-  t: number,
-  yaw: number,
-  lean: number,
-  out: [number, number] = limbScratch,
-) {
-  const lengths = fore ? FORE_LENGTHS : HIND_LENGTHS;
-  const folded = fore ? FORE_TUCKED : HIND_FOLDED;
-  const extended = fore ? FORE_SWEPT : HIND_EXTENDED;
-  let x = (fore ? SHOULDER[0] : HIP[0]) - lean;
-  let y = (fore ? SHOULDER[1] : HIP[1]) * side;
-  for (let j = 0; j < lengths.length; j++) {
-    const a = folded[j] + (extended[j] - folded[j]) * t;
-    x += Math.cos(a * side + yaw) * lengths[j];
-    y += Math.sin(a * side + yaw) * lengths[j];
-  }
-  out[0] = x;
-  out[1] = y;
-  return out;
-}
-/** How far a limb chain reaches from its hip or shoulder at extension t. */
-function limbReach(side: number, fore: boolean, t: number, lean: number) {
-  const end = limbEnd(side, fore, t, 0, lean);
-  return Math.hypot(end[0] - ((fore ? SHOULDER[0] : HIP[0]) - lean), end[1] - (fore ? SHOULDER[1] : HIP[1]) * side);
-}
 /** Order of Frog.anchors: hind left, hind right, fore left, fore right. */
 const anchorIndex = (side: number, fore: boolean) => (fore ? 2 : 0) + (side === 1 ? 0 : 1);
 
@@ -342,6 +321,8 @@ const FORE_TUCKED = [1.2, 0.3] as const;
 const FORE_SWEPT = [2.55, 2.9] as const;
 const HIP = [-0.3, 0.13] as const;
 const SHOULDER = [0.12, 0.15] as const;
+const HIND: LimbSpec = { root: HIP, lengths: HIND_LENGTHS, folded: HIND_FOLDED, extended: HIND_EXTENDED };
+const FORE: LimbSpec = { root: SHOULDER, lengths: FORE_LENGTHS, folded: FORE_TUCKED, extended: FORE_SWEPT };
 /** Hind toes reach this far beyond the ankle, fore toes a little less far. */
 export const HIND_TOE = 0.23;
 export const FORE_TOE = 0.11;
@@ -1227,7 +1208,7 @@ export class FrogWorld {
       if (anchor.phase < 2 * id + 1 && w > 0) {
         // Where this foot will rest, on the leaf, once the step is done.
         const [endX, endY, endHeading] = place(swingAt(start + span));
-        const [qx, qy] = limbEnd(side, fore, rest, 0, 0);
+        const [qx, qy] = limbEnd(fore ? FORE : HIND, side, rest, 0, 0);
         const lx = qx * frog.stretch * frog.size;
         const ly = (qy / frog.stretch) * frog.size;
         anchor.phase = 2 * id + 1;
@@ -1689,11 +1670,9 @@ export class FrogWorld {
     const bs = Math.sin(-frog.bodyHeading);
     for (const side of SIDES) {
       for (const fore of HIND_THEN_FORE) {
-        const lengths = fore ? FORE_LENGTHS : HIND_LENGTHS;
-        const folded = fore ? FORE_TUCKED : HIND_FOLDED;
-        const extended = fore ? FORE_SWEPT : HIND_EXTENDED;
-        const rootX = (fore ? SHOULDER[0] : HIP[0]) - frog.lean;
-        const rootY = (fore ? SHOULDER[1] : HIP[1]) * side;
+        const spec = fore ? FORE : HIND;
+        const rootX = spec.root[0] - frog.lean;
+        const rootY = spec.root[1] * side;
         let t = fore
           ? clamp((side === 1 ? frog.foreL : frog.foreR) - 0.2 * flinch, -0.6, 1)
           : clamp((side === 1 ? frog.hindL : frog.hindR) - 0.14 * flinch, -0.25, 1.15);
@@ -1718,32 +1697,19 @@ export class FrogWorld {
           // rather than the leg being hauled out straight.)
           let lo = fore ? -0.6 : -0.25;
           let hi = fore ? 0.7 : 0.6;
-          const rising = limbReach(side, fore, hi, frog.lean) >= limbReach(side, fore, lo, frog.lean);
+          const rising = limbReach(spec, side, hi, frog.lean) >= limbReach(spec, side, lo, frog.lean);
           for (let i = 0; i < 12; i++) {
             const mid = (lo + hi) / 2;
-            if (limbReach(side, fore, mid, frog.lean) < want === rising) lo = mid;
+            if (limbReach(spec, side, mid, frog.lean) < want === rising) lo = mid;
             else hi = mid;
           }
           const solved = (lo + hi) / 2;
-          const end = limbEnd(side, fore, solved, yaw, frog.lean);
+          const end = limbEnd(spec, side, solved, yaw, frog.lean);
           const aim = angleDelta(Math.atan2(ty - rootY, tx - rootX), Math.atan2(end[1] - rootY, end[0] - rootX));
           t = mix(t, solved, anchor.w);
           yaw += clamp(aim, -1.3, 1.3) * anchor.w;
         }
-        let x = rootX;
-        let y = rootY;
-        for (let j = 0; j < lengths.length; j++) {
-          const a = folded[j] + (extended[j] - folded[j]) * t;
-          const nx = x + Math.cos(a * side + yaw) * lengths[j];
-          const ny = y + Math.sin(a * side + yaw) * lengths[j];
-          out[o] = x;
-          out[o + 1] = y;
-          out[o + 2] = nx;
-          out[o + 3] = ny;
-          o += 4;
-          x = nx;
-          y = ny;
-        }
+        o = poseChain(spec, side, t, yaw, frog.lean, out, o);
       }
     }
   }

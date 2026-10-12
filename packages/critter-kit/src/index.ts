@@ -5,3 +5,4 @@
 export { TAU, clamp, glslFloat, itemSeed, makeCanvas, seeded, smoothstep } from './math';
 export { angleDelta, approach, mix, smooth } from './motion';
 export { startProgram } from './gl';
+export { limbEnd, limbReach, poseChain, type LimbSpec } from './rig';

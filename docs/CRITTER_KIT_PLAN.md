@@ -125,7 +125,7 @@ Each step must leave the frog's motion exactly as it is.
    point identical, so any difference is a real change.
 1. **Pure helpers** (done 2026-10-12: `packages/critter-kit` holds `math.ts`, `motion.ts` and `gl.ts`; golden replay identical, `npm run check` and all 16 browser checks pass): `frog-math.ts`, the easing helpers and `gl-utils.ts` into
    the kit; the frog imports them. Golden replay matches.
-2. **Rig:** `limbEnd`, `limbReach` and the chain part of `pose()` take a
+2. **Rig** (done 2026-10-12: `rig.ts` has `LimbSpec`, `limbEnd`, `limbReach` and `poseChain`; the frog passes `HIND` and `FORE`; golden replay identical; the standalone file grew 0.3 KB to 97.9 of its 100 KB. Channels as an indexed array (`easeChannel`) are left for when a second animal needs them): `limbEnd`, `limbReach` and the chain part of `pose()` take a
    `LimbSpec`; the frog passes its four. Golden replay matches.
 3. **Contact:** the pin solve, anchoring, surface frames and the step arc.
    Golden replay matches, and so do `qa:motion`'s numbers.

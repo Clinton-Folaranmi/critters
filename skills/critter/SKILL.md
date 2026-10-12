@@ -242,7 +242,7 @@ Until the kit is extracted, most pieces live in the frog pond (paths under
 | -------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
 | Clamp, smoothstep, seeded random, per-item seeds, GLSL floats  | `critter-kit/src/math.ts` (extracted)                  | `kit/math.ts`                    |
 | Easing, angle deltas, springs                                  | `critter-kit/src/motion.ts` (extracted)                | `kit/motion.ts`                  |
-| Limb chains: end point, reach, capsules from channels          | `limbEnd`, `limbReach`, `pose()` in `frog-world.ts`    | `kit/rig.ts`                     |
+| Limb chains: end point, reach, capsules from channels          | `critter-kit/src/rig.ts` (extracted)                   | `kit/rig.ts`                     |
 | Pins and steps: anchor, re-aim and solve reach, step on an arc | `anchorFoot`, `pose()`, `turnOnPad` in `frog-world.ts` | `kit/contact.ts`                 |
 | Hit test against drawn capsules and ellipses                   | `frogDistance` in `frog-world.ts`                      | `kit/hit.ts`                     |
 | Containment and boundary clearance for every drawn part        | `contain`, `keepLegsOffBank` in `frog-world.ts`        | `kit/contain.ts`                 |
