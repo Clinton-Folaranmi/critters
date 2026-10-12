@@ -90,6 +90,7 @@ Not pass/fail (tools that write files):
 | `node qa/browser.mjs replay`                  | draws a world saved by `node qa/tools/dump.mjs <aspect> <seed> <frame>`                                                                                                                                                                                                     |
 | `node qa/tools/swimtrace.mjs <aspect>`        | the longest swim in 2 h, second by second                                                                                                                                                                                                                                   |
 | `node qa/tools/baseline.mjs <git-ref> [name]` | builds the standalone page from another commit for side-by-side timing                                                                                                                                                                                                      |
+| `node qa/tools/golden.mjs [--write]`          | the golden replay: hashes the whole world once a second through four seeded sessions and compares with `qa/tools/golden.json`; any difference means motion changed (the kit extraction's guard, `docs/CRITTER_KIT_PLAN.md`)                                                 |
 
 ## Composition review (a person, not a script)
 

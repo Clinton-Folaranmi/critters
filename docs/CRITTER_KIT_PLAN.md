@@ -115,12 +115,14 @@ the rest (renamed from `__frog*` on 2026-10-11, no aliases kept).
 
 Each step must leave the frog's motion exactly as it is.
 
-0. **A golden replay first.** A Node script steps `FrogWorld` for 10 minutes
-   untouched and 5 minutes tapped, at aspects 1.48 and 0.91, with fixed seeds,
-   and writes a hash of every pose (positions, headings, channels, capsules)
-   once a second. Every later step must reproduce it bit for bit. Moving a
-   function without reordering its arithmetic keeps floating point identical,
-   so any difference is a real change.
+0. **A golden replay first.** Done 2026-10-12: `node qa/tools/golden.mjs`
+   steps `FrogWorld` through four seeded sessions (10 minutes untouched at
+   aspects 1.48 and 0.91, 5 minutes tapped, 3 minutes resizing) and hashes the
+   whole world state, plus the ripples it emitted, once a second, against
+   `qa/tools/golden.json`. It runs in about 2.5 s, and a 1 µs change to one
+   frog timing fails all four sessions. Every later step must reproduce it bit
+   for bit: moving a function without reordering its arithmetic keeps floating
+   point identical, so any difference is a real change.
 1. **Pure helpers:** `frog-math.ts`, the easing helpers and `gl-utils.ts` into
    the kit; the frog imports them. Golden replay matches.
 2. **Rig:** `limbEnd`, `limbReach` and the chain part of `pose()` take a
