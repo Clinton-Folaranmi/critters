@@ -8,6 +8,25 @@ looks), `frog-bank.ts` and `frog-bank-paint.ts` (the shore), `frog-shaders.ts`
 (WebGL art) and `frog-canvas.ts` (the Canvas 2D interpretation). Original work
 throughout.
 
+## Evidence and approval status
+
+This is the frog pond's historical motion sheet, not a retroactive substitute
+for the evidence and approval artifacts now required by P-11–P-14. The
+repository does not yet contain a frog footage log with source URLs/time ranges
+and separate observations/inferences, an explicitly human-approved visual
+direction board, a per-aspect creature-first hierarchy plan, or a full-scene
+composition sign-off. Generated imagery, if added while making a future board,
+must be labelled optional art direction under P-13 and cannot stand in for
+frog footage or anatomy/motion evidence.
+
+Accordingly, do not make frog habitat or other composition changes on the
+strength of this document alone. First create the artifacts named above and
+get the board approved by a person, then do the Q-R4 to Q-R7 full-scene review
+before any crops (reported as Q-56). The scene elements described below
+(bank, grass, flowers, reeds, pads, bed, caustics, fireflies, midges) are
+candidates for that board's habitat-job table (E-34): keep the ones with a
+behavioural job and quieten them near the frogs; quieten or remove the rest.
+
 ## Body plan (top-down, body lengths, snout toward +x)
 
 ```

@@ -1,4 +1,4 @@
-# Animal Farm
+# Critters
 
 > Interactive, top-down creature studies for the web (a frog pond first), the
 > method for building them, and the QA harness that measures them. The method's
@@ -8,7 +8,12 @@
 > check names the npm script that measures it.
 
 Start with the spec. The frog pond (packages/frog-pond) is its worked example.
-No sound anywhere. The frog study has two variants, Night and Day (theme keys
+Every study also needs a footage log (URLs, time ranges, observations kept
+apart from inferences), a visual direction board approved by a person before
+production code, and a full-scene composition review at desktop and phone
+size before any detail crop (spec P-11 to P-14, E-33 to E-35, Q-R4 to Q-R7).
+Generated images are optional art direction, never evidence. No sound
+anywhere. The frog study has two variants, Night and Day (theme keys
 `night` and `day`; titles Night Chorus and Day Chorus). Code is MIT; docs are
 CC BY 4.0.
 

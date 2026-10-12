@@ -1,5 +1,5 @@
 {
-  "name": "animal-farm",
+  "name": "critters",
   "version": "0.1.0",
   "private": true,
   "description": "Interactive creature studies (a frog pond first), the method behind them, and the QA harness that measures them.",

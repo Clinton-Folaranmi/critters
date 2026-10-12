@@ -1,21 +1,37 @@
-// Enlarged crops for review by eye, both lights × both renderers, into
-// qa/.out/shots: the keyboard focus ring, the reeds, motes after a tap on the
-// grass, a midge (or firefly) and its shadow, and by day the caustics.
-// Writes qa/.out/shots/sheet.html to see them side by side.
+// Full scenes first, then enlarged crops for review by eye, both lights × both
+// renderers (spec Q-R4 to Q-R6). Into qa/.out/shots: the whole page as a
+// visitor sees it, scene in view, at desktop (1400 × 1000) and phone (375 ×
+// 800) size; then crops of the focus ring, the reeds, motes after a tap on
+// the grass, a midge (or firefly) and its shadow, and by day the caustics.
+// sheet.html shows the full scenes at page size and keeps the crops folded
+// away until the full-scene review is written down.
 import { writeFileSync } from 'node:fs';
 
 export const browser = { width: 1400, height: 1000, dsf: 2 };
+const DESKTOP = { width: 1400, height: 1000 };
+const PHONE = { width: 375, height: 800 };
 
 export default async ({ page, site, report }) => {
   const files = [];
   for (const light of ['night', 'day']) {
     for (const renderer of ['webgl2', 'canvas']) {
       const tag = `${light}-${renderer}`;
-      await page.goto(
-        `${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}${light === 'day' ? '#day' : ''}`,
-      );
+      const url = `${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}${light === 'day' ? '#day' : ''}`;
+      await page.goto(url);
       await page.ready();
       await page.sleep(400);
+      // The whole viewport, not the canvas: the page around the scene is part of the composition.
+      const inView = () => page.eval(`document.querySelector('.stage').scrollIntoView({ block: 'center' })`);
+      await inView();
+      await page.sleep(200);
+      files.push(await page.shot(`qa/.out/shots/full-desktop-${tag}.png`));
+      await page.viewport(PHONE.width, PHONE.height, 2, true);
+      await page.sleep(400); // past the 200 ms bake debounce
+      await inView();
+      await page.sleep(200);
+      files.push(await page.shot(`qa/.out/shots/full-phone-${tag}.png`));
+      await page.viewport(DESKTOP.width, DESKTOP.height, 2);
+      await page.sleep(300);
       // Focus ring, by keyboard.
       await page.eval(`document.querySelector('canvas').focus()`);
       await page.tab();
@@ -49,22 +65,31 @@ export default async ({ page, site, report }) => {
       if (light === 'day') files.push(await page.shot(`qa/.out/shots/caustics-${tag}.png`, at(0.6, 0.72, 0.4, 0.26)));
     }
   }
-  const groups = ['focus', 'reeds', 'motes', 'midge', 'caustics'];
+  const name = (f) => f.split('/').pop();
+  const of = (group) => files.filter((f) => f.includes(`/${group}-`));
+  // Full scenes at their CSS size (the shots are 2× device pixels), one per row, never scaled to fit.
+  const full = (group, { width }) =>
+    `<h2>${group}</h2>${of(group)
+      .map(
+        (f) =>
+          `<figure class="full"><img src="${name(f)}" width="${width}"><figcaption>${name(f)} · creature: ______ · action: ______ · motive: ______</figcaption></figure>`,
+      )
+      .join('')}`;
+  const crops = ['focus', 'reeds', 'motes', 'midge', 'caustics']
+    .map(
+      (group) =>
+        `<h3>${group}</h3><section>${of(group)
+          .map((f) => `<figure><img src="${name(f)}"><figcaption>${name(f)}</figcaption></figure>`)
+          .join('')}</section>`,
+    )
+    .join('');
   writeFileSync(
     'qa/.out/shots/sheet.html',
-    `<!doctype html><meta charset="utf-8"><title>Frog pond shots</title><style>body{font:14px system-ui;margin:16px;background:#888}img{max-width:100%;display:block}figure{margin:0}figcaption{margin:4px 0 12px}section{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}</style>` +
-      groups
-        .map(
-          (group) =>
-            `<h2>${group}</h2><section>${files
-              .filter((f) => f.includes(`/${group}-`))
-              .map(
-                (f) =>
-                  `<figure><img src="${f.split('/').pop()}"><figcaption>${f.split('/').pop()}</figcaption></figure>`,
-              )
-              .join('')}</section>`,
-        )
-        .join(''),
+    `<!doctype html><meta charset="utf-8"><title>Frog pond shots</title><style>body{font:14px system-ui;margin:16px;background:#888}figure{margin:0 0 24px}figure.full img{max-width:none;display:block}section img{max-width:100%;display:block}figcaption{margin:4px 0 12px}section{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}details{margin-top:32px}summary{font-weight:600;cursor:pointer}</style>` +
+      `<h1>Full scenes first (spec Q-R4, Q-R5)</h1><p>View this page at 100 % zoom. For each frame, write down in docs/&lt;ANIMAL&gt;_COMPOSITION_REVIEW.md the creature, its action and its environmental motive before opening the crops. If you can't name them without searching the frame, or they don't match the visual direction board, record a composition defect (E-33), whatever the numbers say. Then watch the shipped build live for at least 30 s at desktop and phone size (npm run build, npm run preview).</p>` +
+      full('full-desktop', DESKTOP) +
+      full('full-phone', PHONE) +
+      `<details><summary>Detail crops: open only after the full-scene review is written down (Q-R6)</summary>${crops}</details>`,
   );
-  report.info('screenshots', `${files.length} in qa/.out/shots (open sheet.html)`);
+  report.info('screenshots', `${files.length} in qa/.out/shots (open sheet.html: full scenes first, then crops)`);
 };

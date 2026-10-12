@@ -1,4 +1,4 @@
-# Animal Farm
+# Critters
 
 Interactive, top-down creature studies for the web, the method for building
 them, and the harness that measures them. The first study is a frog pond,

@@ -1,5 +1,5 @@
-import { mountFrogScene } from '@animal-farm/frog-pond';
-import { serveBankRequests } from '@animal-farm/frog-pond/paint';
+import { mountFrogScene } from '@critters/frog-pond';
+import { serveBankRequests } from '@critters/frog-pond/paint';
 import { startFrogPage } from '../../studies/frogs/page';
 
 // The single-file standalone page: studies/frogs/index.html with its CSS

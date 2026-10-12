@@ -1,5 +1,5 @@
-import type { FrogSceneHandle, FrogSceneOptions } from '@animal-farm/frog-pond';
-import { FROG_COPY, FROG_INSTRUCTIONS, FROG_THEMES, type FrogTheme } from '@animal-farm/frog-pond/theme';
+import type { FrogSceneHandle, FrogSceneOptions } from '@critters/frog-pond';
+import { FROG_COPY, FROG_INSTRUCTIONS, FROG_THEMES, type FrogTheme } from '@critters/frog-pond/theme';
 
 // The frog pond page, shared by the demo (main.ts) and the single-file
 // standalone (standalone/frogs/entry.ts): the pond in either light, with a

@@ -307,8 +307,8 @@
   </nav>
   <article class="card" id="polish">
     <p class="kicker">01 / Principles</p>
-    <h2>Ten rules</h2>
-    <p class="lead">A scene reads as fake because of a small set of errors: a foot sliding while the body turns, a swimmer rotating in place, a pose changing in a single frame, a shadow cast toward the light. These rules target those errors, and the sections after them explain how to meet each one.</p>
+    <h2>Fourteen rules</h2>
+    <p class="lead">A scene reads as fake because of a small set of errors: a foot sliding while the body turns, a swimmer rotating in place, a pose changing in a single frame, a shadow cast toward the light. The first ten rules target those errors. A scene also fails when every measurement passes but a visitor can't find the animal, because the habitat outshines it and close-up crops hide the problem. The last four prevent that.</p>
     <div class="rules">
       <div class="rule"><b>P-1 · Research the animal first</b><span>Watch slow-motion footage before designing any pose. A frog swimming in a straight line kicks both hind legs at once; most people guess they alternate.</span></div>
       <div class="rule"><b>P-2 · Give every action a motive</b><span>A robin turns toward a sound, a beetle steers around a twig, a koi rises for food. Nothing moves to fill time or because the page loaded.</span></div>
@@ -320,6 +320,10 @@
       <div class="rule"><b>P-8 · Build depth from physical cues</b><span>A visible floor, a medium that hides it with depth, and shadows offset by height.</span></div>
       <div class="rule"><b>P-9 · Keep idle behaviour small</b><span>Breathing, blinking and looking around. Larger actions come at irregular intervals for each animal.</span></div>
       <div class="rule"><b>P-10 · Measure, then review by eye</b><span>Foot slide, pose jumps, brightness and frame time all get numbers before anyone signs off.</span></div>
+      <div class="rule"><b>P-11 · Keep a footage log</b><span>Every source has a URL and a time range. What you saw is written apart from what you conclude from it, and every timing in the motion sheet cites its entry.</span></div>
+      <div class="rule"><b>P-12 · Get the picture approved before code</b><span>A visual direction board states the creature, its action, its motive, the camera and the palette. A person approves it before any production code, and again before a later change to the composition.</span></div>
+      <div class="rule"><b>P-13 · Generated images are art direction only</b><span>They're optional, labelled as generated, and never footage, anatomy or motion evidence. They never ship.</span></div>
+      <div class="rule"><b>P-14 · Plan for the creature first</b><span>For every variant and screen shape, the board says where the animal reads at page size, what separates it from its ground, and which habitat layers stay quiet.</span></div>
     </div>
   </article>
 
@@ -364,7 +368,7 @@
   <article class="card" id="order">
     <p class="kicker">03 / Process</p>
     <h2>Order of work</h2>
-    <p class="lead">Research and a written motion sheet come before code. The study ships only after the measurements pass.</p>
+    <p class="lead">Evidence, an approved picture and a written motion sheet come before code. The study ships only after the measurements pass and a person has signed off the full scene.</p>
 <div class="diagram">
       <svg viewBox="0 0 700 250" role="img" aria-label="Work order: observe the animal, write a motion sheet, agree the direction, build the world and rig, then the painters, habitat and interaction, measure, and ship only when the metrics pass. Failed measurements loop back to the world.">
         <defs>
@@ -401,7 +405,8 @@
       </svg>
     </div>
     <p class="caption">A failed measurement gets fixed in the simulation. Adjusting the rendering to hide it doesn't count as a fix.</p>
-    <p>Research means slow-motion footage and any locomotion papers you can find, summarised in your own words. Copy nothing. For the robin, that might be how often it hops versus runs across a lawn, and how far it crouches before take-off. The motion sheet turns those notes into a plan: body dimensions in body lengths, a table of key poses with timings for each behaviour, how individuals differ, the layout of the scene, what a viewer should see in 45 seconds of watching, and what each tap does. Someone with authority over the result agrees the sheet before the build starts.</p>
+    <p>Research means slow-motion footage and any locomotion papers you can find, summarised in your own words. Copy nothing. Record it in a footage log: for each clip, its URL and the seconds you watched, what you actually saw, and, labelled separately, what you infer from it. For the robin, the observation might be "three hops, then a run of about a metre"; the inference, "it hops when searching and runs when it has a target". The motion sheet turns those notes into a plan: body dimensions in body lengths, a table of key poses with timings for each behaviour (each citing its log entry), how individuals differ, what a viewer should see in 45 seconds of watching, and what each tap does.</p>
+    <p>The visual direction board comes alongside it: the creature, its action and the motive the habitat gives it; the camera, the palette and the page sizes; and, for every variant and screen shape, a creature-first hierarchy plan saying where the animal reads and which habitat layers stay quiet. Every prominent habitat element gets a job. A person approves the board before production code starts. A generated image may help discuss composition or colour, but it's labelled as generated and is never evidence of how the animal looks or moves.</p>
   </article>
 
   <article class="card" id="structure">
@@ -814,6 +819,8 @@
     <p>Wind is one field owned by the world and read by everything that moves in it; gusts travel, so a meadow shows a wave passing rather than everything bending at once. Weather is a palette plus particles, each with its own brightness target, and animals respond to it with motives (E-26 to E-29). The frog pond has neither yet; its reeds only sway with time.</p>
     <h3>Time of day</h3>
     <p>A time of day is a palette on the same scene, geometry and behaviour, with its own copy and a brightness target measured inside the visible picture (E-30 to E-32). The frog's Night and Day are the example; the targets are in section 12.</p>
+    <h3>Creature first; every element has a job</h3>
+    <p>The habitat supports the animal; it doesn't compete with it. At the real desktop and phone page sizes, in every variant, and in the stills, the animal and what it's doing read before the scenery's detail (E-33). Every prominent element of the habitat has a behavioural job: a motive, somewhere to rest, cover, a boundary, a sense of scale or depth, or a response to a tap (E-34). An element with a job is kept and quietened where it meets the animal: less contrast, colour, fine detail or movement. An element with no job is quietened or removed. Near the animal, the habitat stays calmer than the animal's own contrast and motion (E-35).</p>
   </article>
 
   <article class="card" id="light">
@@ -922,7 +929,7 @@
   <article class="card" id="measure">
     <p class="kicker">15 / QA</p>
     <h2>QA metrics</h2>
-    <p class="lead">Step the world frame by frame and compute these values after every change; each names the script in this repository that measures it and fails when it's out of bounds. Then review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a swimming stroke, a steering turn) in both renderers.</p>
+    <p class="lead">Step the world frame by frame and compute these values after every change; each names the script in this repository that measures it and fails when it's out of bounds. The numbers can't tell you whether a visitor can find the animal, so a person then reviews the full scene at desktop and phone page size and watches it live for at least 30 seconds. Before looking at any crop, they write down the creature, what it's doing and why. If they can't, or their answer doesn't match the board, that's a composition defect, however good the numbers are (Q-R4, Q-R5). Only then do enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a swimming stroke, a steering turn) get reviewed in both renderers (Q-R6).</p>
 <!-- spec:qa:start -->
 <div class="table-wrap">
   <table>
@@ -982,7 +989,8 @@
       <tr><td>Q-52</td><td>No stalls on load</td><td>worst long task, navigation to 4 s, shipped builds, 2×</td><td>≤ 80 ms</td><td><code>npm run qa:first</code></td></tr>
       <tr><td>Q-53</td><td>Frame cost, GPU</td><td>GPU ms per frame at 1520 × 1027</td><td>≤ 15 ms</td><td><code>npm run qa:gpu</code></td></tr>
       <tr><td>Q-54</td><td>Frame cost, synced</td><td>CPU + GPU ms per frame with a readback</td><td>≤ 16.7 ms</td><td><code>npm run qa:gpu</code></td></tr>
-      <tr><td>Q-55</td><td>Review by eye</td><td>enlarged crops of each key moment, both variants × renderers</td><td>reviewed</td><td><code>npm run qa:shots</code></td></tr>
+      <tr><td>Q-56</td><td>Full-scene composition</td><td>creature, action and motive named before crops; desktop and phone frames; ≥ 30 s live</td><td>signed off</td><td><code>npm run qa:shots</code></td></tr>
+      <tr><td>Q-55</td><td>Review by eye</td><td>enlarged crops of each key moment, both variants × renderers, only after Q-56</td><td>reviewed</td><td><code>npm run qa:shots</code></td></tr>
     </tbody>
   </table>
 </div>
@@ -1028,13 +1036,14 @@
     <p class="lead">One ground beetle walking over damp leaf litter under a log, seen from above, by day. It uses every part of the method on a body plan unlike the frog's. The spec's section 14 has the code.</p>
     <div class="rows">
       <div class="row"><span class="tag">1</span><span><b>Brief.</b> One beetle (later two, differing in size and sheen); a warm key light from the upper right through a canopy; it walks with a tripod gait, pauses with its antennae sweeping, and steers round twigs. Tap the beetle and it runs off; tap the litter and a leaf shifts; tap the log and the beetle freezes; Enter drops water mid-scene.</span></div>
-      <div class="row"><span class="tag">2</span><span><b>Research notes, in your own words.</b> Two alternating tripods; stance longer than swing when slow (duty factor about 0.6); outside legs stride longer in a turn; antennae touch obstacles first; a startled beetle runs in a burst, then freezes.</span></div>
-      <div class="row"><span class="tag">3</span><span><b>Motion sheet.</b> Head 0.18, thorax 0.24, wing cases 0.58 body lengths; six legs of three parts; a 0.45 s cycle walking, 0.25 s running; keys per leg (lift-off, swing, touch-down, stance); turning only by stepping. Agree it before building.</span></div>
+      <div class="row"><span class="tag">2</span><span><b>Footage log.</b> Each clip with its URL and time range. Observation: front and rear legs on one side lift with the middle leg of the other; antennae touch a twig before the body turns. Inference, labelled separately: a tripod gait, stance longer than swing when slow (duty factor about 0.6); the touch is the motive for the turn.</span></div>
+      <div class="row"><span class="tag">3</span><span><b>Direction board and motion sheet.</b> A dark beetle on dark litter is the classic case of a habitat burying its animal, so the board puts it on a paler path of damp soil, with its sheen facing the light, and quietens the litter near the path. The log keeps its job (cover and shade); bright berries with no job go. Motion sheet: head 0.18, thorax 0.24, wing cases 0.58 body lengths; a 0.45 s cycle walking, 0.25 s running; turning only by stepping. A person approves the board before building.</span></div>
       <div class="row"><span class="tag">4</span><span><b>Scaffold.</b> Copy <code>packages/frog-pond</code> to <code>packages/beetle-litter</code> and rename its files; keep the scene controller, the builds and the QA wiring. The page, the still, lazy loading, the worker and the pause come with it.</span></div>
       <div class="row"><span class="tag">5</span><span><b>Habitat geometry.</b> The log's outline as one distance function, shared by the world, the renderers and the hit test, with a parity check. The log is an occluder: a tap on it goes to the log.</span></div>
       <div class="row"><span class="tag">6</span><span><b>The world.</b> States (walk, pause, run, freeze), a footfall timeline with every stance foot pinned, <code>check()</code> from the first day, and a soak copied from <code>qa/soak.mjs</code>.</span></div>
       <div class="row"><span class="tag">7</span><span><b>Motion.</b> <code>qa:motion</code> already measures planted-foot slide, turning while still and pose jumps; add duty factor per leg and "both tripods in phase". Fix failures in the world, not the renderer.</span></div>
-      <div class="row"><span class="tag">8</span><span><b>Renderers, palette, interaction, performance, the single file.</b> Then stills, enlarged crops, and a report with numbers and a list of what wasn't checked.</span></div>
+      <div class="row"><span class="tag">8</span><span><b>Renderers, palette, interaction, performance, the single file.</b></span></div>
+      <div class="row"><span class="tag">9</span><span><b>Full scenes, then crops.</b> A colleague who hasn't seen the build looks at the desktop and phone frames at page size and watches for 30 seconds, and writes down "a ground beetle, walking, turning away from a twig" before any crop is opened. If they say "a log in some leaves", that's a composition defect. Then the enlarged crops, and a report with numbers, the composition review and a list of what wasn't checked.</span></div>
     </div>
   </article>
 
@@ -1043,10 +1052,12 @@
     <h2>Definition of done</h2>
 
     <ul class="check">
-      <li>Research notes and a motion sheet are written and the direction is agreed.</li>
+      <li>A footage log keeps linked, timed observations apart from inferences, and the motion sheet cites it.</li>
+      <li>A person approved the visual direction board, with its creature-first hierarchy plan and a job for every prominent habitat element, before production code.</li>
       <li>The simulation is separate from the renderers, seeded, and clean through both long test runs.</li>
       <li>Every check in section 15 is run and reported; failures are fixed or recorded as known issues with a reason.</li>
-      <li>Enlarged frame-by-frame crops of each key moment have been reviewed in both renderers.</li>
+      <li>Full-scene desktop and phone frames and a 30-second live session were signed off before any crop; the reviewer named the creature, its action and its motive, matching the board.</li>
+      <li>Then enlarged frame-by-frame crops of each key moment were reviewed in both renderers.</li>
       <li>Every palette meets its brightness target, and the 2D renderer is within about 5 points of the GPU renderer.</li>
       <li>Frame time is about 15 ms or less, static layers are drawn once, and the shading radius has been checked.</li>
       <li>Losing the GPU context falls back and recovers, and the console shows no errors.</li>
@@ -1072,10 +1083,10 @@ What it really does: [basking, hopping, swimming strokes, feeding, calling…]
 Idle life: [breathing, blinks, throat or gill pulse, grooming…]
 Environment: [boundaries, occluders, perches and cover, ambient life, wind]
 Interactions: [tap the creature → …; tap the ground or a prop → …; keyboard → …]
-Mood and colour: [described in words, not copied images]
+Mood and colour: [described in words, not copied images; generated images optional, labelled as art direction]
 Platforms: [desktop and phone at 375 px; offline single file?]
 Constraints: [no new runtime dependencies, frame budget, fallback required]
-Deliver: observation notes, a motion sheet, the working study, and a QA report with numbers, stills, and a list of anything unchecked.</pre>
+Deliver: a footage log with URLs, time ranges and observations kept apart from inferences; a visual direction board approved by a person before production code; a motion sheet; the working study; and a QA report with full-scene desktop and phone frames, a live-session sign-off, detail crops, numbers, and a list of anything unchecked.</pre>
     <div class="actions" style="margin:0">
       <button class="btn primary" id="copy-brief" type="button">Copy the brief</button>
       <span class="status" id="brief-status" role="status" aria-live="polite"></span>
@@ -1099,6 +1110,10 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
   <div class="row"><span class="tag soft">P-8</span><span><b>SHOULD</b> Build depth from physical cues: a visible floor, a medium that hides it with depth, shadows offset by height.</span></div>
   <div class="row"><span class="tag soft">P-9</span><span><b>SHOULD</b> Keep idle behaviour small (breathing, blinking, looking) and larger actions irregular and individual.</span></div>
   <div class="row"><span class="tag">P-10</span><span><b>MUST</b> Measure, then review by eye. Every check in section 12 is run and reported before anyone signs off.</span></div>
+  <div class="row"><span class="tag">P-11</span><span><b>MUST</b> Before designing poses, make <code>docs/&lt;ANIMAL&gt;_FOOTAGE_LOG.md</code>. For each source, record a stable URL, the observed time range, and a short <b>Observation</b> written only about what is visible; put any proposed explanation, timing generalisation or design decision in a separately labelled <b>Inference</b>. Link anatomy or locomotion sources alongside the footage when they support an inference. Every key-pose timing, contact rule and turning rule in the motion sheet cites the log entry or source it comes from; one with no source is marked as a guess.</span></div>
+  <div class="row"><span class="tag">P-12</span><span><b>MUST</b> Before production scene code (world, habitat or renderer) is written, make <code>docs/&lt;ANIMAL&gt;_VISUAL_DIRECTION.md</code> and obtain an explicit human approval recorded there: reviewer, date, decision and the approved revision or link. The board states the intended creature, action, environmental motive, camera, palette and reference frames for every variant and required aspect. The same applies to a later change to an existing study's composition (habitat layers, palette, camera, scale, where the animals sit): it needs an approved board revision that covers it. Only a person can approve; an agent or an automated check may prepare the board, not approve it. Throwaway sketches that illustrate the board may be made outside <code>packages/</code> and are labelled as sketches.</span></div>
+  <div class="row"><span class="tag">P-13</span><span><b>MUST</b> A generated image is optional art direction only. Label it as generated in its caption and its file name (<code>generated-…</code>), name the prompt or tool, and use it only to discuss composition, palette or material. It is never footage, anatomy evidence or motion evidence: it never appears in the footage log, never supplies a pose, proportion or timing, never replaces the research sources required by P-1 and P-11, and is never shipped in a study, its stills or its page.</span></div>
+  <div class="row"><span class="tag">P-14</span><span><b>MUST</b> The visual direction board includes a creature-first hierarchy plan for every variant and target aspect: where the intended creature reads at normal page size, what separates it from its ground (value, colour, edge, sheen or shadow), the action silhouette or cue that makes it legible, the environmental motive that explains it, and which habitat layers must stay subordinate and how.</span></div>
 </div>
 <h3>2. Architecture</h3>
 <div class="rows">
@@ -1217,6 +1232,9 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
   <div class="row"><span class="tag">E-30</span><span><b>MUST</b> A time of day is a palette applied to the same scene, geometry and behaviour (the frog's Night and Day differ only in <code>FROG_PALETTES</code>, copy, and fireflies becoming midges). Copy, title and labels are written for each variant.</span></div>
   <div class="row"><span class="tag">E-31</span><span><b>MUST</b> Each variant has a brightness target: mean luma (0–255, Rec. 601 weights) inside the visible picture, bank included, where the picture's mask is over half opaque. The renderers stay within 5 of each other (<code>qa:luma</code>).</span></div>
   <div class="row"><span class="tag">E-32</span><span><b>MUST</b> The key light's direction may change between variants but each variant has one; shadows follow it (P-7). <code>qa:midge</code> checks a small flier's shadow in both renderers.</span></div>
+  <div class="row"><span class="tag">E-33</span><span><b>MUST</b> For every variant and target aspect, implement and review the creature-first hierarchy plan (P-14) at the actual desktop and phone page sizes, including the first-frame stills (F-2) and the reduced-motion still (I-5). The intended creature and its action read before decorative habitat detail; hierarchy is a composition requirement, not a luma, performance or renderer-parity result.</span></div>
+  <div class="row"><span class="tag">E-34</span><span><b>MUST</b> Every prominent habitat element has a stated behavioural job: it provides a motive, usable affordance, cover, boundary, scale cue, depth cue or a response to interaction. Record that job in the visual direction board. Quiet, simplify or remove elements without one; atmosphere alone is not enough for a prominent element. An element that has a job is kept and made subordinate (less contrast, saturation, fine detail or movement where it meets the creature) rather than removed. "Prominent" means a viewer notices it at normal page size before, or as soon as, the creature.</span></div>
+  <div class="row"><span class="tag soft">E-35</span><span><b>SHOULD</b> Where the creature usually sits or moves, habitat contrast, saturation and fine detail stay below the creature's own, and habitat movement (sway, caustics, ambient life) is slower and smaller than the creature's actions. Cover and occluders may hide part of the creature when that is their job, but not the cue that shows its action.</span></div>
 </div>
 <h3>9. Light, palettes and colour</h3>
 <div class="rows">
@@ -1251,7 +1269,10 @@ Deliver: observation notes, a motion sheet, the working study, and a QA report w
   <div class="row"><span class="tag">Q-R1</span><span><b>MUST</b> Run <code>npm run check</code> (typecheck, lint, format, docs, build, Node checks) before every commit, and <code>npm run qa:browser</code> before a release or after any visual, input or loading change.</span></div>
   <div class="row"><span class="tag">Q-R2</span><span><b>MUST</b> A failed measurement is fixed in the simulation or the renderer that causes it, not hidden by adjusting another layer.</span></div>
   <div class="row"><span class="tag">Q-R3</span><span><b>MUST</b> Report what was verified and what wasn't (machines, browsers, real devices, how the timing was taken and the load average).</span></div>
-  <div class="row"><span class="tag">Q-R4</span><span><b>MUST</b> Review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a stroke, a steering turn) in both renderers (<code>qa:shots</code>, <code>qa:stills</code>).</span></div>
+  <div class="row"><span class="tag">Q-R4</span><span><b>MUST</b> Before opening any detail crop, review and sign off full-scene frames at normal desktop and phone page sizes for every variant and renderer, plus a short real-time session in each variant (at least 30 seconds, at desktop and phone). "Normal page size" means the page sizes named on the visual direction board, seen at 100 % with the page around the scene: not enlarged, not a thumbnail. The real-time session uses a build without dev flags (no frame stepping, no fixed resolution). Record the device or viewport, renderer, reviewer, date and result in <code>docs/&lt;ANIMAL&gt;_COMPOSITION_REVIEW.md</code>.</span></div>
+  <div class="row"><span class="tag">Q-R5</span><span><b>MUST</b> On each full-scene review, before looking at a crop, the reviewer writes down the creature they see, its current action and the environmental motive, then compares them with the board's intent (P-12). If any of the three can't be identified without searching the frame, or doesn't match the board, record a composition defect against E-33 even when every numeric test passes. A composition defect blocks sign-off: fix it, or carry it as a known issue (section 15) only with the owner's written acceptance, recorded in the review.</span></div>
+  <div class="row"><span class="tag">Q-R6</span><span><b>MUST</b> Only after Q-R4 and Q-R5 pass, review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a stroke, a steering turn) in both renderers (<code>qa:shots</code>, <code>qa:stills</code>). Crops diagnose detail; they never establish full-scene readability.</span></div>
+  <div class="row"><span class="tag soft">Q-R7</span><span><b>SHOULD</b> At least one full-scene review is done cold, by someone who didn't build the scene and hasn't seen its crops that day. The builder already knows where the animals are, so they are the reviewer least likely to notice that the animals are hard to find.</span></div>
 </div>
 <!-- spec:rules:end -->
   </article>

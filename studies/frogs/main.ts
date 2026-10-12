@@ -5,7 +5,7 @@ import { startFrogPage } from './page';
 // within 300 px of the viewport, and its canvas replaces the still once its
 // first frame is drawn.
 
-const loadScene = () => import('@animal-farm/frog-pond').then((module) => module.mountFrogScene);
+const loadScene = () => import('@critters/frog-pond').then((module) => module.mountFrogScene);
 let scene: ReturnType<typeof loadScene> | null = null;
 
 /** Resolves once the element is on or near the screen. */
@@ -30,5 +30,5 @@ startFrogPage(async (container, options) => {
 
 if (import.meta.env.DEV) {
   // Dev-only, for the QA harness: the shore maths in the page.
-  void import('@animal-farm/frog-pond/bank').then((bank) => Object.assign(window, { __frogBank: bank }));
+  void import('@critters/frog-pond/bank').then((bank) => Object.assign(window, { __frogBank: bank }));
 }

@@ -17,7 +17,7 @@ if (!ref) {
   console.error('Usage: node qa/tools/baseline.mjs <git-ref> [name]');
   process.exit(1);
 }
-const tree = mkdtempSync(join(tmpdir(), 'animal-farm-baseline-'));
+const tree = mkdtempSync(join(tmpdir(), 'critters-baseline-'));
 try {
   execSync(`git archive ${ref} | tar -x -C ${JSON.stringify(tree)}`, { stdio: 'inherit' });
   execSync(`ln -s ${JSON.stringify(resolve('node_modules'))} ${JSON.stringify(join(tree, 'node_modules'))}`);

@@ -1,6 +1,6 @@
 // The frog pond study: mount it in any element, in either light.
 //
-//   import { mountFrogScene } from '@animal-farm/frog-pond';
+//   import { mountFrogScene } from '@critters/frog-pond';
 //   const scene = mountFrogScene(element, { reducedMotion: false, theme: 'day' });
 //   // … later
 //   scene.dispose();

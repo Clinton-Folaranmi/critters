@@ -26,7 +26,8 @@ target the study doesn't meet yet and that is recorded as a known issue
 useful, but they're printed with the target and the note.
 
 Everything the checks build or write goes to `qa/.out/` (git-ignored) and
-`dist/`.
+`dist/`. Numeric checks do not sign off composition: see "Composition
+review" below and spec Q-R4 to Q-R7.
 
 ## Running
 
@@ -82,13 +83,35 @@ helpers into `qa/.out/pages`.
 
 Not pass/fail (tools that write files):
 
-| Script                                        | Does                                                                                                                                   |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `qa:stills`                                   | regenerates `studies/frogs/stills/*.webp` (the first frame each light, wide and narrow); run after any visual change                   |
-| `qa:shots`                                    | enlarged crops for review by eye (focus ring, reeds, motes, midge, caustics), both lights × renderers, with `qa/.out/shots/sheet.html` |
-| `node qa/browser.mjs replay`                  | draws a world saved by `node qa/tools/dump.mjs <aspect> <seed> <frame>`                                                                |
-| `node qa/tools/swimtrace.mjs <aspect>`        | the longest swim in 2 h, second by second                                                                                              |
-| `node qa/tools/baseline.mjs <git-ref> [name]` | builds the standalone page from another commit for side-by-side timing                                                                 |
+| Script                                        | Does                                                                                                                                                                                                                                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `qa:stills`                                   | regenerates `studies/frogs/stills/*.webp` (the first frame each light, wide and narrow); run after any visual change                                                                                                                                                        |
+| `qa:shots`                                    | first the whole page, scene in view, at desktop (1400 × 1000) and phone (375 × 800) size for each light × renderer, then enlarged crops (focus ring, reeds, motes, midge, caustics); `qa/.out/shots/sheet.html` shows the full scenes at page size and folds the crops away |
+| `node qa/browser.mjs replay`                  | draws a world saved by `node qa/tools/dump.mjs <aspect> <seed> <frame>`                                                                                                                                                                                                     |
+| `node qa/tools/swimtrace.mjs <aspect>`        | the longest swim in 2 h, second by second                                                                                                                                                                                                                                   |
+| `node qa/tools/baseline.mjs <git-ref> [name]` | builds the standalone page from another commit for side-by-side timing                                                                                                                                                                                                      |
+
+## Composition review (a person, not a script)
+
+Every check above can pass while the animals are hard to find on the page.
+The full-scene review catches that, and it comes before any crop (spec
+Q-R4 to Q-R7, reported as Q-56, then Q-55):
+
+1. `npm run qa:shots`, then open `qa/.out/shots/sheet.html` at 100 % zoom.
+   The full-scene frames are shown at their page size; don't zoom in.
+2. For each frame, write down the creature, its action and its
+   environmental motive in `docs/<ANIMAL>_COMPOSITION_REVIEW.md` (template
+   in spec section 13.1), and compare them with the visual direction board.
+   If you can't name them without searching, or they don't match the board,
+   record a composition defect (E-33), whatever the numbers say.
+3. Watch the shipped build live for at least 30 s in each variant, at
+   desktop and phone size (`npm run build`, then `npm run preview`; no dev
+   flags), and record it.
+4. Only then open the crops in the sheet (Q-R6).
+
+Ideally one reviewer is someone who didn't build the scene (Q-R7). An agent
+may run steps 1 and 3 and prepare the frames, but the sign-off is a
+person's.
 
 ## Timing checks and a busy machine
 

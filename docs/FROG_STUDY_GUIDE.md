@@ -237,6 +237,11 @@ night and 86–87 by day (`npm run qa:luma`).
 
 ## Changing common things
 
+Changes to the pond's composition (colours, the bank, reeds, pads, the bed,
+layout) need an approved visual direction board first, and the frog pond
+doesn't have one yet (spec P-12 and section 15). The table says where things
+live; it isn't permission to change them.
+
 | You want…                                        | Look at                                                                                                                                      |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Different colours or brightness for night or day | `FROG_PALETTES` in `frog-theme.ts` (then run `npm run qa:luma` and `npm run qa:stills`)                                                      |
@@ -250,8 +255,10 @@ night and 86–87 by day (`npm run qa:luma`).
 | The reeds                                        | `reedBlades()` in `frog-bank.ts` (both painters and the tap test use it)                                                                     |
 | The bank's look                                  | `paintBank()` in `frog-bank-paint.ts`; its colours are `soil*`, `grass*`, `moss` and `flowers` in `frog-theme.ts`                            |
 
-After a visual change, regenerate the stills (`npm run qa:stills`) and check
-their size (`npm run qa:size`).
+After a visual change, regenerate the stills (`npm run qa:stills`), check
+their size (`npm run qa:size`), then run `npm run qa:shots` and review the
+full desktop and phone scenes, and a live session, before any crop (spec
+Q-R4 to Q-R6).
 
 ## Developer tools (`npm run dev` only; never shipped)
 
@@ -289,14 +296,16 @@ renderer: webgl2`); painting on the page instead of in the worker is logged
    the bank, a narrow pad layout for phones, bank taps that show something,
    swims that head home, brighter day, caustics and reeds in the backup
    painter, and the loading and speed work above (`docs/audit-report.html`).
-9. **Moved to its own repository (Animal Farm)** as a framework-free package
+9. **Moved to its own repository (Critters)** as a framework-free package
    with a plain demo page, the single file built from that page, and the
    audit harness turned into `npm run qa:*` checks with thresholds, including
    a new motion check (planted feet, mirroring, pose jumps).
 
 ## Known gaps
 
-Not yet checked: a long real-time watch (motion checks were done by stepping
+Not yet checked: a full-scene composition review at desktop and phone size
+(no footage log, approved visual direction board or composition review exist
+yet; spec section 15), a long real-time watch (motion checks were done by stepping
 frames), a real OS reduce-motion toggle, real touch devices, Safari and
 Firefox, a slow graphics card, and the standalone file running live as an
 artifact. The backup painter's caustics are softer and fade with depth now,

@@ -43,7 +43,7 @@ const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
  */
 export async function withPage(task, { width = 1600, height = 1100, dsf = 1, flags = [] } = {}) {
   const port = 9300 + Math.floor(Math.random() * 600);
-  const profile = mkdtempSync(join(tmpdir(), 'animal-farm-qa-'));
+  const profile = mkdtempSync(join(tmpdir(), 'critters-qa-'));
   const gpu = platform() === 'darwin' ? ['--use-angle=metal', '--ignore-gpu-blocklist'] : ['--ignore-gpu-blocklist'];
   const chrome = spawn(
     findChrome(),
