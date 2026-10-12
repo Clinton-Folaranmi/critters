@@ -6,3 +6,4 @@ export { TAU, clamp, glslFloat, itemSeed, makeCanvas, seeded, smoothstep } from 
 export { angleDelta, approach, mix, smooth } from './motion';
 export { startProgram } from './gl';
 export { limbEnd, limbReach, poseChain, type LimbSpec } from './rig';
+export { fromSurface, solvePin, stepArc, toSurface, type Surface } from './contact';

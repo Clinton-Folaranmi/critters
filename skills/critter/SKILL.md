@@ -238,20 +238,20 @@ Until the kit is extracted, most pieces live in the frog pond (paths under
 `packages/frog-pond/src` unless marked); extracted ones are in
 `packages/critter-kit/src`:
 
-| Piece                                                          | Today                                                  | Kit module (planned)             |
-| -------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
-| Clamp, smoothstep, seeded random, per-item seeds, GLSL floats  | `critter-kit/src/math.ts` (extracted)                  | `kit/math.ts`                    |
-| Easing, angle deltas, springs                                  | `critter-kit/src/motion.ts` (extracted)                | `kit/motion.ts`                  |
-| Limb chains: end point, reach, capsules from channels          | `critter-kit/src/rig.ts` (extracted)                   | `kit/rig.ts`                     |
-| Pins and steps: anchor, re-aim and solve reach, step on an arc | `anchorFoot`, `pose()`, `turnOnPad` in `frog-world.ts` | `kit/contact.ts`                 |
-| Hit test against drawn capsules and ellipses                   | `frogDistance` in `frog-world.ts`                      | `kit/hit.ts`                     |
-| Containment and boundary clearance for every drawn part        | `contain`, `keepLegsOffBank` in `frog-world.ts`        | `kit/contain.ts`                 |
-| Scene controller: canvas, loop, input, fallback, resolution    | `frog-scene.ts`                                        | `kit/scene.ts`                   |
-| Shader compile without stalling                                | `critter-kit/src/gl.ts` (extracted)                    | `kit/gl.ts`                      |
-| Static layers painted in a worker, cached and debounced        | `frog-bank-layer.ts`, `frog-bank-worker*.ts`           | `kit/bake.ts`                    |
-| Picture edge, its mask and focus ring                          | `pictureEdge`, `bankMaskUrl`, `pictureRingUrl`         | `kit/edge.ts`                    |
-| Motion and soak checks                                         | `qa/motion.mjs`, `qa/soak.mjs` (frog-specific)         | `scripts/motion.mjs`, `soak.mjs` |
-| Headless Chrome driver, shots and contact sheets               | `qa/lib/chrome.mjs`, `qa/browser/shots.mjs`            | `scripts/drive.mjs`              |
+| Piece                                                          | Today                                           | Kit module (planned)             |
+| -------------------------------------------------------------- | ----------------------------------------------- | -------------------------------- |
+| Clamp, smoothstep, seeded random, per-item seeds, GLSL floats  | `critter-kit/src/math.ts` (extracted)           | `kit/math.ts`                    |
+| Easing, angle deltas, springs                                  | `critter-kit/src/motion.ts` (extracted)         | `kit/motion.ts`                  |
+| Limb chains: end point, reach, capsules from channels          | `critter-kit/src/rig.ts` (extracted)            | `kit/rig.ts`                     |
+| Pins and steps: anchor, re-aim and solve reach, step on an arc | `critter-kit/src/contact.ts` (extracted)        | `kit/contact.ts`                 |
+| Hit test against drawn capsules and ellipses                   | `frogDistance` in `frog-world.ts`               | `kit/hit.ts`                     |
+| Containment and boundary clearance for every drawn part        | `contain`, `keepLegsOffBank` in `frog-world.ts` | `kit/contain.ts`                 |
+| Scene controller: canvas, loop, input, fallback, resolution    | `frog-scene.ts`                                 | `kit/scene.ts`                   |
+| Shader compile without stalling                                | `critter-kit/src/gl.ts` (extracted)             | `kit/gl.ts`                      |
+| Static layers painted in a worker, cached and debounced        | `frog-bank-layer.ts`, `frog-bank-worker*.ts`    | `kit/bake.ts`                    |
+| Picture edge, its mask and focus ring                          | `pictureEdge`, `bankMaskUrl`, `pictureRingUrl`  | `kit/edge.ts`                    |
+| Motion and soak checks                                         | `qa/motion.mjs`, `qa/soak.mjs` (frog-specific)  | `scripts/motion.mjs`, `soak.mjs` |
+| Headless Chrome driver, shots and contact sheets               | `qa/lib/chrome.mjs`, `qa/browser/shots.mjs`     | `scripts/drive.mjs`              |
 
 The frog pond is the large example: a Study. It was built before the footage
 log, board and full-scene review rules, so it has none of those artifacts yet,

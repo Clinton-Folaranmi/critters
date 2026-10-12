@@ -16,12 +16,15 @@ import {
   angleDelta,
   approach,
   clamp,
+  fromSurface,
   limbEnd,
-  limbReach,
   mix,
   poseChain,
   smooth,
   smoothstep,
+  solvePin,
+  stepArc,
+  toSurface,
   type LimbSpec,
 } from '@critters/critter-kit';
 
@@ -304,6 +307,8 @@ const MOTES_PER_TAP = 4;
 const SIDES = [1, -1] as const;
 const YAWS = ['yawHL', 'yawHR', 'yawFL', 'yawFR'] as const;
 const HIND_THEN_FORE = [false, true] as const;
+/** A point handed back by the kit's surface helpers (hoisted so a frame allocates nothing). */
+const pointScratch: [number, number] = [0, 0];
 /** Order of Frog.anchors: hind left, hind right, fore left, fore right. */
 const anchorIndex = (side: number, fore: boolean) => (fore ? 2 : 0) + (side === 1 ? 0 : 1);
 
@@ -1115,10 +1120,9 @@ export class FrogWorld {
   private ridePad(frog: Frog) {
     if (frog.pad < 0) return;
     const pad = this.pads[frog.pad];
-    const c = Math.cos(pad.angle);
-    const s = Math.sin(pad.angle);
-    frog.x = pad.x + frog.padX * c - frog.padY * s;
-    frog.y = pad.y + frog.padX * s + frog.padY * c;
+    fromSurface(pad, frog.padX, frog.padY, pointScratch);
+    frog.x = pointScratch[0];
+    frog.y = pointScratch[1];
     // Settled frogs turn with their leaf. (The crouch follows the leaf's spin
     // in crouch(); it also squares up to its jump.)
     if (frog.state === 'sit' || frog.state === 'turn' || frog.state === 'land') {
@@ -1220,12 +1224,20 @@ export class FrogWorld {
       if (anchor.phase === 2 * id + 1) {
         // Seen from above, a lifted foot draws in a little toward the body
         // on its way to the new spot, rather than sliding straight across.
-        const x = mix(anchor.fromX, anchor.toX, w);
-        const y = mix(anchor.fromY, anchor.toY, w);
-        const inward = Math.hypot(frog.padX - x, frog.padY - y) || 1;
         const pull = lift(w) * frog.size * 0.1;
-        anchor.x = x + ((frog.padX - x) / inward) * pull;
-        anchor.y = y + ((frog.padY - y) / inward) * pull;
+        const [x, y] = stepArc(
+          anchor.fromX,
+          anchor.fromY,
+          anchor.toX,
+          anchor.toY,
+          w,
+          frog.padX,
+          frog.padY,
+          pull,
+          pointScratch,
+        );
+        anchor.x = x;
+        anchor.y = y;
         anchor.w = 1;
         if (w >= 1) anchor.phase = 2 * id + 2;
       }
@@ -1671,8 +1683,6 @@ export class FrogWorld {
     for (const side of SIDES) {
       for (const fore of HIND_THEN_FORE) {
         const spec = fore ? FORE : HIND;
-        const rootX = spec.root[0] - frog.lean;
-        const rootY = spec.root[1] * side;
         let t = fore
           ? clamp((side === 1 ? frog.foreL : frog.foreR) - 0.2 * flinch, -0.6, 1)
           : clamp((side === 1 ? frog.hindL : frog.hindR) - 0.14 * flinch, -0.25, 1.15);
@@ -1683,31 +1693,19 @@ export class FrogWorld {
         const anchor = frog.anchors[anchorIndex(side, fore)];
         const pad = anchor.pad >= 0 ? this.pads[anchor.pad] : null;
         if (pad && anchor.w > 0.001) {
-          const ac = Math.cos(pad.angle);
-          const as = Math.sin(pad.angle);
-          const wx = pad.x + anchor.x * ac - anchor.y * as - frog.x;
-          const wy = pad.y + anchor.x * as + anchor.y * ac - frog.y;
+          fromSurface(pad, anchor.x, anchor.y, pointScratch);
+          const wx = pointScratch[0] - frog.x;
+          const wy = pointScratch[1] - frog.y;
           const tx = (wx * bc - wy * bs) / scale / frog.bodyStretch;
           const ty = ((wx * bs + wy * bc) / scale) * frog.bodyStretch;
-          const want = Math.hypot(tx - rootX, ty - rootY);
           // Reach grows with extension over the limb's range; a bisection
           // finds the extension that puts the foot back on its anchor.
           // (The foreleg's reach peaks near 0.7, so it searches below that. A
           // planted hind leg stays compact; past that the foot gives a little
           // rather than the leg being hauled out straight.)
-          let lo = fore ? -0.6 : -0.25;
-          let hi = fore ? 0.7 : 0.6;
-          const rising = limbReach(spec, side, hi, frog.lean) >= limbReach(spec, side, lo, frog.lean);
-          for (let i = 0; i < 12; i++) {
-            const mid = (lo + hi) / 2;
-            if (limbReach(spec, side, mid, frog.lean) < want === rising) lo = mid;
-            else hi = mid;
-          }
-          const solved = (lo + hi) / 2;
-          const end = limbEnd(spec, side, solved, yaw, frog.lean);
-          const aim = angleDelta(Math.atan2(ty - rootY, tx - rootX), Math.atan2(end[1] - rootY, end[0] - rootX));
-          t = mix(t, solved, anchor.w);
-          yaw += clamp(aim, -1.3, 1.3) * anchor.w;
+          const pin = solvePin(spec, side, frog.lean, yaw, tx, ty, fore ? -0.6 : -0.25, fore ? 0.7 : 0.6);
+          t = mix(t, pin[0], anchor.w);
+          yaw += clamp(pin[1], -1.3, 1.3) * anchor.w;
         }
         o = poseChain(spec, side, t, yaw, frog.lean, out, o);
       }
@@ -1725,11 +1723,8 @@ export class FrogWorld {
     const ly = (this.capsules[o + 3] / frog.bodyStretch) * scale;
     const c = Math.cos(frog.bodyHeading);
     const s = Math.sin(frog.bodyHeading);
-    const wx = frog.x + lx * c - ly * s - pad.x;
-    const wy = frog.y + lx * s + ly * c - pad.y;
-    const pc = Math.cos(-pad.angle);
-    const ps = Math.sin(-pad.angle);
-    return [wx * pc - wy * ps, wx * ps + wy * pc] as const;
+    const [x, y] = toSurface(pad, frog.x + lx * c - ly * s, frog.y + lx * s + ly * c, pointScratch);
+    return [x, y] as const;
   }
 
   /** Pins a foot where it is now, fully or partly (weight 0 … 1). */

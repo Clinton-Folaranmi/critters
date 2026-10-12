@@ -127,7 +127,7 @@ Each step must leave the frog's motion exactly as it is.
    the kit; the frog imports them. Golden replay matches.
 2. **Rig** (done 2026-10-12: `rig.ts` has `LimbSpec`, `limbEnd`, `limbReach` and `poseChain`; the frog passes `HIND` and `FORE`; golden replay identical; the standalone file grew 0.3 KB to 97.9 of its 100 KB. Channels as an indexed array (`easeChannel`) are left for when a second animal needs them): `limbEnd`, `limbReach` and the chain part of `pose()` take a
    `LimbSpec`; the frog passes its four. Golden replay matches.
-3. **Contact:** the pin solve, anchoring, surface frames and the step arc.
+3. **Contact** (done 2026-10-12: `contact.ts` has `Surface`, `toSurface`, `fromSurface`, `solvePin` and `stepArc`; the frog's pad riding, pin solve, foot-on-pad and on-pad step arc call them; golden replay identical, `qa:motion` unchanged at 84 passed and 12 known; standalone 98.2 of 100 KB. The anchor objects keep their `pad` field until the QA probe, step 5): the pin solve, anchoring, surface frames and the step arc.
    Golden replay matches, and so do `qa:motion`'s numbers.
 4. **Hit and containment.** Golden replay, `qa:hit` and `qa:tol` match.
 5. **The QA probe.** `qa:motion` and the generic half of `qa:soak` read the
