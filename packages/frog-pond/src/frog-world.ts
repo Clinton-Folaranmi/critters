@@ -15,11 +15,17 @@ import {
   TAU,
   angleDelta,
   approach,
+  capsuleDistance,
   clamp,
+  contain,
+  ellipseDistance,
   fromSurface,
+  gradient,
   limbEnd,
   mix,
   poseChain,
+  pushOff,
+  separate,
   smooth,
   smoothstep,
   solvePin,
@@ -532,37 +538,15 @@ export class FrogWorld {
 
   /** Pulls a point back inside the swimmable water (less a margin), toward its middle. */
   private contain(point: { x: number; y: number }, margin: number) {
-    if (this.pondDistance(point.x, point.y, margin) <= 1) return;
-    const cx = this.aspect * WATER_CX;
-    let inside = 0;
-    let outside = 1;
-    for (let i = 0; i < 14; i++) {
-      const t = (inside + outside) / 2;
-      const d = this.pondDistance(cx + (point.x - cx) * t, WATER_CY + (point.y - WATER_CY) * t, margin);
-      if (d <= 1) inside = t;
-      else outside = t;
-    }
-    point.x = cx + (point.x - cx) * inside;
-    point.y = WATER_CY + (point.y - WATER_CY) * inside;
+    contain(point, this.aspect * WATER_CX, WATER_CY, this.pondRegion, margin);
   }
+
+  /** pondDistance() as a kit region function, made once so containing allocates nothing. */
+  private readonly pondRegion = (x: number, y: number, margin: number) => this.pondDistance(x, y, margin);
 
   /** Nudges a drifting pad back off the bank. */
   private keepOffBank(pad: Pad) {
-    const clear = shoreDistance(pad.x, pad.y, this.aspect) - pad.radius - PAD_CLEARANCE;
-    if (clear >= 0) return;
-    const e = 0.002;
-    let gx = shoreDistance(pad.x + e, pad.y, this.aspect) - shoreDistance(pad.x - e, pad.y, this.aspect);
-    let gy = shoreDistance(pad.x, pad.y + e, this.aspect) - shoreDistance(pad.x, pad.y - e, this.aspect);
-    const g = Math.hypot(gx, gy) || 1;
-    gx /= g;
-    gy /= g;
-    pad.x -= gx * clear;
-    pad.y -= gy * clear;
-    const into = pad.vx * gx + pad.vy * gy;
-    if (into < 0) {
-      pad.vx -= gx * into;
-      pad.vy -= gy * into;
-    }
+    pushOff(pad, pad.radius, PAD_CLEARANCE, shoreDistance, this.aspect);
   }
 
   /**
@@ -667,12 +651,9 @@ export class FrogWorld {
         }
       }
       if (need <= 0) return;
-      const e = 0.002;
-      const gx = shoreDistance(atX + e, atY, this.aspect) - shoreDistance(atX - e, atY, this.aspect);
-      const gy = shoreDistance(atX, atY + e, this.aspect) - shoreDistance(atX, atY - e, this.aspect);
-      const g = Math.hypot(gx, gy) || 1;
-      frog.x += (gx / g) * need;
-      frog.y += (gy / g) * need;
+      const away = gradient(shoreDistance, this.aspect, atX, atY);
+      frog.x += away[0] * need;
+      frog.y += away[1] * need;
       this.contain(frog, frog.size * 0.8);
     }
   }
@@ -1650,18 +1631,7 @@ export class FrogWorld {
       for (let j = i + 1; j < frogs.length; j++) {
         const b = frogs[j];
         if (b.state !== 'swim' && b.state !== 'dive') continue;
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const d = Math.hypot(dx, dy);
-        const min = (a.size + b.size) * 0.8;
-        if (d >= min) continue;
-        const nx = d > 1e-5 ? dx / d : 1;
-        const ny = d > 1e-5 ? dy / d : 0;
-        const overlap = Math.min((min - d) / 2, 0.004);
-        a.x -= nx * overlap;
-        a.y -= ny * overlap;
-        b.x += nx * overlap;
-        b.y += ny * overlap;
+        if (!separate(a, b, (a.size + b.size) * 0.8, 0.004)) continue;
         this.contain(a, a.size * 0.8);
         this.contain(b, b.size * 0.8);
       }
@@ -1762,10 +1732,8 @@ export class FrogWorld {
     const dy = (y - frog.y) / scale;
     const qx = (dx * c - dy * s) / frog.bodyStretch;
     const qy = (dx * s + dy * c) * frog.bodyStretch;
-    const ellipse = (px: number, py: number, rx: number, ry: number) =>
-      (Math.hypot(px / rx, py / ry) - 1) * Math.min(rx, ry);
     const bx = qx + frog.lean;
-    let d = Math.min(ellipse(bx + 0.1, qy, 0.42, 0.28), ellipse(bx - 0.26, qy, 0.28, 0.24));
+    let d = Math.min(ellipseDistance(bx + 0.1, qy, 0.42, 0.28), ellipseDistance(bx - 0.26, qy, 0.28, 0.24));
     const base = index * FROG_CAPSULES * 4;
     for (let k = 0; k < FROG_CAPSULES; k++) {
       const o = base + k * 4;
@@ -1774,8 +1742,10 @@ export class FrogWorld {
       const abx = this.capsules[o + 2] - ax;
       const aby = this.capsules[o + 3] - ay;
       const part = k % 5;
-      const h = clamp(((qx - ax) * abx + (qy - ay) * aby) / (abx * abx + aby * aby), 0, 1);
-      d = Math.min(d, Math.hypot(qx - ax - abx * h, qy - ay - aby * h) - (part === 0 ? 0.09 : 0.05));
+      d = Math.min(
+        d,
+        capsuleDistance(qx, qy, ax, ay, this.capsules[o + 2], this.capsules[o + 3], part === 0 ? 0.09 : 0.05),
+      );
       // Feet: a disc covering the toe fan beyond the ankle or wrist.
       if (part === 2 || part === 4) {
         const toe = part === 2 ? HIND_TOE : FORE_TOE;
