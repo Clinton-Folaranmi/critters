@@ -134,7 +134,7 @@ Each step must leave the frog's motion exactly as it is.
    probe and report the same numbers as before.
 6. **Scene controller and baker.** `mountFrogScene` becomes a thin wrapper
    over `mountScene`. The full `npm run qa:browser` passes.
-7. **New primitives:** `gait.ts`, `chain.ts`, `wave.ts` and `secondary.ts`
+7. **New primitives** (`gait.ts` done 2026-10-13: a footfall clock advanced by distance, with tripod, wave and quadruped offsets; `qa:gait` checks it against the measured cockroach gait, spec L-30 and Q-57 to Q-61): `gait.ts`, `chain.ts`, `wave.ts` and `secondary.ts`
    have nothing to extract; they are written new, each with a Node check of
    its own (a gait's measured duty factor and phase match what was asked; a
    chain point never slides sideways off the head's path).

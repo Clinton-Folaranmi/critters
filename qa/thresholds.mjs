@@ -65,6 +65,17 @@ export const THRESHOLDS = {
     // No unexplained spins (a take-off once measured 1600 rad/s² before the fix; now ≤ 300).
     angularAcceleration: { max: 400, unit: 'rad/s²' },
   },
+  gait: {
+    // spec L-30: the kit's gait clock must reproduce the measured gait it is given
+    // (docs/footage/weihmann2017-file3.stances.json). Frame quantisation alone is about 0.01.
+    periodError: { max: 0.05 },
+    dutyError: { max: 0.03 },
+    phaseError: { max: 0.03 },
+    // spec 7.1: an insect tripod always has three feet down when the duty factor is 0.5 or more.
+    tripodSupport: { min: 3, unit: 'feet' },
+    // L-5: with no distance travelled, no foot lifts or lands.
+    standingDrift: { equals: 0 },
+  },
   alloc: {
     // p1: world.step ~470 B/frame, reedBlades() ~100 B/call.
     stepBytesPerFrame: { max: 1024, unit: 'B' },

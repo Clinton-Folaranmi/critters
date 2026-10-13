@@ -7,3 +7,19 @@ export { angleDelta, approach, mix, smooth } from './motion';
 export { startProgram } from './gl';
 export { limbEnd, limbReach, poseChain, type LimbSpec } from './rig';
 export { fromSurface, solvePin, stepArc, toSurface, type Surface } from './contact';
+export {
+  TRIPOD_OFFSETS,
+  advanceGait,
+  createGaitState,
+  dutyAt,
+  interpolate,
+  isStance,
+  legPhase,
+  quadrupedOffsets,
+  strideLengthAt,
+  swingProgress,
+  waveOffsets,
+  type GaitSpec,
+  type GaitState,
+  type GaitTable,
+} from './gait';

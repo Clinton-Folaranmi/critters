@@ -1,5 +1,6 @@
 // Builds what the checks drive, into qa/.out (git-ignored):
 //   world.mjs, bank.mjs      the simulation and shore maths, for Node
+//   kit.mjs                  the critter kit, for Node
 //   pages/bake.{html,js}     painter, shore maths, shaders, a GL helper (in-browser maths checks)
 //   pages/{dev,prod}-frogs.html   the standalone page with and without the dev helpers
 // and the demo site (dist/site-dev with the dev helpers, dist/site as shipped).
@@ -16,9 +17,9 @@ export const PAGES = `${OUT}/pages`;
 const SRC = 'packages/frog-pond/src';
 const skip = () => process.env.QA_NO_BUILD === '1';
 
-/** The world and shore maths as Node modules: qa/.out/world.mjs, bank.mjs. */
+/** The world, shore maths and kit as Node modules: qa/.out/world.mjs, bank.mjs, kit.mjs. */
 export async function buildNodeModules() {
-  if (skip() && existsSync(`${OUT}/world.mjs`)) return;
+  if (skip() && existsSync(`${OUT}/world.mjs`) && existsSync(`${OUT}/kit.mjs`)) return;
   const node = {
     bundle: true,
     format: 'esm',
@@ -29,6 +30,7 @@ export async function buildNodeModules() {
   };
   await build({ ...node, entryPoints: [`${SRC}/world.ts`], outfile: `${OUT}/world.mjs` });
   await build({ ...node, entryPoints: [`${SRC}/frog-bank.ts`], outfile: `${OUT}/bank.mjs` });
+  await build({ ...node, entryPoints: ['packages/critter-kit/src/index.ts'], outfile: `${OUT}/kit.mjs` });
 }
 
 /** Pages opened from file://: the bake page and the standalone builds. */
