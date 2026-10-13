@@ -17,9 +17,18 @@ export const PAGES = `${OUT}/pages`;
 const SRC = 'packages/frog-pond/src';
 const skip = () => process.env.QA_NO_BUILD === '1';
 
-/** The world, shore maths and kit as Node modules: qa/.out/world.mjs, bank.mjs, kit.mjs. */
+/**
+ * The worlds, shore maths and kit as Node modules: qa/.out/world.mjs (the
+ * frog pond), bank.mjs, kit.mjs and cockroach-world.mjs.
+ */
 export async function buildNodeModules() {
-  if (skip() && existsSync(`${OUT}/world.mjs`) && existsSync(`${OUT}/kit.mjs`)) return;
+  if (
+    skip() &&
+    existsSync(`${OUT}/world.mjs`) &&
+    existsSync(`${OUT}/kit.mjs`) &&
+    existsSync(`${OUT}/cockroach-world.mjs`)
+  )
+    return;
   const node = {
     bundle: true,
     format: 'esm',
@@ -31,6 +40,11 @@ export async function buildNodeModules() {
   await build({ ...node, entryPoints: [`${SRC}/world.ts`], outfile: `${OUT}/world.mjs` });
   await build({ ...node, entryPoints: [`${SRC}/frog-bank.ts`], outfile: `${OUT}/bank.mjs` });
   await build({ ...node, entryPoints: ['packages/critter-kit/src/index.ts'], outfile: `${OUT}/kit.mjs` });
+  await build({
+    ...node,
+    entryPoints: ['packages/cockroach-floor/src/world.ts'],
+    outfile: `${OUT}/cockroach-world.mjs`,
+  });
 }
 
 /** Pages opened from file://: the bake page and the standalone builds. */

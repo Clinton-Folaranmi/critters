@@ -58,6 +58,10 @@ console after a browser check.
 poke it, which feet are planted and on what, what counts as a fluid, its pose
 channels and resting state, and adds its own soak rows (the pond's bank and
 pads). Choose one with `--study=<name>`; the frog pond is the default.
+`cockroach.mjs` is the cockroach Specimen: six feet pinned to the floor, and
+its curvature and turning-while-still rows are measured while walking or
+running (it has no fluid; the mirroring row doesn't apply). `qa:node` runs
+both checks for every study.
 
 Options: `npm run qa:soak -- --aspect=0.91 --mode=tap --minutes=30 --seed=3`,
 `npm run qa:swims -- --hours=6`.

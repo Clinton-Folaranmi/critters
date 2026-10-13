@@ -43,6 +43,7 @@ import {
   REFLEX,
   SPEED,
   STRIDE_YAW,
+  TIP_OUT,
   TURN,
 } from './cockroach-motion';
 import { ANTENNA_RADIUS, LEG_RADII, bodyDistance } from './cockroach-shape';
@@ -92,6 +93,8 @@ export interface Roach {
   heading: number;
   /** Heading plus the small once-per-stride yaw; what is drawn. */
   bodyHeading: number;
+  /** How fast the heading is turning, rad/s (eased: TURN.accel). */
+  turnRate: number;
   /** BL/s, eased toward the behaviour's wish. */
   speed: number;
   /** One body length, world units. */
@@ -138,6 +141,7 @@ export class CockroachWorld {
       y: 0.42,
       heading: 0.25,
       bodyHeading: 0.25,
+      turnRate: 0,
       speed: 0,
       size,
       state: 'rest',
@@ -193,7 +197,7 @@ export class CockroachWorld {
     const [fx, fy] = FOOTHOLD[name[1] as '1' | '2' | '3'];
     // Standing still, the stance centres on the foothold rather than starting there.
     scratch[0] = fx + ahead;
-    scratch[1] = fy * side;
+    scratch[1] = (fy + TIP_OUT) * side;
     return scratch;
   }
 
@@ -265,6 +269,16 @@ export class CockroachWorld {
     r.until = this.between(BEHAVIOUR.flee);
     r.startle = 1;
     r.cooldown = BEHAVIOUR.tapCooldown;
+    // An escape turns first, then runs.
+    if (Math.abs(angleDelta(away, r.heading)) > TURN.straightAhead) this.pivot();
+  }
+
+  /** Turns on the spot (stepping), then carries on in the current moving state. */
+  private pivot() {
+    const r = this.roach;
+    if (r.state === 'turn') return;
+    r.resume = r.state;
+    r.state = 'turn';
   }
 
   private setTarget(x: number, y: number) {
@@ -314,36 +328,59 @@ export class CockroachWorld {
 
     // Speed eases toward what the state wants; heading turns toward the target.
     const wantSpeed = r.state === 'flee' ? SPEED.run : r.state === 'walk' ? SPEED.walk : 0;
-    const toTarget = Math.atan2(r.targetY - r.y, r.targetX - r.x);
-    const off = angleDelta(toTarget, r.heading);
-    const moving = r.state === 'walk' || r.state === 'flee';
+    const off = angleDelta(Math.atan2(r.targetY - r.y, r.targetX - r.x), r.heading);
+    let moving = r.state === 'walk' || r.state === 'flee';
     // Walking to a target well behind: turn on the spot first, stepping (L-6), rather than
-    // walking a wide loop. (An escape turns as it runs.)
-    if (r.state === 'walk' && Math.abs(off) > Math.PI / 2 && r.speed < SPEED.walk * 0.6) {
-      r.resume = r.state;
-      r.state = 'turn';
-    }
+    // walking a wide loop.
+    if (r.state === 'walk' && Math.abs(off) > Math.PI / 2 && r.speed < SPEED.walk * 0.6) this.pivot();
+    const pivoting = r.state === 'turn';
+    // The turn rate eases toward what the state allows, slowing as the heading nears the target
+    // (and never passing it within a frame, which would swing it back and forth).
+    const most = pivoting ? (r.resume === 'flee' ? TURN.escapeRate : TURN.pivotRate) : TURN.curvature * r.speed;
+    const want = Math.sign(off) * Math.min(most, Math.sqrt(2 * TURN.accel * Math.abs(off)), Math.abs(off) / dt);
+    r.turnRate += clamp(want - r.turnRate, -TURN.accel * dt, TURN.accel * dt);
     let stepped = 0;
-    if (r.state === 'turn') {
-      const turn = clamp(off, -TURN.pivotRate * dt, TURN.pivotRate * dt);
+    if (pivoting) {
+      const turn = r.turnRate * dt;
       r.heading += turn;
       // The feet step round while it pivots: stepping distance is the arc a foot travels.
       stepped = Math.abs(turn) * TURN.stepPerRadian;
       r.speed = approach(r.speed, 0, SPEED.accelerate, dt);
-      if (Math.abs(off) < TURN.straightAhead) r.state = r.resume;
+      // Done once lined up and nearly still, so the walk or run starts without a jerk.
+      if (Math.abs(off - turn) < TURN.aligned && Math.abs(r.turnRate) < 1) {
+        r.state = r.resume;
+        moving = true;
+      }
     } else {
       r.speed = approach(r.speed, moving ? wantSpeed : 0, SPEED.accelerate, dt);
       if (!moving && r.speed < 0.05) r.speed = 0;
     }
-    const distance = r.speed * dt; // BL
-    if (moving && distance > 0) {
-      // Heading changes only with distance travelled, along a curve (P-4 on the ground too).
-      const limit = TURN.curvature * distance;
-      r.heading += clamp(off, -limit, limit);
-    }
-    r.x += Math.cos(r.heading) * distance * r.size;
-    r.y += Math.sin(r.heading) * distance * r.size;
+    const wish = r.speed * dt; // BL
+    const fromX = r.x;
+    const fromY = r.y;
+    r.x += Math.cos(r.heading) * wish * r.size;
+    r.y += Math.sin(r.heading) * wish * r.size;
     contain(r, this.aspect / 2, 0.5, this.region, ARENA);
+    // The distance it really went, once the floor's edge has had its say.
+    const distance = Math.hypot(r.x - fromX, r.y - fromY) / r.size;
+    if (!pivoting) {
+      if (distance < wish * 0.5 || wish === 0) {
+        // Stopped, or bumped the edge of the floor: the turn runs down at its own pace (no
+        // spin), and a bump stops it there; if it was going somewhere it turns on the spot.
+        r.heading += r.turnRate * dt;
+        if (wish > 0) {
+          r.speed = 0;
+          if (moving && Math.abs(off) > TURN.aligned) this.pivot();
+        }
+      } else {
+        // Heading changes only with distance travelled, along a curve (P-4 on the ground too),
+        // coasting to a stop included.
+        const limit = TURN.curvature * distance;
+        const turn = clamp(r.turnRate * dt, -limit, limit);
+        r.heading += turn;
+        r.turnRate = turn / dt;
+      }
+    }
     r.heading = angleDelta(r.heading, 0);
 
     this.walkFeet(distance + stepped, r.speed, dt);
@@ -502,11 +539,7 @@ export class CockroachWorld {
       }
       if (foot.planted && this.overreached(name, foot)) {
         // C-5: carried out of reach (or under the body), the foot steps home now.
-        foot.planted = false;
-        foot.reflex = 0;
-        foot.fromX = foot.x;
-        foot.fromY = foot.y;
-        this.aim(name, k, travel * 0.5);
+        this.startReflex(name, k, foot, travel * 0.5);
         return;
       }
       if (distance === 0) {
@@ -528,6 +561,8 @@ export class CockroachWorld {
           foot.y = foot.toY;
           foot.planted = true;
           foot.stance++;
+          // Landed out of reach (the body turned under the swing): step again at once (C-5).
+          if (this.overreached(name, foot)) this.startReflex(name, k, foot, travel * 0.5);
         }
         return;
       }
@@ -544,6 +579,14 @@ export class CockroachWorld {
       foot.x = scratch[0];
       foot.y = scratch[1];
     });
+  }
+
+  private startReflex(name: LegName, k: number, foot: Foot, ahead: number) {
+    foot.planted = false;
+    foot.reflex = 0;
+    foot.fromX = foot.x;
+    foot.fromY = foot.y;
+    this.aim(name, k, ahead);
   }
 
   /** Whether a planted foot is out of its leg's reach (C-5), or has crossed under the body. */
@@ -573,9 +616,15 @@ export class CockroachWorld {
         const side = name[0] === 'L' ? 1 : -1;
         const c = Math.cos(r.heading);
         const s = Math.sin(r.heading);
-        foot.toX = front.x - (FOLLOW.behind * c - FOLLOW.out * side * -s) * r.size;
-        foot.toY = front.y - (FOLLOW.behind * s - FOLLOW.out * side * c) * r.size;
-        return;
+        const fx = front.x - (FOLLOW.behind * c - FOLLOW.out * side * -s) * r.size;
+        const fy = front.y - (FOLLOW.behind * s - FOLLOW.out * side * c) * r.size;
+        const [lx, ly] = this.footholdLocal(name, ahead);
+        const [wx, wy] = this.toWorld(lx, ly);
+        if (Math.hypot(fx - wx, fy - wy) < FOLLOW.within * r.size) {
+          foot.toX = fx;
+          foot.toY = fy;
+          return;
+        }
       }
     }
     const [lx, ly] = this.footholdLocal(name, ahead);

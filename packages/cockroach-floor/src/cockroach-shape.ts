@@ -4,21 +4,27 @@
 // 1 × 0.4 BL, pronotum the front 0.23); the parts' exact curves are drawing
 // choices, not measurements.
 
-/** Blended ellipses, front to back: [centre x, radius x, radius y]. */
+/**
+ * Blended ellipses, front to back: [centre x, radius x, radius y]. They
+ * overlap far enough that the outline has no waist: from above, the
+ * pronotum's rear edge lies over the wing pads at the body's full width, and
+ * the body is one oval (half-width 0.19 to 0.20 from 0.35 ahead to 0.2
+ * behind, as on footage frame 58).
+ */
 export const BODY_PARTS = {
-  pronotum: [0.37, 0.135, 0.195],
-  thorax: [0.1, 0.2, 0.2],
-  abdomen: [-0.2, 0.3, 0.19],
+  pronotum: [0.35, 0.16, 0.195],
+  thorax: [0.12, 0.26, 0.2],
+  abdomen: [-0.15, 0.35, 0.19],
 } as const;
 /** How softly the parts blend (a smooth minimum's width, BL). */
-export const BLEND = 0.06;
+export const BLEND = 0.08;
 /** Where the pronotum's rear edge and the wing pads' rear edge cross the midline (BL). */
 export const PRONOTUM_BACK = 0.27;
 export const TEGMINA_BACK = -0.05;
 /** The visible abdominal segment lines (x, BL). */
 export const SEGMENT_LINES = [-0.11, -0.18, -0.25, -0.32, -0.39, -0.45] as const;
 /** Capsule radii (BL): femur, tibia, tarsus; then the antennae. */
-export const LEG_RADII = [0.03, 0.022, 0.013] as const;
+export const LEG_RADII = [0.021, 0.014, 0.009] as const;
 export const ANTENNA_RADIUS = 0.009;
 /** How far the body casts its shadow along the light (BL): a low animal close to the floor. */
 export const SHADOW_OFFSET = 0.07;
@@ -43,6 +49,34 @@ export function bodyDistance(px: number, py: number) {
     ellipse(px - ac, py, arx, ary),
     BLEND,
   );
+}
+
+/**
+ * The body's outline as a closed polygon (BL, x0 y0 x1 y1 …), traced from
+ * bodyDistance so the Canvas renderer draws exactly the shader's shape.
+ */
+export function bodyOutline(samples = 64) {
+  const half: number[] = [];
+  let front = 0.6;
+  while (front > 0 && bodyDistance(front, 0) > 0) front -= 0.001;
+  let back = -0.6;
+  while (back < 0 && bodyDistance(back, 0) > 0) back += 0.001;
+  for (let i = 0; i <= samples; i++) {
+    const x = front + (back - front) * (i / samples);
+    // The half-width at x, by bisection on the distance.
+    let lo = 0;
+    let hi = 0.4;
+    for (let j = 0; j < 20; j++) {
+      const mid = (lo + hi) / 2;
+      if (bodyDistance(x, mid) <= 0) lo = mid;
+      else hi = mid;
+    }
+    half.push(x, lo);
+  }
+  const points: number[] = [];
+  for (let i = 0; i < half.length; i += 2) points.push(half[i], half[i + 1]);
+  for (let i = half.length - 2; i >= 0; i -= 2) points.push(half[i], -half[i + 1]);
+  return points;
 }
 
 /** The same body distance as GLSL, generated from the numbers above. */

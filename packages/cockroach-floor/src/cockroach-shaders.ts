@@ -60,10 +60,22 @@ float hash(vec2 p) {
   p3 += dot(p3, p3.yzx + 33.33);
   return fract((p3.x + p3.y) * p3.z);
 }
+// Quintic fade: no visible lattice where the cells meet.
 float noise(vec2 p) {
   vec2 i = floor(p), f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
+  vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
   return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1)), u.x), u.y);
+}
+// Four octaves, each rotated off the last so no grid direction lines up.
+float fbm(vec2 p) {
+  const mat2 turn = mat2(1.6, 1.2, -1.2, 1.6);
+  float v = 0.0, a = 0.5;
+  for (int i = 0; i < 4; i++) {
+    v += a * noise(p);
+    p = turn * p + 17.0;
+    a *= 0.5;
+  }
+  return v / 0.9375;
 }
 
 ${bodyGlsl(float)}
@@ -94,7 +106,7 @@ void main() {
 
   // The floor: pale, with fine grain and a soft mottle.
   vec3 col = FLOOR;
-  col = mix(col, MOTTLE, smoothstep(0.35, 0.75, noise(p * 9.0)) * 0.6);
+  col = mix(col, MOTTLE, smoothstep(0.32, 0.72, fbm(p * 3.5)));
   col = mix(col, GRAIN, smoothstep(0.62, 0.95, noise(gl_FragCoord.xy * 0.55)) * 0.5);
 
   // Crumbs, with a small contact shadow away from the light.

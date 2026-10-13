@@ -12,6 +12,7 @@ import {
   SHADOW_OFFSET,
   SHADOW_SOFTNESS,
   TEGMINA_BACK,
+  bodyOutline,
 } from './cockroach-shape';
 import { COCKROACH_PALETTE as P } from './cockroach-theme';
 import { CAPSULES, LEG_NAMES, LEG_SEGMENTS, type CockroachWorld } from './cockroach-world';
@@ -65,12 +66,11 @@ export function createCockroachCanvas(
     const s = Math.sin(r.bodyHeading);
     ctx.setTransform(k * c, -k * s, -k * s, -k * c, h * r.x, h * (1 - r.y));
   };
+  const outline = bodyOutline();
   const bodyPath = () => {
     ctx.beginPath();
-    for (const [cx, rx, ry] of Object.values(BODY_PARTS)) {
-      ctx.moveTo(cx + rx, 0);
-      ctx.ellipse(cx, 0, rx, ry, 0, 0, Math.PI * 2);
-    }
+    for (let i = 0; i < outline.length; i += 2) ctx.lineTo(outline[i], outline[i + 1]);
+    ctx.closePath();
   };
   /** A cross-body curve x = x0 + bend·(y/0.2)², as the shader draws the seams and segment lines. */
   const curve = (x0: number, bend: number) => {

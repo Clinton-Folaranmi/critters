@@ -1,6 +1,7 @@
 // Runs a group of checks, builds once, and exits non-zero if any fails.
 //
-//   npm run qa:node      soak, swims, motion, alloc, gait, size (Node only; what CI runs)
+//   npm run qa:node      soak, swims, motion, alloc, gait, size (Node only; what CI runs);
+//                        soak and motion run for every study in qa/lib/studies
 //   npm run qa:browser   every pass/fail browser check (needs the headless shell)
 //   npm run qa           both
 //
@@ -12,8 +13,10 @@ import { flags } from './lib/report.mjs';
 
 export const NODE = [
   ['soak', ['qa/soak.mjs']],
+  ['soak cockroach', ['qa/soak.mjs', '--study=cockroach']],
   ['swims', ['qa/swims.mjs']],
   ['motion', ['qa/motion.mjs']],
+  ['motion cockroach', ['qa/motion.mjs', '--study=cockroach']],
   ['alloc', ['--expose-gc', '--max-semi-space-size=512', 'qa/alloc.mjs']],
   ['gait', ['qa/gait.mjs']],
   ['size', ['qa/size.mjs']],

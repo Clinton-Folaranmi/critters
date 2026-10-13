@@ -60,6 +60,8 @@ export const SPEED = {
  * and 0.21 out, middle 0.20 ahead and 0.28 out, hind 0.26 behind and 0.26
  * out). Swinging feet aim here, shifted forward by how far the body will
  * travel before the foot lands (inferred: the stance then centres on it).
+ * These are the centres of the pixels that stay still, i.e. of the planted
+ * tarsus; the leg chain ends at the tarsus tip, TIP_OUT further out.
  */
 export const FOOTHOLD: Readonly<Record<'1' | '2' | '3', readonly [number, number]>> = {
   '1': [0.43, 0.21],
@@ -68,29 +70,51 @@ export const FOOTHOLD: Readonly<Record<'1' | '2' | '3', readonly [number, number
 };
 
 /**
+ * How much further out than the measured foothold the tarsus tip lands (BL).
+ * measured on frame 58 against a 10 px grid: the tips stand 0.28 (front),
+ * 0.31 to 0.40 (middle) and 0.28 (hind) out from the midline, 0.05 or so
+ * beyond the footholds above.
+ */
+export const TIP_OUT = 0.05;
+
+/**
  * Follow the leader (measured six times; inferred as a rule): a middle foot
  * lands where the front foot on its side just left, under 1 mm behind along
- * the path (0.02 BL) and about 2.6 mm further out (0.1 BL).
+ * the path (0.02 BL) and about 2.6 mm further out (0.1 BL). guess: it does
+ * so only when that footprint is within `within` BL of where the middle
+ * foot would land anyway; a footprint left behind by a pivot or a stop isn't
+ * followed.
  */
-export const FOLLOW = { behind: 0.02, out: 0.1 } as const;
+export const FOLLOW = { behind: 0.02, out: 0.1, within: 0.15 } as const;
 
 /**
  * Leg geometry, BL, left side. measured: how far each leg reaches beyond the
- * body's edge (front 33, middle 45, hind 75 px of a 195 px body); guess: the
- * split into femur, tibia and tarsus (0.4 : 0.4 : 0.2), where the legs
- * attach, and the joint angles of the folded and extended poses. The
- * extension value folds the leg into a zigzag (knee out) and straightens it.
+ * body's edge when stretched (front 33, middle 45, hind 75 px of a 195 px
+ * body: 0.17, 0.23, 0.38 BL; the front and hind legs here reach 0.17 and
+ * 0.39, the middle 0.32, which it never stretches to while walking); and,
+ * from the footage frames, that every knee points away from the body: back
+ * and out on the front and middle legs, forward and out on the hind leg,
+ * whose zigzag therefore bends the other way (`bend` −1). guess: the split
+ * into femur, tibia and tarsus (0.4 : 0.4 : 0.2), where the legs attach, and
+ * the joint angles of the folded and extended poses. The extension value
+ * folds the leg into a zigzag and straightens it.
+ *
+ * `angle` sets only the resting direction the leg's yaw is measured from
+ * (REFLEX.aim): solvePin draws the same pose whatever it is. Each is chosen
+ * so the yaw a stance needs, from 0.12 BL ahead of the foothold to 0.4 BL
+ * behind it, is centred on zero (front −1.35 … 1.44, middle −1.05 … 1.10,
+ * hind −0.65 … 0.66 rad).
  */
-const leg = (root: readonly [number, number], length: number, angle: number): LimbSpec => ({
+const leg = (root: readonly [number, number], length: number, angle: number, bend = 1): LimbSpec => ({
   root,
   lengths: [length * 0.4, length * 0.4, length * 0.2],
-  folded: [angle + 0.9, angle - 1.3, angle - 0.7],
-  extended: [angle + 0.12, angle - 0.05, angle - 0.15],
+  folded: [angle + 0.9 * bend, angle - 1.3 * bend, angle - 0.7 * bend],
+  extended: [angle + 0.12 * bend, angle - 0.05 * bend, angle - 0.15 * bend],
 });
 export const LEGS: Readonly<Record<'1' | '2' | '3', LimbSpec>> = {
-  '1': leg([0.16, 0.11], 0.3, 0.75),
-  '2': leg([0.08, 0.13], 0.4, 1.45),
-  '3': leg([-0.04, 0.12], 0.55, 2.3),
+  '1': leg([0.2, 0.13], 0.4, 1.7),
+  '2': leg([0.08, 0.15], 0.42, 1.85),
+  '3': leg([-0.08, 0.15], 0.56, 2.3, -1),
 };
 /** Planted legs search their extension in this range when solving a pin; below 0 folds tighter than the folded pose. */
 export const REACH: readonly [number, number] = [-0.5, 0.98];
@@ -135,10 +159,25 @@ export const BEHAVIOUR = {
 } as const;
 
 /**
- * Turning (spec L-6, C-4; guess for the numbers): heading changes with
- * distance travelled, at most this curvature (radians per BL) while
- * walking; a turn on the spot pivots at this rate (rad/s), stepping all the
+ * Turning (spec L-6, C-4, P-4; guess for the numbers). The heading follows a
+ * turn rate whose change is limited to `accel` rad/s² (no spins, Q-21), and
+ * which slows as the heading nears the target, so a turn starts, runs and
+ * stops over a few frames. While walking or running the heading changes only
+ * with the distance actually travelled, at most `curvature` radians per BL.
+ * A turn on the spot pivots at up to `pivotRate` rad/s, stepping all the
  * while (the gait clock advances `stepPerRadian` BL per radian turned), until
- * the target is within `straightAhead`.
+ * the heading is within `aligned` of the target; it starts when the target
+ * is more than `straightAhead` off and the animal is slow, or when it walks
+ * into the edge of the floor. An escape turns first and then runs, at up to
+ * `escapeRate` (real escape turns are faster still and over within tens of
+ * milliseconds; not yet sourced, and slowed here so the turn reads).
  */
-export const TURN = { curvature: 3.2, pivotRate: 1.6, straightAhead: 0.6, stepPerRadian: 0.9 } as const;
+export const TURN = {
+  curvature: 3.2,
+  pivotRate: 1.6,
+  escapeRate: 9,
+  accel: 300,
+  straightAhead: 0.6,
+  aligned: 0.05,
+  stepPerRadian: 0.9,
+} as const;
