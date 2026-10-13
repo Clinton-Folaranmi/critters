@@ -75,7 +75,7 @@ the restriction so it is not mistaken for reusable material.
 THE ANIMALS AND WHAT TO FIND FOR EACH
 0. Frog or toad: jumping (the crouch, take-off and landing), and swimming
    with both legs kicking.
-1. Ground beetle or other beetle (cockroaches and darkling beetles are fine
+1. Cockroach, ground beetle or other beetle (cockroaches and darkling beetles are fine
    substitutes): walking on flat ground, ideally both slow walking and
    running; a turn if possible.
 2. Spider (wolf spider, jumping spider or house spider): walking on flat

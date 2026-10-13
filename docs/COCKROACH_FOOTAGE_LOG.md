@@ -1,14 +1,12 @@
-# Beetle footage log
+# Cockroach footage log
 
-The evidence for the ground-beetle Specimen (roster animal 1,
-`docs/CRITTER_KIT_PLAN.md`), in the format of spec section 13.1 (P-11).
+The evidence for the cockroach Specimen (roster animal 1,
+`docs/CRITTER_KIT_PLAN.md`; _Nauphoeta cinerea_, chosen over the planned
+ground beetle on 2026-10-13 because every measurement here is of it), in the format of spec section 13.1 (P-11).
 Observations say only what is visible or measured; inferences are labelled
-and kept apart. No beetle clip with visible legs and a known frame rate has
-been found yet, so the first entries are a cockroach, the stand-in the spec
-and the prior-work survey name for six-legged walking (both are insects
-walking an alternating tripod at these speeds).
+and kept apart. Both entries are laboratory footage of the same species.
 
-Clips are in `footage/1-beetle/` (not committed); screening verdicts are in
+Clips are in `footage/1-cockroach/` (not committed); screening verdicts are in
 `docs/FOOTAGE_SCREENING.md`.
 
 ## Cockroach walking, then speeding up (Weihmann et al. 2017, Additional file 3)
@@ -51,11 +49,16 @@ and the lower front foot lands under the head, so it isn't measured.
 
 Observation:
 
-- Scale and speed: the fitted body outline is about 206 px long, which for
-  the 27 mm animals gives 7.6 px per mm. The body centre moves 3.23 px per
-  frame over frames 20–80 and 4.61 px per frame over frames 80–120, i.e.
-  0.106 m/s and 0.152 m/s; the caption gives 0.10 m/s rising toward
-  0.16 m/s from frame 80.
+- Body, measured on frame 60 against a 10 px grid at three times the size:
+  195 px from the front of the pronotum to the tip of the abdomen, about
+  77 px wide (0.40 of the length); the head is hidden under the pronotum
+  from above, and the pronotum is about 0.23 of the length. Beyond the body's
+  edge the upper hind leg reaches about 75 px, the middle leg 45 px and the
+  front leg 33 px. For the 27 mm animals that is 7.2 px per mm.
+- Speed: the body centre moves 3.23 px per frame over frames 20–80 and
+  4.61 px per frame over frames 80–120, i.e. 0.112 m/s and 0.160 m/s
+  (4.1 and 5.9 body lengths per second); the caption gives 0.10 m/s rising
+  toward 0.16 m/s from frame 80.
 - All six legs separated (R = upper side, L = lower; stances in
   `docs/footage/weihmann2017-file3.stances.json`, gait diagram
   `docs/footage/weihmann2017-file3-gait.png`):
@@ -63,10 +66,10 @@ Observation:
   |                                                          | Before frame 80                      | From frame 80           |
   | -------------------------------------------------------- | ------------------------------------ | ----------------------- |
   | Stride period (touch-down to touch-down), all legs       | 101–110 ms (strides of 22–32 frames) | 80–88 ms (17–24 frames) |
-  | Stride length (footholds of one foot)                    | 10.4–11.7 mm (0.4 body lengths)      | 12.0–13.4 mm            |
+  | Stride length (footholds of one foot)                    | 11.0–12.3 mm (0.43 body lengths)     | 12.6–14.2 mm            |
   | Middle and hind feet still on the floor, seen from above | 0.61–0.68 of the stride              | 0.42–0.59               |
 
-  Stride length ÷ period gives 0.106 m/s and 0.144 m/s, agreeing with the
+  Stride length ÷ period gives 0.113 m/s and 0.155 m/s, agreeing with the
   body's speed.
 
 - Phases (where one foot's touch-down falls in another foot's stride; 0 or 1
@@ -111,13 +114,13 @@ about 0.7 at low speed to about 0.5 and below at the highest speeds.
 Inference:
 
 - An alternating tripod at about 4 body lengths per second: a stride of
-  about 105 ms and 0.4 body lengths, the front and hind feet of one side
+  about 105 ms and 0.43 body lengths, the front and hind feet of one side
   with the middle foot of the other, half a stride from the opposite set.
   The measured phases agree with the authors': front in hind 0.95 → 0.86
   against their 0.9 → 0.82 for this sequence; middle in hind 0.44 against
   0.45; front in middle 0.52 against 0.49, shifting to 0.39 as the animal
   speeds up (they report 0.32 at high speed). Faster walking shortens the
-  stride period (105 → 85 ms) and lengthens the stride (11 → 12.5 mm).
+  stride period (105 → 85 ms) and lengthens the stride (11.7 → 13.2 mm).
 - For a top-down animation, each middle and hind foot stays visibly still
   for about two-thirds of the stride at a walk and about half at a fast walk; true
   contact (the authors' 0.52 and 0.45) is shorter, so a foot should begin and
@@ -125,16 +128,16 @@ Inference:
   as movement.
 - **Follow-the-leader foot placement:** a middle foot lands where the front
   foot on the same side has just left, within 20 ms, less than 1 mm behind it
-  along the path and a little further out. A beetle Specimen should aim each
+  along the path and a little further out. The Specimen should aim each
   swinging middle foot at the foothold its front neighbour is leaving, not at
   a fixed offset from the body (seen six times here). The hind feet don't
   follow as closely: they land a few millimetres behind the middle foot of
-  their side while it is still down. To confirm on a beetle clip.
+  their side while it is still down. To confirm on other clips.
 
 Supporting source: Weihmann et al. 2017 (above), Methods and Results; the
 caption numbers are the authors' measurements of this clip.
 
-Used in: the beetle's motion sheet (gait row, foot placement) and the first
+Used in: the cockroach's motion sheet (`packages/cockroach-floor/src/cockroach-motion.ts`) (gait row, foot placement) and the first
 test of the `gait.ts` primitive (stride period, stride length, phase and the
 still fraction at a given speed).
 
@@ -155,7 +158,7 @@ Observation: not measured yet. Caption (authors' measurements): mean speed
 ipsilateral phase shift 0.77, mean duty factor 0.42.
 
 Inference: at high speed the tripod loosens into a metachronal pattern (the
-legs of a set touching down one after another). A beetle Specimen that walks
+legs of a set touching down one after another). A Specimen that walks
 should stay in the tripod range; this clip marks where that range ends.
 
-Used in: the upper bound of the beetle gait's speed range.
+Used in: the upper bound of the walking gait's speed range.

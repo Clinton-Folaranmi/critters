@@ -1,6 +1,6 @@
 // The kit's gait clock against a measured gait. From the reviewed stances of
 // a filmed animal (docs/footage/*.stances.json: the cockroach of
-// docs/BEETLE_FOOTAGE_LOG.md) it takes the stride period and length, the
+// docs/COCKROACH_FOOTAGE_LOG.md) it takes the stride period and length, the
 // duty factor and every leg's touch-down phase, builds a GaitSpec from them,
 // walks the clock at the measured speeds, and measures the result the same
 // way: the primitive must reproduce the gait it was given. Also checks that

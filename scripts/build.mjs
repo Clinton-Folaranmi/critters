@@ -26,7 +26,7 @@ const WORKER = `${PACKAGE}/src/frog-bank-worker.ts`;
 const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
 
 /** Modules plus the worker script into `outdir`; returns the output sizes. */
-async function buildModules(entryPoints, outdir, dev) {
+async function buildModules(entryPoints, outdir, dev, bankWorker = true) {
   const modules = await build({
     ...browserOptions(dev),
     entryPoints,
@@ -38,6 +38,7 @@ async function buildModules(entryPoints, outdir, dev) {
     metafile: true,
     plugins: [glslMinify],
   });
+  if (!bankWorker) return modules.metafile.outputs;
   // The chunk that starts the worker resolves './frog-bank-worker.js'
   // against its own URL, so the worker goes in that chunk's folder.
   const starter = Object.entries(modules.metafile.outputs).find(([, output]) =>
@@ -91,6 +92,10 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   const outputs = await buildModules({ main: 'studies/frogs/main.ts' }, frogs, dev);
   for (const file of ['index.html', 'page.css', 'stills.css']) await cp(`studies/frogs/${file}`, `${frogs}/${file}`);
   await cp('studies/frogs/stills', `${frogs}/stills`, { recursive: true });
+  // The cockroach Specimen (packages/cockroach-floor): no stills or single file yet.
+  const cockroach = `${outdir}/cockroach`;
+  await buildModules({ main: 'studies/cockroach/main.ts' }, cockroach, dev, false);
+  for (const file of ['index.html', 'page.css']) await cp(`studies/cockroach/${file}`, `${cockroach}/${file}`);
   // A GitHub Pages site shouldn't be run through Jekyll.
   await writeFile(`${outdir}/.nojekyll`, '');
   if (!dev && !quiet) {
@@ -101,7 +106,7 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
       );
     }
   }
-  if (!quiet) console.log(`${outdir}/ (frogs/)`);
+  if (!quiet) console.log(`${outdir}/ (frogs/, cockroach/)`);
   return { outdir: frogs, outputs };
 }
 

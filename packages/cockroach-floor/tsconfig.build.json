@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "rootDir": "src",
+    // Resolve the kit to its built declarations (scripts/build.mjs builds
+    // them first), not its sources, which sit outside rootDir.
+    "customConditions": []
+  },
+  "include": ["src"]
+}

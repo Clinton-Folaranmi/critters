@@ -27,7 +27,7 @@ CC BY 4.0.
 - [Critter skill (draft)](skills/critter/SKILL.md): the Claude Code skill that turns one line into a creature study
 - [Critter kit plan](docs/CRITTER_KIT_PLAN.md): what moves out of the frog pond into a generic kit, and in what order
 - [Footage brief](docs/FOOTAGE_BRIEF.md): how to source openly licensed slow-motion clips for the test roster
-- [Beetle footage log](docs/BEETLE_FOOTAGE_LOG.md): the first footage log, measured from 250 fps cockroach footage (spec P-11)
+- [Cockroach footage log](docs/COCKROACH_FOOTAGE_LOG.md): the first footage log, measured from 250 fps footage of _Nauphoeta cinerea_ (spec P-11)
 - [Footage screening](docs/FOOTAGE_SCREENING.md): which downloaded clips show measurable motion, with frame times and verdicts
 - [Prior work](docs/CRITTER_PRIOR_WORK.md): physics, procedural animation, locomotion biology, video tools and motion metrics, with sources
 - [Audit report](docs/audit-report.html): the 2026-09-25 frog pond audit (26 findings, all addressed or superseded)
@@ -35,6 +35,7 @@ CC BY 4.0.
 ## Code
 
 - [packages/critter-kit](packages/critter-kit/src/index.ts): the shared kit (maths and seeded randomness, easing, limb chains (rig), foot pins and steps (contact), containment, hit distances, the gait clock, WebGL helpers and the scene controller), extracted from the frog pond under a golden replay
+- [packages/cockroach-floor](packages/cockroach-floor/src/index.ts): the cockroach Specimen, built only from the kit (in progress; see docs/HANDOFF.md)
 - [packages/frog-pond](packages/frog-pond/README.md): the framework-free study; `mountFrogScene()`, the theme, the world and shore maths
 - [studies/frogs](studies/frogs/index.html): the demo page (Night | Day), built by scripts/build.mjs
 - [standalone/frogs/entry.ts](standalone/frogs/entry.ts): the single offline HTML file's script (scripts/build-standalone.mjs)
@@ -42,5 +43,6 @@ CC BY 4.0.
 
 ## Working in this repo
 
+- [HANDOFF.md](docs/HANDOFF.md): where the work stands and what's next
 - [AGENTS.md](AGENTS.md): rules for coding agents (also CLAUDE.md)
 - [README.md](README.md): setup, scripts and layout

@@ -150,13 +150,13 @@ are committed (`docs/<ANIMAL>_FOOTAGE_LOG.md`, `docs/footage/*.stances.json`).
 | `footfalls.mjs <clip>`    | planted feet in a top view: per-frame body outline, pixels still for 5+ frames outside it, grouped into footfalls with touch-down, lift-off and position → JSON, plus the body path |
 | `gait.mjs <stances.json>` | from reviewed stances per leg: stride period and length, still fraction, phases between legs (`--split` frame for a speed change), and a gait diagram (`--png`)                     |
 
-The workflow, as used for `docs/BEETLE_FOOTAGE_LOG.md`:
+The workflow, as used for `docs/COCKROACH_FOOTAGE_LOG.md`:
 
 ```bash
-node qa/tools/footage/sheet.mjs footage/1-beetle/clip.avi --out sheet.png
-node qa/tools/footage/track.mjs footage/1-beetle/clip.avi --band 292:506 --out track.csv
-node qa/tools/footage/footfalls.mjs footage/1-beetle/clip.avi --track track.csv --floor 290 --out footfalls.json
-node qa/tools/footage/sheet.mjs footage/1-beetle/clip.avi --out check.png --from 0 --to 60 --step 2 --follow footfalls-body.csv --boxes footfalls.json
+node qa/tools/footage/sheet.mjs footage/1-cockroach/clip.avi --out sheet.png
+node qa/tools/footage/track.mjs footage/1-cockroach/clip.avi --band 292:506 --out track.csv
+node qa/tools/footage/footfalls.mjs footage/1-cockroach/clip.avi --track track.csv --floor 290 --out footfalls.json
+node qa/tools/footage/sheet.mjs footage/1-cockroach/clip.avi --out check.png --from 0 --to 60 --step 2 --follow footfalls-body.csv --boxes footfalls.json
 node qa/tools/footage/gait.mjs docs/footage/clip.stances.json --split 80 --png gait.png
 ```
 

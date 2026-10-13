@@ -38,3 +38,4 @@ export {
   type SceneRenderer,
   type SceneWorld,
 } from './scene';
+export { createPictureEdge, type PictureEdge, type PictureEdgeOptions } from './edge';

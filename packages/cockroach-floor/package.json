@@ -1,0 +1,28 @@
+{
+  "name": "@critters/cockroach-floor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A cockroach on a plain floor, walking its measured tripod (WebGL2 with a Canvas 2D fallback), framework-free. A Specimen built from the critter kit.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./world": {
+      "types": "./dist/types/world.d.ts",
+      "source": "./src/world.ts",
+      "default": "./dist/world.js"
+    }
+  },
+  "dependencies": {
+    "@critters/critter-kit": "0.1.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

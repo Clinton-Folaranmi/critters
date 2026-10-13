@@ -1,7 +1,7 @@
 {
   "clip": "Weihmann, Brun and Pycroft 2017, Frontiers in Zoology 14:54, doi 10.1186/s12983-017-0232-y, Additional file 3 (Nauphoeta cinerea, 250 fps, file at 1/10 speed)",
   "frameMs": 4,
-  "pxPerMm": 7.6,
+  "pxPerMm": 7.2,
   "bodyLengthMm": 27,
   "measured": "2026-10-13, Claude, with qa/tools/footage: track.mjs --band 292:506 --near 120; footfalls.mjs --floor 290 --min-pixels 10 (footfall ids below refer to that run). Footfalls were assigned to legs by where they land relative to the body at touch-down (front about 60–100 px ahead of the body centre, middle 60 px ahead to 12 px behind, hind 12–70 px behind) and chained so that successive footholds of one leg lie one body displacement apart (within 15 px); the two tripods were then checked to touch down together, and every assignment was checked on sheets drawn with sheet.mjs --boxes --stances.",
   "sides": "U = upper side of the image, L = lower side. Which is the animal's left is not established (a mirrored top view would swap them), so the legs are named R (upper) and L (lower) only so that gait.mjs can pair them; read R/L as upper/lower.",

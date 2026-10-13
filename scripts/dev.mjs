@@ -26,7 +26,7 @@ const rebuild = () => {
 };
 
 await buildSite({ dev: true });
-for (const dir of ['packages/critter-kit/src', 'packages/frog-pond/src', 'studies'])
+for (const dir of ['packages/critter-kit/src', 'packages/frog-pond/src', 'packages/cockroach-floor/src', 'studies'])
   watch(dir, { recursive: true }, rebuild);
 const { url } = await serve('dist/site-dev', Number(process.env.PORT ?? 5173));
-console.log(`Frog pond (dev): ${url}frogs/  (night)  ·  ${url}frogs/#day`);
+console.log(`Frog pond (dev): ${url}frogs/  (night)  ·  ${url}frogs/#day  ·  Cockroach: ${url}cockroach/`);
