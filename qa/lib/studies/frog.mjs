@@ -193,7 +193,7 @@ export default {
     });
     if (!world.pads.some((p, i) => i < 4 && p.occupant === -1)) acc.noFreeStage++;
   },
-  soakReport(report, tag, acc, T, world, minutes) {
+  soakReport(report, tag, acc, T) {
     report.measure(`${tag}: pad-under-bank frames`, acc.padUnder, T.padUnderBankFrames);
     report.measure(`${tag}: swimmer body over bank`, acc.swimmerBody, T.swimmerOverBank);
     report.measure(`${tag}: swimmer limbs over bank`, acc.swimmerLimb, T.swimmerOverBank);
