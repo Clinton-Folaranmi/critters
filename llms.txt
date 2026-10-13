@@ -34,7 +34,7 @@ CC BY 4.0.
 
 ## Code
 
-- [packages/critter-kit](packages/critter-kit/src/index.ts): the shared kit (maths, seeded randomness, easing, WebGL helpers so far), extracted from the frog pond under a golden replay
+- [packages/critter-kit](packages/critter-kit/src/index.ts): the shared kit (maths and seeded randomness, easing, limb chains (rig), foot pins and steps (contact), containment, hit distances, the gait clock, WebGL helpers and the scene controller), extracted from the frog pond under a golden replay
 - [packages/frog-pond](packages/frog-pond/README.md): the framework-free study; `mountFrogScene()`, the theme, the world and shore maths
 - [studies/frogs](studies/frogs/index.html): the demo page (Night | Day), built by scripts/build.mjs
 - [standalone/frogs/entry.ts](standalone/frogs/entry.ts): the single offline HTML file's script (scripts/build-standalone.mjs)

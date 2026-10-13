@@ -1,6 +1,6 @@
 # Creature Study Spec
 
-Version 1.5 · 2026-10-13 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
+Version 1.6 · 2026-10-13 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
 
 This is the **single source of truth** for building an interactive, top-down
 creature study: a small living scene (a frog pond, a koi pool, a robin on a
@@ -203,7 +203,7 @@ interface CreatureRendererHooks {
   onChange?: () => void; // something arrived between frames (a baked layer)
 }
 
-/** Mounting the scene (frog-scene.ts: FrogSceneOptions, FrogSceneHandle). */
+/** Mounting the scene (the kit's scene.ts: mountScene, SceneOptions, SceneHandle; frog-scene.ts wraps it). */
 interface SceneOptions<Variant extends string> {
   reducedMotion: boolean; // true: one still, no loop, no tap target
   theme?: Variant; // which variant (the frog: 'night' | 'day')
@@ -245,15 +245,16 @@ A study is a framework-free package, a demo page that uses it, a standalone
 entry, and QA scripts, built on the shared kit. The frog pond:
 
 ```
-packages/critter-kit/                the kit every study imports (docs/CRITTER_KIT_PLAN.md): maths, seeded
-                                     randomness, easing and angles, WebGL helpers; more as they are extracted
+packages/critter-kit/                the kit every study imports (docs/CRITTER_KIT_PLAN.md): maths, easing,
+                                     rig, contact, containment, hit distances, gait clock, WebGL helpers,
+                                     the scene controller (mountScene)
 packages/<study>/                    the study, no framework
   package.json                       exports ".", "./world", "./bank", "./theme", "./paint"; "source" condition → src
   src/
     index.ts                         mountScene(), the theme, types
     world.ts, bank.ts, theme.ts      DOM-free entry points (Node can import them)
     <animal>-world.ts                simulation: states, poses, pins, check()
-    <animal>-scene.ts                controller: canvas, loop, input, fallback, resolution, visibility
+    <animal>-scene.ts                the kit's mountScene with the study's world, renderers, edge and taps
     <animal>-theme.ts                palettes, looks, copy, instructions
     <animal>-shaders.ts              GLSL as /* glsl */ template literals (minified at build)
     <animal>-webgl.ts                GPU renderer

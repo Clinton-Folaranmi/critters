@@ -132,8 +132,15 @@ Each step must leave the frog's motion exactly as it is.
 4. **Hit and containment** (done 2026-10-13: `contain.ts` has `contain`, `gradient`, `pushOff` and `separate`; `hit.ts` has `ellipseDistance` and `capsuleDistance`; golden replay identical, `qa:hit`, `qa:tol` and `qa:smoke` pass; standalone 98.4 of 100 KB). Golden replay, `qa:hit` and `qa:tol` match.
 5. **The QA probe** (done 2026-10-13, as a study adapter rather than a method on the world, so nothing is added to the shipped page: `qa/lib/studies/frog.mjs`; `qa:motion` and `qa:soak` are generic and report the same 112 and 57 rows as before, value for value). `qa:motion` and the generic half of `qa:soak` read the
    probe and report the same numbers as before.
-6. **Scene controller and baker.** `mountFrogScene` becomes a thin wrapper
-   over `mountScene`. The full `npm run qa:browser` passes.
+6. **Scene controller** (done 2026-10-13): the kit's `scene.ts` has
+   `mountScene`, and a study passes a `SceneConfig` (its world, renderers,
+   picture edge, covering scenery, what a tap emits, labels);
+   `mountFrogScene` wraps it. Golden replay identical; 14 of 16 browser
+   checks pass, and the two timing checks fail equally for the previous
+   commit built alongside on a busy machine (GPU 10.20 against 10.27 ms,
+   worst long task 106 against 103 ms). Standalone 98.9 of 100 KB. Still the
+   pond's: the baker (worker, cache, debounce), to move when a second study
+   bakes static layers.
 7. **New primitives** (`gait.ts` done 2026-10-13: a footfall clock advanced by distance, with tripod, wave and quadruped offsets; `qa:gait` checks it against the measured cockroach gait, spec L-30 and Q-57 to Q-61): `gait.ts`, `chain.ts`, `wave.ts` and `secondary.ts`
    have nothing to extract; they are written new, each with a Node check of
    its own (a gait's measured duty factor and phase match what was asked; a

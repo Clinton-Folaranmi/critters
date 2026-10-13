@@ -249,7 +249,7 @@ Until the kit is extracted, most pieces live in the frog pond (paths under
 | Footfall timing: each leg's phase, stride and duty against speed, advanced by distance | `critter-kit/src/gait.ts` (new; `qa:gait`)     | `kit/gait.ts`                    |
 | Hit test against drawn capsules and ellipses                                           | `critter-kit/src/hit.ts` (extracted)           | `kit/hit.ts`                     |
 | Containment and boundary clearance for every drawn part                                | `critter-kit/src/contain.ts` (extracted)       | `kit/contain.ts`                 |
-| Scene controller: canvas, loop, input, fallback, resolution                            | `frog-scene.ts`                                | `kit/scene.ts`                   |
+| Scene controller: canvas, loop, input, fallback, resolution                            | `critter-kit/src/scene.ts` (extracted)         | `kit/scene.ts`                   |
 | Shader compile without stalling                                                        | `critter-kit/src/gl.ts` (extracted)            | `kit/gl.ts`                      |
 | Static layers painted in a worker, cached and debounced                                | `frog-bank-layer.ts`, `frog-bank-worker*.ts`   | `kit/bake.ts`                    |
 | Picture edge, its mask and focus ring                                                  | `pictureEdge`, `bankMaskUrl`, `pictureRingUrl` | `kit/edge.ts`                    |

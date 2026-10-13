@@ -25,3 +25,16 @@ export {
   type GaitState,
   type GaitTable,
 } from './gait';
+export {
+  devFlag,
+  mountScene,
+  type Emit,
+  type RendererFactory,
+  type RendererHooks,
+  type RendererMode,
+  type SceneConfig,
+  type SceneHandle,
+  type SceneOptions,
+  type SceneRenderer,
+  type SceneWorld,
+} from './scene';
