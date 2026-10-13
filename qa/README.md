@@ -53,6 +53,12 @@ console after a browser check.
 | `qa:gait`   | the kit's gait clock (`gait.ts`) walking the measured cockroach gait (`docs/footage/weihmann2017-file3.stances.json`) at both measured speeds: stride period, duty factor, touch-down phases; the tripod's support; drift while standing still      | period off by > 5 %, duty by > 0.03, a phase by > 0.03; fewer than 3 feet down; any drift                                  |
 | `qa:size`   | standalone script, the demo split by when it loads, the worker, the stills                                                                                                                                                                          | over the budgets in `thresholds.mjs`                                                                                       |
 
+`qa:motion` and `qa:soak` measure any study: the study's own file in
+`qa/lib/studies/` (`frog.mjs` for the pond) says how to make its world and
+poke it, which feet are planted and on what, what counts as a fluid, its pose
+channels and resting state, and adds its own soak rows (the pond's bank and
+pads). Choose one with `--study=<name>`; the frog pond is the default.
+
 Options: `npm run qa:soak -- --aspect=0.91 --mode=tap --minutes=30 --seed=3`,
 `npm run qa:swims -- --hours=6`.
 
