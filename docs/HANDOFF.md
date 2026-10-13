@@ -79,28 +79,37 @@ Canvas fallback works (it caught a shader error during the build).
   `cockroach-theme.ts`, `cockroach-shaders.ts`, `cockroach-webgl.ts`,
   `cockroach-canvas.ts`, `cockroach-scene.ts`.
 
-### Known issues to fix next
+### Done since (2026-10-13, second session)
 
-1. **Floor mottle reads as blocky squares** (shader value noise at scale 9,
-   too contrasty): use smoother noise (quintic, fbm, rotated octaves) and
-   less amplitude; keep the Canvas floor in step.
-2. **Legs read short and stubby**; much of each leg hides under the body.
-   Try longer legs and roots nearer the body edge, then re-run the Node
-   reach check (scratch script: step the world, compare each planted foot
-   with its tarsus end).
-3. **No QA adapter yet**: add `qa/lib/studies/cockroach.mjs` (planted feet
-   from `world.roach.feet`, surface = the floor), build its world in
-   `qa/lib/prepare.mjs`, and decide whether `qa/run.mjs` runs motion and
-   soak per study.
-4. **Not yet done for the Specimen**: first-frame stills, reduced-motion
-   still check, `qa:browser` coverage of the page, the full-scene review
-   (Q-R4, Q-R5) and **the board for the owner (P-16)**: desktop and phone
-   frames, creature / action / motive written down, the owner's decision
-   recorded in `docs/COCKROACH_VISUAL_DIRECTION.md` (doesn't exist yet).
-   No single-file build (optional for a Specimen, P-15).
-5. Guesses still to source: antenna length and sweep, behaviour timings,
-   stride yaw amplitude, turning numbers, leg segment split.
-6. The site build's `buildModules` gained a `bankWorker` flag so the
+- Issues 1–3 below fixed in `b7efc91`: smooth fbm floor; thinner, longer,
+  better-rooted legs with outward knees and feet aimed at the tarsus tip
+  (`TIP_OUT`, measured on frame 58); one-oval body (no waist; the Canvas
+  renderer traces the shader's outline); turning with eased turn rate,
+  turning only with distance actually moved, pivots at the floor's edge, an
+  escape that turns first. QA adapter `qa/lib/studies/cockroach.mjs`;
+  `qa:node` runs soak and motion for it (15/15, 92/92 pass).
+- First full-scene review and the **P-16 board**:
+  `docs/COCKROACH_VISUAL_DIRECTION.md` (r1, PENDING the owner's decision),
+  `docs/COCKROACH_COMPOSITION_REVIEW.md` (builder's review: composition
+  defect E-33, the crumb can't be found without searching and is hidden
+  while eaten), frames in `docs/cockroach-board/`. Four open questions with
+  proposals are on the board; nothing is changed until the owner decides.
+- Frame scripts used for the board live in `qa/.out/board-shots.mjs` and
+  `qa/.out/live.mjs` (git-ignored, scratch); a generic `qa:shots` for any
+  study would replace them.
+- The browser pane throttles a hidden page to ~1 frame/s: a "frozen" animal
+  there is not a bug. Watch live in the headless shell instead.
+
+### Still open
+
+1. The owner's decision on board r1 (and the proposals it lists).
+2. Not yet done for the Specimen: first-frame stills, reduced-motion still
+   check, `qa:browser` coverage of the page, a cold review (Q-R7), crops
+   (after sign-off). No single-file build (optional, P-15).
+3. Guesses still to source: antenna length and sweep, behaviour timings,
+   stride yaw amplitude, turning numbers (now including escape turn rate and
+   turn acceleration), leg segment split.
+4. The site build's `buildModules` gained a `bankWorker` flag so the
    cockroach build doesn't look for the frog's worker; the frog's site and
    size budgets are unchanged.
 
@@ -128,11 +137,10 @@ Canvas fallback works (it caught a shader error during the build).
 
 ## Next steps, in order
 
-1. Fix the cockroach's floor and legs (issues 1–2), then its QA adapter
-   (issue 3) and run `qa:motion`/`qa:soak --study=cockroach`.
-2. Full-scene review and the P-16 board for the owner.
-3. Commit; update `docs/CRITTER_KIT_PLAN.md` (step 8 under way) and the
-   skill's Setup table (cockroach as the first small example).
-4. Then the plan's step 7 primitives (`chain.ts`, `wave.ts`,
+1. Get the owner's decision on `docs/COCKROACH_VISUAL_DIRECTION.md` r1;
+   record it there, then make the approved changes and re-review.
+2. Update `docs/CRITTER_KIT_PLAN.md` (step 8 under way) and the skill's
+   Setup table (cockroach as the first small example).
+3. Then the plan's step 7 primitives (`chain.ts`, `wave.ts`,
    `secondary.ts`) with the koi (footage screened: top-down koi kept) and
    the turtle (top-down swim kept).
