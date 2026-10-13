@@ -3,41 +3,234 @@
   "frameMs": 4,
   "pxPerMm": 7.6,
   "bodyLengthMm": 27,
-  "measured": "2026-10-13, Claude, with qa/tools/footage (track.mjs --band 292:506 --near 120; footfalls.mjs --floor 290; defaults otherwise). Each stance is a footfall from footfalls.json (ids given), chained into a leg by where it lands relative to the body at touch-down and by successive footholds lying one body displacement apart, then checked on sheets drawn with sheet.mjs --boxes --stances.",
+  "measured": "2026-10-13, Claude, with qa/tools/footage: track.mjs --band 292:506 --near 120; footfalls.mjs --floor 290 --min-pixels 10 (footfall ids below refer to that run). Footfalls were assigned to legs by where they land relative to the body at touch-down (front about 60–100 px ahead of the body centre, middle 60 px ahead to 12 px behind, hind 12–70 px behind) and chained so that successive footholds of one leg lie one body displacement apart (within 15 px); the two tripods were then checked to touch down together, and every assignment was checked on sheets drawn with sheet.mjs --boxes --stances.",
   "sides": "U = upper side of the image, L = lower side. Which is the animal's left is not established (a mirrored top view would swap them), so the legs are named R (upper) and L (lower) only so that gait.mjs can pair them; read R/L as upper/lower.",
   "stance": "A stance here is the time the foot is still on the floor as seen from above. From above, a foot hovering just over its footprint as it lifts or lands looks planted, so this is longer than true ground contact (the authors report contact duty factors of 0.52, then 0.45, for this clip, from the side view).",
   "legs": {
     "R1": [
-      { "td": 11, "lo": 19, "x": 487, "footfall": 7 },
-      { "td": 37, "lo": 44, "x": 420, "footfall": 20 },
-      { "td": 64, "lo": 76, "x": 333, "footfall": 30, "note": "footfalls 30 and 33, one foothold" },
-      { "td": 88, "lo": 98, "x": 238, "footfall": 42 },
-      { "td": 109, "lo": 122, "x": 132, "footfall": 52 },
-      { "td": 130, "lo": 140, "x": 49, "footfall": 64 }
+      {
+        "td": 11,
+        "lo": 19,
+        "x": 487,
+        "footfall": 7
+      },
+      {
+        "td": 37,
+        "lo": 44,
+        "x": 420,
+        "footfall": 20
+      },
+      {
+        "td": 64,
+        "lo": 76,
+        "x": 333,
+        "footfall": 31,
+        "note": "footfall 31 with 34, one foothold"
+      },
+      {
+        "td": 88,
+        "lo": 98,
+        "x": 238,
+        "footfall": 46
+      },
+      {
+        "td": 109,
+        "lo": 122,
+        "x": 132,
+        "footfall": 59
+      },
+      {
+        "td": 130,
+        "lo": 140,
+        "x": 49,
+        "footfall": 72
+      }
     ],
     "R2": [
-      { "td": 23, "lo": 42, "x": 493, "footfall": 10 },
-      { "td": 49, "lo": 67, "x": 414, "footfall": 24 },
-      { "td": 77, "lo": 89, "x": 328, "footfall": 36 },
-      { "td": 99, "lo": 109, "x": 234, "footfall": 48 },
-      { "td": 123, "lo": 133, "x": 127, "footfall": 60 },
-      { "td": 142, "lo": 153, "x": 43, "footfall": 70, "note": "may run past the clip's end (frame 154)" }
+      {
+        "td": 23,
+        "lo": 42,
+        "x": 493,
+        "footfall": 10
+      },
+      {
+        "td": 49,
+        "lo": 67,
+        "x": 414,
+        "footfall": 24
+      },
+      {
+        "td": 77,
+        "lo": 89,
+        "x": 328,
+        "footfall": 39
+      },
+      {
+        "td": 99,
+        "lo": 109,
+        "x": 234,
+        "footfall": 53
+      },
+      {
+        "td": 123,
+        "lo": 133,
+        "x": 127,
+        "footfall": 67
+      },
+      {
+        "td": 142,
+        "lo": 153,
+        "x": 43,
+        "footfall": 78,
+        "note": "may run past the clip's end (frame 154)"
+      }
+    ],
+    "R3": [
+      {
+        "td": 13,
+        "lo": 26,
+        "x": 614,
+        "footfall": 8
+      },
+      {
+        "td": 35,
+        "lo": 55,
+        "x": 537,
+        "footfall": 19,
+        "note": "footfalls 19 and 22, one foothold"
+      },
+      {
+        "td": 67,
+        "lo": 79,
+        "x": 462,
+        "footfall": 36
+      },
+      {
+        "td": 91,
+        "lo": 99,
+        "x": 364,
+        "footfall": 51,
+        "note": "footfalls 50 and 51, one foothold"
+      },
+      {
+        "td": 112,
+        "lo": 122,
+        "x": 262,
+        "footfall": 63,
+        "note": "footfalls 63 and 64, one foothold"
+      }
+    ],
+    "L1": [
+      {
+        "td": 25,
+        "lo": 39,
+        "x": 427,
+        "footfall": 12
+      },
+      {
+        "td": 80,
+        "lo": 84,
+        "x": 267,
+        "footfall": 40,
+        "missedBefore": true,
+        "note": "the stance before it (touch-down near frame 50) was not detected"
+      },
+      {
+        "td": 97,
+        "lo": 103,
+        "x": 176,
+        "footfall": 52
+      },
+      {
+        "td": 120,
+        "lo": 125,
+        "x": 84,
+        "footfall": 66
+      }
     ],
     "L2": [
-      { "td": 9, "lo": 25, "x": 537, "footfall": 6 },
-      { "td": 34, "lo": 52, "x": 452, "footfall": 18 },
-      { "td": 64, "lo": 78, "x": 379, "footfall": 31 },
+      {
+        "td": 9,
+        "lo": 25,
+        "x": 537,
+        "footfall": 6
+      },
+      {
+        "td": 34,
+        "lo": 52,
+        "x": 452,
+        "footfall": 18
+      },
+      {
+        "td": 64,
+        "lo": 78,
+        "x": 379,
+        "footfall": 32
+      },
       {
         "td": 109,
         "lo": 121,
         "x": 181,
-        "footfall": 53,
+        "footfall": 60,
         "missedBefore": true,
         "note": "the stance before it (touch-down near frame 86) was not detected"
       },
-      { "td": 131, "lo": 142, "x": 90, "footfall": 65 }
+      {
+        "td": 131,
+        "lo": 142,
+        "x": 90,
+        "footfall": 73
+      }
+    ],
+    "L3": [
+      {
+        "td": 1,
+        "lo": 14,
+        "x": 654,
+        "footfall": 3,
+        "clipStart": true,
+        "note": "planted when the clip starts; its touch-down is earlier"
+      },
+      {
+        "td": 26,
+        "lo": 40,
+        "x": 561,
+        "footfall": 14
+      },
+      {
+        "td": 51,
+        "lo": 67,
+        "x": 489,
+        "footfall": 25
+      },
+      {
+        "td": 73,
+        "lo": 90,
+        "x": 400,
+        "footfall": 38,
+        "note": "footfalls 38 and 42, one foothold"
+      },
+      {
+        "td": 103,
+        "lo": 111,
+        "x": 295,
+        "footfall": 56
+      },
+      {
+        "td": 125,
+        "lo": 133,
+        "x": 207,
+        "footfall": 69
+      },
+      {
+        "td": 146,
+        "lo": 153,
+        "x": 106,
+        "footfall": 79,
+        "note": "may run past the clip's end (frame 154)"
+      }
     ]
   },
-  "notFound": "R3 (upper hind), L1 (lower front) and L3 (lower hind) do not chain consistently from this pass: the lower front foot lands under the head and beside the lower antenna, the hind feet often land in the middle feet's footprints (follow the leader), and several of their footfalls are below the size cut. They need a closer pass.",
-  "excluded": "Footfalls 5, 9, 11, 27 and 55 (touching down 114–142 px ahead of the body centre) are antennae resting on the floor, checked on frames 14–30 and 58–62."
+  "excluded": "Footfalls 4, 5, 9, 11, 15, 28, 30, 62 and 71 (touching down 114–142 px ahead of the body centre) are antennae resting on the floor, checked on frames 14–30 and 58–62. Footfalls 13, 16, 17 (frames 25–34) and 74, 75, 76 (frames 135–144) step about 20 px forward from one piece to the next: a hind foot in swing, not planted.",
+  "limits": "L1 (lower front) lands under the head and beside the lower antenna: its touch-downs are reliable, its measured stances (5–15 frames) are cut short by the head and are not a still fraction. The upper hind foot's stances after frame 122, and the lower front foot's before frame 25 and near frame 50, were not detected."
 }

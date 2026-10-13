@@ -28,8 +28,8 @@ frame, **4 ms**. Top view from a camera perpendicular to the walkway, with a
 males 27 ± 1.3 mm long (Methods). File 668 × 506 px.
 
 Method (Claude, 2026-10-13, with `qa/tools/footage`, described in
-`qa/README.md`): `track.mjs` follows the dorsal markers; `footfalls.mjs`
-fits the body outline per frame from the dark pixels and finds planted feet
+`qa/README.md`): `track.mjs` follows the dorsal markers; `footfalls.mjs` (run with
+`--min-pixels 10`) fits the body outline per frame from the dark pixels and finds planted feet
 as pixels that stay dark for 5+ frames outside it, grouped into footfalls;
 footfalls were assigned to legs by where they land relative to the body at
 touch-down and by successive footholds of one leg lying one body displacement
@@ -56,29 +56,48 @@ Observation:
   frame over frames 20–80 and 4.61 px per frame over frames 80–120, i.e.
   0.106 m/s and 0.152 m/s; the caption gives 0.10 m/s rising toward
   0.16 m/s from frame 80.
-- Three legs separated over the whole clip (upper front, upper middle, lower
-  middle; the table's "R" is upper, "L" lower):
+- All six legs separated (R = upper side, L = lower; stances in
+  `docs/footage/weihmann2017-file3.stances.json`, gait diagram
+  `docs/footage/weihmann2017-file3-gait.png`):
 
-  |                                                                 | Before frame 80                          | From frame 80           |
-  | --------------------------------------------------------------- | ---------------------------------------- | ----------------------- |
-  | Stride period (touch-down to touch-down)                        | 101–110 ms (strides of 22–30 frames)     | 84–88 ms (19–24 frames) |
-  | Stride length (footholds of one foot)                           | 10.4–11.4 mm (0.4 body lengths)          | 12.0–12.6 mm            |
-  | Middle feet still on the floor, seen from above                 | 0.66 (lower), 0.68 (upper) of the stride | 0.59, 0.52              |
-  | Upper front foot's touch-down in the upper middle foot's stride | 0.54, 0.54, 0.50 (mean 0.52)             | 0.42, 0.37 (mean 0.39)  |
-  | Lower middle in upper middle's stride                           | 0.42, 0.54                               | 0.42, 0.42              |
+  |                                                          | Before frame 80                      | From frame 80           |
+  | -------------------------------------------------------- | ------------------------------------ | ----------------------- |
+  | Stride period (touch-down to touch-down), all legs       | 101–110 ms (strides of 22–32 frames) | 80–88 ms (17–24 frames) |
+  | Stride length (footholds of one foot)                    | 10.4–11.7 mm (0.4 body lengths)      | 12.0–13.4 mm            |
+  | Middle and hind feet still on the floor, seen from above | 0.61–0.68 of the stride              | 0.42–0.59               |
 
   Stride length ÷ period gives 0.106 m/s and 0.144 m/s, agreeing with the
   body's speed.
 
-- The upper front and lower middle feet touch down together (frames 11/9,
-  37/34, 64/64, 109/109, 130/131), half a stride away from the upper middle
-  foot.
+- Phases (where one foot's touch-down falls in another foot's stride; 0 or 1
+  together, 0.5 alternating), circular means with the single values:
+
+  |                                       | Before frame 80         | From frame 80     |
+  | ------------------------------------- | ----------------------- | ----------------- |
+  | Upper front in upper hind's stride    | 0.95 (0.06, 0.91, 0.88) | 0.86              |
+  | Upper front in upper middle's stride  | 0.52 (0.54, 0.54, 0.50) | 0.39 (0.42, 0.37) |
+  | Upper middle in upper hind's stride   | 0.44 (0.45, 0.44, 0.42) | 0.38              |
+  | Lower hind in upper hind's stride     | 0.46 (0.59, 0.50, 0.25) | 0.57              |
+  | Lower middle in upper middle's stride | 0.48 (0.42, 0.54)       | 0.42 (0.42, 0.42) |
+
+  The lower side's own phases are noisier (lower middle in lower hind's
+  stride 0.32 and 0.59) because the lower front foot is partly hidden.
+
+- Two sets touch down together: upper front, upper hind and lower middle
+  (frames 11/13/9, 37/35/34, 64/67/64, 88/91/–, 109/112/109); and lower
+  front, lower hind and upper middle (25/26/23, –/51/49, 80/73/77, 97/103/99,
+  120/125/123).
 - The upper middle foot touches down 1–5 frames (4–20 ms) after the upper
   front foot lifts (lift-off → touch-down: 19→23, 44→49, 76→77, 98→99,
   122→123, 140→142), 4–6 px (under 1 mm) behind the front foot's foothold
   along the path and about 20 px (2.6 mm) further out from the body.
-- The upper front foot's measured stances (8–14 frames) are shorter than the
-  middle feet's; it lands close beside the head, where part of it is hidden.
+- The hind feet land behind the middle foot of their side while it is still
+  planted: the lower hind foot 16–37 px (2–5 mm) behind the lower middle
+  foot's foothold, the upper hind foot about 44 px (6 mm) behind the upper
+  middle foot's.
+- The front feet's measured stances (5–15 frames) are shorter than the
+  others': they land close beside the head, where part of each is hidden, so
+  only their touch-downs are used.
 
 Published measurements of this same sequence (authors' caption, not
 re-measured here): before frame 80, mean ipsilateral phase shift 0.9 and mean
@@ -92,13 +111,15 @@ about 0.7 at low speed to about 0.5 and below at the highest speeds.
 Inference:
 
 - An alternating tripod at about 4 body lengths per second: a stride of
-  about 105 ms and 0.4 body lengths; the front foot of one side lands with the
-  middle foot of the other, half a stride from the opposite set. Faster
-  walking shortens the stride period (105 → 86 ms) and lengthens the stride
-  (11 → 12.4 mm), and the front foot lands earlier in the middle foot's
-  stride (0.52 → 0.39), the same shift the authors report (0.49 → 0.32).
-- For a top-down animation, each middle foot stays visibly still for about
-  two-thirds of the stride at a walk and about half at a fast walk; true
+  about 105 ms and 0.4 body lengths, the front and hind feet of one side
+  with the middle foot of the other, half a stride from the opposite set.
+  The measured phases agree with the authors': front in hind 0.95 → 0.86
+  against their 0.9 → 0.82 for this sequence; middle in hind 0.44 against
+  0.45; front in middle 0.52 against 0.49, shifting to 0.39 as the animal
+  speeds up (they report 0.32 at high speed). Faster walking shortens the
+  stride period (105 → 85 ms) and lengthens the stride (11 → 12.5 mm).
+- For a top-down animation, each middle and hind foot stays visibly still
+  for about two-thirds of the stride at a walk and about half at a fast walk; true
   contact (the authors' 0.52 and 0.45) is shorter, so a foot should begin and
   end its stance with a short near-vertical lift that the camera doesn't see
   as movement.
@@ -106,9 +127,9 @@ Inference:
   foot on the same side has just left, within 20 ms, less than 1 mm behind it
   along the path and a little further out. A beetle Specimen should aim each
   swinging middle foot at the foothold its front neighbour is leaving, not at
-  a fixed offset from the body (seen six times here; whether the hind foot
-  does the same with the middle foot is not yet measured). To confirm on a
-  beetle clip.
+  a fixed offset from the body (seen six times here). The hind feet don't
+  follow as closely: they land a few millimetres behind the middle foot of
+  their side while it is still down. To confirm on a beetle clip.
 
 Supporting source: Weihmann et al. 2017 (above), Methods and Results; the
 caption numbers are the authors' measurements of this clip.
@@ -117,10 +138,9 @@ Used in: the beetle's motion sheet (gait row, foot placement) and the first
 test of the `gait.ts` primitive (stride period, stride length, phase and the
 still fraction at a given speed).
 
-Not measured yet: the upper hind foot and the lower front and hind feet. The
-hind feet often land in the middle feet's footprints, the lower front foot
-under the head, and several of their footfalls fall below the size cut; they
-need a closer pass with the same tools.
+Not measured: the lower front foot's stance lengths (hidden by the head; its
+touch-downs are used), and a few stances near the clip's start and end and
+near frames 50 and 86 that the detector missed (marked in the stances file).
 
 ## Cockroach running fast (Weihmann et al. 2017, Additional file 2)
 

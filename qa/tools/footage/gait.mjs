@@ -9,7 +9,8 @@
 // Legs are named L/R for side and 1–3 front to back (spec section 7.1); a leg
 // with four or more pairs continues 4, 5, …. `x` (the foothold, px) is
 // optional and gives stride lengths; `"missedBefore": true` on a stance means
-// one before it was not detected, so no stride is counted across the gap. --split n reports frames before n and
+// one before it was not detected, so no stride is counted across the gap, and `"clipStart": true` marks a stance
+// already under way when the clip starts (no stride is counted from it). --split n reports frames before n and
 // from n separately (a change of speed or gait).
 //
 // Definitions. Stride: touch-down to the same leg's next touch-down. Duty
@@ -55,7 +56,7 @@ function strides(leg, from, to) {
   const list = [...legs[leg]].sort((a, b) => a.td - b.td);
   const out = [];
   for (let k = 0; k + 1 < list.length; k++) {
-    if (list[k].td < from || list[k].td >= to || list[k + 1].missedBefore) continue;
+    if (list[k].td < from || list[k].td >= to || list[k + 1].missedBefore || list[k].clipStart) continue;
     const period = list[k + 1].td - list[k].td;
     out.push({
       td: list[k].td,
@@ -71,7 +72,7 @@ function strides(leg, from, to) {
 function phase(a, b, from, to) {
   const values = [];
   for (const s of strides(b, from, to))
-    for (const t of legs[a]) if (t.td >= s.td && t.td < s.next) values.push((t.td - s.td) / s.period);
+    for (const t of legs[a]) if (!t.clipStart && t.td >= s.td && t.td < s.next) values.push((t.td - s.td) / s.period);
   return values;
 }
 
