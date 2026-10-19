@@ -7,11 +7,11 @@ build's full-scene frames for a person's decision. Until a revision here is
 approved, nothing in it is approved; an agent drafted it and may not sign it
 (P-12).
 
-## Revision 1 — drafted 2026-10-13, awaiting the owner's decision
+## Revision 1 — approved 2026-10-17, with selected changes
 
 ```text
-Revision: r1 (branch critter-skill, commit after b7efc91)  Approval: PENDING — not yet reviewed by a person
-Reviewer and date: [owner, date]  Approved revision/link: [—]
+Revision: r1 (branch critter-skill, commit after b7efc91)  Approval: APPROVED WITH CHANGES
+Reviewer and date: owner, 2026-10-17  Approved revision/link: this entry
 Intended creature: one lobster cockroach (Nauphoeta cinerea), adult, seen from directly above
 Intended action: walks its measured alternating tripod to food, eats, rests with antennae sweeping; runs when touched
 Environmental motive: a crumb on the floor (one at the start; a tap or Enter/Space drops more); a touch is a threat
@@ -26,8 +26,8 @@ Camera and normal page sizes: top-down, orthographic; desktop 1400 × 1000; phon
 | Prominent habitat element      | Behavioural job                                                                    | Treatment                                                                              |
 | ------------------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Floor (pale, softly mottled)   | boundary and ground: what the feet pin to; its soft edge is where the animal stops | keep, quiet: mottle at low contrast and large scale so it never competes with the legs |
-| Crumb                          | motive (food); also the tap's answer                                               | keep; **see open questions 1 and 2**: it is small and hidden while eaten               |
-| Vignette and soft picture edge | boundary (the floor ends)                                                          | keep, quiet; **see open question 3** (the animal can stand in the fade on a phone)     |
+| Crumb                          | motive (food); also the tap's answer                                               | keep at the current study size and colour; visible ahead of the head while eating      |
+| Vignette and soft picture edge | boundary (the floor ends)                                                          | keep, quiet; dropped food and search targets stay inside the clearly visible floor     |
 
 References: `docs/COCKROACH_FOOTAGE_LOG.md` (Weihmann, Brun and Pycroft 2017,
 Additional file 3, 250 fps: gait, footholds, body outline, leg reach); frame 58
@@ -51,28 +51,52 @@ picture and reads at once at both sizes; nothing covers it. The floor is
 pale and quiet. The action reads while it walks (legs alternate, the body
 travels) and in the escape; at rest only the antennae move.
 
-### Open questions for the owner (found in the full-scene review)
+### Findings from the r1 full-scene review and their disposition
 
-1. **The motive is hard to see.** The crumb is about 13 px across on desktop
-   and 7 px on a phone, pale on a pale floor. Proposal: crumbs about twice
-   the size, a little darker and warmer, so food reads before you search
-   for it.
-2. **The motive disappears while it eats.** It stops with the crumb under its
-   pronotum, so in most of a session the picture shows a cockroach standing
-   still with no visible reason. Proposal: it stops with the crumb just ahead
-   of its head, antennae and front legs on it, the crumb shrinking as it eats.
-3. **On a phone it can stand in the faded edge.** A crumb dropped near the
-   edge draws it into the soft border (live frames 18–30 s on the phone).
-   Proposal: a dropped crumb is moved inside the clearly visible part of the
-   floor, as targets already are.
-4. **Little action in 30 seconds.** It reaches the first crumb within 3 s,
+1. **Crumb size and colour.** The owner says the crumbs look fine for this
+   stage; their final design can be decided later. Keep the current size and
+   palette in this revision.
+2. **Resolved in r2: the motive disappeared while it ate.** R1 stopped with
+   the crumb under its pronotum. It now stops with the crumb just ahead of its
+   head, reaches toward it with the front feet, and the crumb shrinks as it eats.
+3. **Resolved in r2: a phone tap could draw it into the faded edge.** Dropped
+   crumbs are now moved inside the clearly visible part of the floor, as
+   targets already are.
+4. **Resolved in r2: little action in 30 seconds.** It reached the first crumb within 3 s,
    then eats (3–6 s) and rests (4–9 s); a search starts only after 12–22 s
    without food. A visitor who doesn't tap sees about 1.5 s of walking.
-   These timings are guesses (motion sheet, BEHAVIOUR). Proposal: start it
-   further from the crumb and shorten the wait before a search, so an
-   untouched page shows walking every few seconds.
+   These timings are guesses (motion sheet, BEHAVIOUR). R2 starts it farther
+   from the crumb and shortens the search interval to 6–10 s. Timing remains
+   labelled as a guess in the motion sheet.
 
-None of these is changed in this revision: they change the habitat's
-elements or where the animal goes, which needs this board's approval.
+**Owner decision (2026-10-17):** approve the existing crumb size and colour
+for this stage. Approve proposals 2–4: stop with the crumb ahead of the head
+and reach toward it while eating; keep dropped crumbs within the clearly
+visible floor; start farther from the initial crumb and shorten the search
+wait. These approved changes are implemented in revision 2 below. Final
+crumb design remains open.
 
-Decision: [owner: approve r1 as is / approve with the proposals above (which) / changes requested]
+## Revision 2 — implemented under the owner's approval
+
+```text
+Revision: r2 (implementation of the r1 decision above)  Approval: covered by the owner's explicit r1 decision
+Reviewer and date: owner, 2026-10-17  Approved revision/link: r1 decision above
+```
+
+Reference frames at normal page size:
+
+- `docs/cockroach-board/r2/desktop-webgl2-rest.jpg`, `desktop-webgl2-walk.jpg`, `desktop-webgl2-feed.jpg`
+- `docs/cockroach-board/r2/desktop-canvas-feed.jpg`
+- `docs/cockroach-board/r2/phone-webgl2-rest.jpg`, `phone-webgl2-walk.jpg`, `phone-webgl2-feed.jpg`
+- `docs/cockroach-board/r2/phone-canvas-walk.jpg`
+
+The r2 full-scene frames show the same crumb size and palette as r1. In the
+feed frames the crumb stays ahead of the head, with the front pair reaching
+to either side. The initial walk starts farther from the crumb. A dropped
+crumb is clamped to the clearly visible floor. The unprompted search interval
+is now 6–10 seconds (still a design guess; see `cockroach-motion.ts`).
+
+Human review of the r2 frames: approved by the owner on 2026-10-17. The
+owner's cold full-scene review and the builder's real-time sessions are
+recorded in `docs/COCKROACH_COMPOSITION_REVIEW.md`. Detail crop review is now
+unblocked under Q-R6.

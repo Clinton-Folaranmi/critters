@@ -21,3 +21,28 @@ Crop review (only after the entries above): not done (blocked by the defect abov
 Also seen, not a composition defect: the Canvas fallback draws the pronotum's
 pale margin more strongly than WebGL2 does (same shape and pose on the same
 frame otherwise).
+
+## Review 2 — 2026-10-17, full-scene review and owner sign-off
+
+```text
+Build/revision: board r2 (approved changes from the r1 decision)  Reviewer/date: Claude (builder), 2026-10-17
+Renderer: WebGL2 and Canvas 2D  Variant and viewport: floor; desktop 1400 × 1000 and phone 375 × 800, device scale 2
+Full-scene frames: docs/cockroach-board/r2/*.jpg
+Cold review (Q-R7): yes — owner, 2026-10-17; owner did not build the scene.
+Before crops, I identify — creature: a lobster cockroach; action: tripod walking toward food, feeding, resting, then searching; motive: the visible crumb is food and the tap drops more.
+Matches the approved intent: yes in the deterministic rest, walk and feed frames at desktop and phone sizes. In feed, the crumb remains ahead of the head and the front pair reaches to either side. The live session shows food-directed walking after the tap; the tapped crumb and animal stay within the clearly visible floor.
+Full-scene result: owner approves the frames; no E-33 composition defect identified. Signed off for full-scene composition.
+Real-time session: shipped build, no dev hooks, headless Chromium; 33 s at desktop and 33 s at phone. Sampled at 3 s intervals; tap on the floor at 12 s. About 2,127 desktop and 2,119 phone animation frames over the session; no page errors observed.
+Known issue or follow-up: final crumb scale and colour remain open by the owner's choice; timing values remain guesses in the motion sheet.
+Crop review: now unblocked by the owner's full-scene approval; sample detail crops reviewed, full Q-R6 crop set remains.
+```
+
+Sample detail review, 2026-10-17: enlarged crops from r2 were checked for the
+desktop WebGL2 walk and feed, desktop Canvas feed, phone WebGL2 feed and phone
+Canvas walk. The body outline, segment marks, leg placement, antennae and
+crumb remain coherent in these samples. The phone food cue is small but
+visible; the owner has accepted the crumb's current size for this stage. Canvas
+is visibly flatter than WebGL2 in body shading, consistent with the renderer
+difference noted after review 1; it preserves the silhouette and pose. No new
+defect was found in the sampled crops. The full Q-R6 set (every key moment in
+both renderers) remains to be reviewed before the cockroach review is complete.

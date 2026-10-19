@@ -109,6 +109,8 @@ export interface Roach {
   targetY: number;
   /** The crumb being walked to or eaten, or -1. */
   crumb: number;
+  /** Whether the front pair has begun its deliberate reach during this feed. */
+  feedReach: boolean;
   gait: GaitState;
   feet: Foot[];
   /** Seconds since it last ate or searched; past BEHAVIOUR.searchAfter it searches. */
@@ -137,8 +139,8 @@ export class CockroachWorld {
     this.random = seeded(seed);
     const size = 0.19;
     this.roach = {
-      x: aspect * 0.3,
-      y: 0.42,
+      x: aspect * 0.22,
+      y: 0.36,
       heading: 0.25,
       bodyHeading: 0.25,
       turnRate: 0,
@@ -151,6 +153,7 @@ export class CockroachWorld {
       targetX: 0,
       targetY: 0,
       crumb: -1,
+      feedReach: false,
       gait: createGaitState(0.13),
       feet: LEG_NAMES.map(() => ({
         x: 0,
@@ -172,7 +175,7 @@ export class CockroachWorld {
     };
     this.crumbs = Array.from({ length: MAX_CRUMBS }, () => ({ x: 0, y: 0, left: 0 }));
     // Food across the floor: the first motive.
-    this.dropCrumb(aspect * 0.72, 0.6);
+    this.dropCrumb(aspect * 0.78, 0.66);
     this.plantAll();
     this.pose();
   }
@@ -217,7 +220,9 @@ export class CockroachWorld {
       // Full: the crumb it isn't eating goes first.
       slot = this.crumbs.findIndex((_, i) => i !== this.roach.crumb);
     }
-    Object.assign(this.crumbs[slot], { x, y, left: 1 });
+    const point = { x, y };
+    contain(point, this.aspect / 2, 0.5, this.region, ARENA * 0.92);
+    Object.assign(this.crumbs[slot], { x: point.x, y: point.y, left: 1 });
     return slot;
   }
 
@@ -295,7 +300,10 @@ export class CockroachWorld {
     const r = this.roach;
     r.x *= scale;
     r.targetX *= scale;
-    for (const c of this.crumbs) c.x *= scale;
+    for (const c of this.crumbs) {
+      c.x *= scale;
+      if (c.left > 0) contain(c, aspect / 2, 0.5, this.region, ARENA * 0.92);
+    }
     const point = { x: r.x, y: r.y };
     contain(point, aspect / 2, 0.5, this.region, ARENA);
     const dx = point.x - r.x;
@@ -384,6 +392,7 @@ export class CockroachWorld {
     r.heading = angleDelta(r.heading, 0);
 
     this.walkFeet(distance + stepped, r.speed, dt);
+    this.reachForFood();
     this.eat(dt);
     r.bodyHeading = r.heading + STRIDE_YAW * Math.sin(r.gait.phase * Math.PI * 2) * smooth(r.speed / SPEED.walk);
     // Antennae point ahead while moving, sweep at rest, and lower toward food while eating.
@@ -411,10 +420,11 @@ export class CockroachWorld {
     if (r.state === 'walk' || r.state === 'turn') {
       if (r.crumb >= 0) {
         if (this.crumbs[r.crumb].left <= 0) r.crumb = -1;
-        else if (this.headOn(this.crumbs[r.crumb])) {
+        else if (this.foodReady(this.crumbs[r.crumb])) {
           r.state = 'feed';
           r.time = 0;
           r.until = this.between(BEHAVIOUR.feed);
+          r.feedReach = false;
           return;
         }
       }
@@ -456,12 +466,16 @@ export class CockroachWorld {
     return Math.hypot(r.targetX - r.x, r.targetY - r.y) < within * r.size;
   }
 
-  /** The head (0.45 BL ahead of the centre) is over the crumb. */
-  private headOn(c: Crumb) {
+  /** Food is just ahead of the head, in a narrow band the front feet can reach. */
+  private foodReady(c: Crumb) {
     const r = this.roach;
     const hx = r.x + Math.cos(r.heading) * 0.45 * r.size;
     const hy = r.y + Math.sin(r.heading) * 0.45 * r.size;
-    return Math.hypot(c.x - hx, c.y - hy) < 0.1 * r.size;
+    const dx = c.x - hx;
+    const dy = c.y - hy;
+    const ahead = (dx * Math.cos(r.heading) + dy * Math.sin(r.heading)) / r.size;
+    const across = (-dx * Math.sin(r.heading) + dy * Math.cos(r.heading)) / r.size;
+    return ahead >= 0.12 && ahead <= 0.38 && Math.abs(across) <= 0.12;
   }
 
   private nearestCrumb() {
@@ -482,11 +496,11 @@ export class CockroachWorld {
   private eat(dt: number) {
     const r = this.roach;
     if (r.state === 'walk' && r.crumb >= 0) {
-      // Aim the body so the head arrives on the crumb.
+      // Stop with the crumb about a quarter body length ahead of the head.
       const c = this.crumbs[r.crumb];
       const a = Math.atan2(c.y - r.y, c.x - r.x);
-      r.targetX = c.x - Math.cos(a) * 0.4 * r.size;
-      r.targetY = c.y - Math.sin(a) * 0.4 * r.size;
+      r.targetX = c.x - Math.cos(a) * 0.7 * r.size;
+      r.targetY = c.y - Math.sin(a) * 0.7 * r.size;
     }
     if (r.state === 'feed' && r.crumb >= 0) {
       const c = this.crumbs[r.crumb];
@@ -497,6 +511,29 @@ export class CockroachWorld {
         this.rest();
       }
     }
+  }
+
+  /** During feeding, the front feet reach toward either side of the crumb. */
+  private reachForFood() {
+    const r = this.roach;
+    if (r.state !== 'feed' || r.crumb < 0 || r.feedReach) return;
+    const c = this.crumbs[r.crumb];
+    const hx = Math.cos(r.heading);
+    const hy = Math.sin(r.heading);
+    for (const [k, side] of [
+      [0, 1],
+      [3, -1],
+    ] as const) {
+      const foot = r.feet[k];
+      const tx = c.x - hx * 0.12 * r.size - hy * side * 0.06 * r.size;
+      const ty = c.y - hy * 0.12 * r.size + hx * side * 0.06 * r.size;
+      foot.fromX = foot.x;
+      foot.fromY = foot.y;
+      foot.toX = tx;
+      foot.toY = ty;
+      foot.planted = false;
+    }
+    r.feedReach = true;
   }
 
   // ---- Feet -------------------------------------------------------------------------

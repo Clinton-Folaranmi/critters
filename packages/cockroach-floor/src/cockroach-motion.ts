@@ -151,8 +151,8 @@ export const STRIDE_YAW = 0.035;
 export const BEHAVIOUR = {
   feed: [3, 6],
   rest: [4, 9],
-  /** After resting this long with no food, it searches (walks to a point it hasn't been). */
-  searchAfter: [12, 22],
+  /** Guess: after this long without food, it searches (walks to a point it hasn't been). */
+  searchAfter: [6, 10],
   /** A tap on the animal: it runs away this long, then slows (H-3: committed, then a cooldown). */
   flee: [0.9, 1.6],
   tapCooldown: 0.35,
