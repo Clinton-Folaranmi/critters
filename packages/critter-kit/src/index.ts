@@ -4,6 +4,20 @@
 
 export { TAU, clamp, glslFloat, itemSeed, makeCanvas, seeded, smoothstep } from './math';
 export { angleDelta, approach, mix, smooth } from './motion';
+export { createTrail, followChain, recordTrail, resetTrail, sampleTrail, type ChainPoint, type Trail } from './chain';
+export { CARANGIFORM_ENVELOPE, travellingWave, waveEnvelope, type WaveShape } from './wave';
+export {
+  createSwimBody,
+  moveSwimBody,
+  placeSwimBody,
+  relaxSwimBody,
+  scaleSwimBody,
+  stepSwimBody,
+  turnSwimBody,
+  type SwimBody,
+  type SwimShape,
+} from './swim';
+export { stepSecondary, type SecondaryPoint } from './secondary';
 export { startProgram } from './gl';
 export { limbEnd, limbReach, poseChain, type LimbSpec } from './rig';
 export { fromSurface, solvePin, stepArc, toSurface, type Surface } from './contact';

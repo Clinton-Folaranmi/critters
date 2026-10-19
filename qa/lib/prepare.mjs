@@ -19,14 +19,15 @@ const skip = () => process.env.QA_NO_BUILD === '1';
 
 /**
  * The worlds, shore maths and kit as Node modules: qa/.out/world.mjs (the
- * frog pond), bank.mjs, kit.mjs and cockroach-world.mjs.
+ * frog pond), bank.mjs, kit.mjs, cockroach-world.mjs and koi-world.mjs.
  */
 export async function buildNodeModules() {
   if (
     skip() &&
     existsSync(`${OUT}/world.mjs`) &&
     existsSync(`${OUT}/kit.mjs`) &&
-    existsSync(`${OUT}/cockroach-world.mjs`)
+    existsSync(`${OUT}/cockroach-world.mjs`) &&
+    existsSync(`${OUT}/koi-world.mjs`)
   )
     return;
   const node = {
@@ -45,6 +46,7 @@ export async function buildNodeModules() {
     entryPoints: ['packages/cockroach-floor/src/world.ts'],
     outfile: `${OUT}/cockroach-world.mjs`,
   });
+  await build({ ...node, entryPoints: ['packages/koi/src/world.ts'], outfile: `${OUT}/koi-world.mjs` });
 }
 
 /** Pages opened from file://: the bake page and the standalone builds. */

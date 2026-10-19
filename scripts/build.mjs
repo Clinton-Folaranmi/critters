@@ -96,6 +96,10 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   const cockroach = `${outdir}/cockroach`;
   await buildModules({ main: 'studies/cockroach/main.ts' }, cockroach, dev, false);
   for (const file of ['index.html', 'page.css']) await cp(`studies/cockroach/${file}`, `${cockroach}/${file}`);
+  // The koi Specimen (packages/koi): no stills or single file yet.
+  const koi = `${outdir}/koi`;
+  await buildModules({ main: 'studies/koi/main.ts' }, koi, dev, false);
+  for (const file of ['index.html', 'page.css']) await cp(`studies/koi/${file}`, `${koi}/${file}`);
   // A GitHub Pages site shouldn't be run through Jekyll.
   await writeFile(`${outdir}/.nojekyll`, '');
   if (!dev && !quiet) {
@@ -106,7 +110,7 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
       );
     }
   }
-  if (!quiet) console.log(`${outdir}/ (frogs/, cockroach/)`);
+  if (!quiet) console.log(`${outdir}/ (frogs/, cockroach/, koi/)`);
   return { outdir: frogs, outputs };
 }
 

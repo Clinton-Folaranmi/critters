@@ -76,6 +76,23 @@ export const THRESHOLDS = {
     // L-5: with no distance travelled, no foot lifts or lands.
     standingDrift: { equals: 0 },
   },
+  swim: {
+    // spec L-31: the kit's swimmer lays down the wave it is asked for. The body
+    // doesn't stretch, so the tail falls a little short of a free sine (≈ 6 %).
+    tailAmplitudeError: { max: 0.12 },
+    // Carangiform: the head swings far less than the tail (the envelope asks for 0.2).
+    headShare: { max: 0.3 },
+    stretch: { max: 0.001 },
+    // Tail still: every spine point on the head's path (follow-the-leader), in body lengths.
+    pathError: { max: 0.01, unit: 'BL' },
+    // The koi soak: ten minutes with a visitor dropping food and touching it.
+    koiIssues: { equals: 0 },
+    koiFed: { min: 0.6 },
+    koiChase: { max: 12, unit: 's' },
+    // At 60 frames/s: 0.08 BL is about 5 BL/s, above a dash's tail tip (≈ 4), far below
+    // the 9 BL/s snap of the first startle, which read as the fish jumping.
+    koiJump: { max: 0.08, unit: 'BL' },
+  },
   alloc: {
     // p1: world.step ~470 B/frame, reedBlades() ~100 B/call.
     stepBytesPerFrame: { max: 1024, unit: 'B' },

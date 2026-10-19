@@ -85,9 +85,10 @@ so the skill works outside this repository, the way Anatomy ships
 | `rig.ts`       | `LimbSpec { root, lengths, folded, extended, range, toe }`, `limbEnd(spec, side, t, yaw, lean)`, `limbReach`, `poseChain(spec, …) → capsules`, `easeChannel`                                                                                                                                                                                                                        |
 | `contact.ts`   | `FootPin`, `Surface { x, y, angle }` (a static ground is the identity), `toSurface`, `fromSurface`, `pinFoot`, `solvePin(spec, pin, body) → { t, yaw }`, `stepArc(pin, w, centre, lift)`, `restAfterStep`, `trailYaw(spin, gain, cap)`                                                                                                                                              |
 | `gait.ts`      | new, not in the frog: a footfall timeline. Leg groups, each foot's duty factor and phase offset (Hildebrand), small whole-number frequency ratios between groups of different leg length (Spore), the phase advanced by distance travelled rather than time, and a per-channel phase vector whose amplitude falls to zero at rest so idle-to-walk needs no special case (DeepPhase) |
-| `chain.ts`     | new: a follow-the-leader spine with a bend limit and a width per vertebra for the outline (argonaut), for koi, snakes, tadpoles and tails                                                                                                                                                                                                                                           |
-| `wave.ts`      | new: a travelling lateral wave with an amplitude envelope along the body (carangiform: near zero over the front fifth, about 0.10 body lengths at the tail; Miller's snakes)                                                                                                                                                                                                        |
-| `secondary.ts` | new: passive, damped motion for parts nothing drives (antennae, a tongue, fins), a short constraint chain that never feeds back into the driven body (Spore's jiggles)                                                                                                                                                                                                              |
+| `chain.ts`     | implemented: `followChain` (keeps a spine's lengths, limits each bend) and a head-path `Trail` (`createTrail`, `recordTrail`, `sampleTrail`)                                                                                                                                                                                                                                        |
+| `wave.ts`      | implemented: `travellingWave` with a quadratic envelope (`CARANGIFORM_ENVELOPE`: quiet head, largest at the tail)                                                                                                                                                                                                                                                                   |
+| `secondary.ts` | implemented: passive, damped point motion (`stepSecondary`) for parts nothing drives (antennae, tongue tips, fins); it must never feed back into the driven body                                                                                                                                                                                                                    |
+| `swim.ts`      | implemented: a spine-driven swimmer: body on the head's path, wave laid over it at the tail-beat frequency (slip below 1, beat and glide), whole-body bend and turn for fast starts and pivots; `qa:swim` (spec L-31, Q-62 to Q-68); used by the koi                                                                                                                                |
 | `hit.ts`       | `bodyDistance(ellipses, capsules, toes, point)`, `topmost(animals, point, tolerance)`                                                                                                                                                                                                                                                                                               |
 | `contain.ts`   | `contain(point, distance, centre, margin)`, `pushOff(disc, boundary, clearance)`, `clearParts(parts, boundary, clearance)`, `separate(discs, gap)`                                                                                                                                                                                                                                  |
 | `scene.ts`     | `mountScene({ createWorld, renderers: { webgl2, canvas }, edge, coveredAt, onTap, copy, name })` returning `{ mode, dispose }`                                                                                                                                                                                                                                                      |
@@ -141,7 +142,7 @@ Each step must leave the frog's motion exactly as it is.
    worst long task 106 against 103 ms). Standalone 98.9 of 100 KB. Still the
    pond's: the baker (worker, cache, debounce), to move when a second study
    bakes static layers.
-7. **New primitives** (`gait.ts` done 2026-10-13: a footfall clock advanced by distance, with tripod, wave and quadruped offsets; `qa:gait` checks it against the measured cockroach gait, spec L-30 and Q-57 to Q-61): `gait.ts`, `chain.ts`, `wave.ts` and `secondary.ts`
+7. **New primitives** (`gait.ts` done 2026-10-13: a footfall clock advanced by distance, with tripod, wave and quadruped offsets; `chain.ts`, `wave.ts` and `secondary.ts` added 2026-10-17; `swim.ts` and `qa:swim` 2026-10-18, after the first chain/wave combination was found to swing the tail 2.7 times too far): `gait.ts`, `chain.ts`, `wave.ts`, `secondary.ts` and `swim.ts`. The koi Specimen (`packages/koi`) uses them.
    have nothing to extract; they are written new, each with a Node check of
    its own (a gait's measured duty factor and phase match what was asked; a
    chain point never slides sideways off the head's path).
@@ -193,10 +194,25 @@ in it, not only the frog. That needs the QA probe (step 5) to work for any
 body, so the probe is written against the cockroach and the koi as well as the
 frog before step 7 ends.
 
-**Footage for each one.** Each Specimen needs a footage log before its
-motion sheet (P-11). Clips come from the owner, or are openly licensed
-(journal supplementary videos, Wikimedia Commons), found by search and
-downloaded only with the owner's OK each time.
+**Evidence is reused.** The first Specimen that needs a species or movement
+mode creates the footage log. Later specimens cite and reuse its relevant
+entries; they do not search, watch or measure the same movement again. Extend
+the log only when the new animal, mode or conditions expose a genuine gap
+(P-11). Clips come from the owner, or are openly licensed (journal
+supplementary videos, Wikimedia Commons), found by search and downloaded only
+with the owner's OK each time.
+
+**Build reusable movement coverage.** The roster is also the start of a
+source-backed library for the common movement families in the skill; see
+`docs/MOVEMENT_LIBRARY.md`. For each
+family, keep a representative footage log, measured example and reusable kit
+primitive together: e.g. cockroach for tripod walking, frog for hopping and
+limb-driven swimming, koi for spine-driven swimming, then a bird for flight
+and a snake for slithering. A new build should first match its animal and mode
+to this library. It can start from an existing pattern and source set, then
+add research only where species-specific evidence or a new mode changes the
+motion. Shared mechanics are reusable; one species' exact timing is not
+silently treated as a fact about another species.
 
 ## Decided
 
@@ -208,6 +224,11 @@ downloaded only with the owner's OK each time.
 - **Where the kit lives:** `packages/critter-kit`, with a generated copy in
   `skills/critter/kit/` (owner, 2026-10-11).
 - **Hook names:** `__critter*`, renamed now, no aliases (owner, 2026-10-11).
+- **Style and motion are separate:** a rendering style consumes the same
+  world geometry and pose; it cannot change behavior, contacts or motives.
+  The p5.js cockroach plates are exploratory references. The implementation
+  plan and candidate catalogue live in `docs/RENDERING_STYLE_PLAN.md`; no
+  production style is considered approved until its board is reviewed.
 
 ## Open decisions
 

@@ -52,6 +52,7 @@ and in the console `__critterWorld`, `__critterAdvance(s)`, `__critterTap(x, y)`
 packages/critter-kit/ the kit every study is built from (maths and seeded randomness, easing, limb chains (rig), foot pins and steps (contact), containment, hit distances, the gait clock, WebGL helpers and the scene controller)
 packages/frog-pond/   the study (world, scene, renderers, bank, theme)
 packages/cockroach-floor/ the cockroach Specimen, built only from the kit (in progress: docs/HANDOFF.md)
+packages/koi/             the koi Specimen, built only from the kit (in review: docs/KOI_VISUAL_DIRECTION.md)
 studies/frogs/        the demo page (plain HTML + TypeScript), its CSS and first-frame stills
 studies/index.html    the site's index
 standalone/frogs/     the single-file build's entry (the page is studies/frogs with its CSS inlined)

@@ -32,6 +32,7 @@
     "qa:swims": "node qa/swims.mjs",
     "qa:motion": "node qa/motion.mjs",
     "qa:gait": "node qa/gait.mjs",
+    "qa:swim": "node qa/swim.mjs",
     "qa:alloc": "node --expose-gc --max-semi-space-size=512 qa/alloc.mjs",
     "qa:size": "node qa/size.mjs",
     "qa:smoke": "node qa/browser.mjs smoke",
