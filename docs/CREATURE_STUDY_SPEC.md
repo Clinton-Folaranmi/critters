@@ -1,6 +1,6 @@
 # Creature Study Spec
 
-Version 1.6 · 2026-10-13 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
+Version 1.7 · 2026-10-19 · CC BY 4.0 (see `docs/LICENSE`) · repository `critters`
 
 This is the **single source of truth** for building an interactive, top-down
 creature study: a small living scene (a frog pond, a koi pool, a robin on a
@@ -70,6 +70,12 @@ right after the first one), a creature-first hierarchy for every variant and
 shape, and full-scene review before crops (Q-R4 to Q-R7). P-15 and P-16 size
 the work and say which route to approval it takes.
 
+A scene fails a third way when its motion is invented: every number a
+plausible guess, every check passing, and the animal still moving like
+nothing alive. The koi did this twice. P-17 to P-19 are the cure: grade the
+footage, track the real animal into curves and measure the model the same
+way, and put a real-speed side-by-side in front of a person early (Q-R8).
+
 - **P-1 (MUST)** Research the animal before designing any pose: slow-motion footage and locomotion papers, summarised in your own words (copy nothing). A straight-swimming frog kicks both hind legs at once; most people guess they alternate.
 - **P-2 (MUST)** Give every action a motive that exists in the world (food, a threat, rest, a destination). Nothing moves to fill time or because the page loaded.
 - **P-3 (MUST)** Pin feet that touch a surface. A pinned foot moves only by stepping.
@@ -86,6 +92,9 @@ the work and say which route to approval it takes.
 - **P-14 (MUST)** The visual direction board includes a creature-first hierarchy plan for every variant and target aspect: where the intended creature reads at normal page size, what separates it from its ground (value, colour, edge, sheen or shadow), the action silhouette or cue that makes it legible, the environmental motive that explains it, and which habitat layers must stay subordinate and how.
 - **P-15 (MUST)** Size the work before any other step, and say the size and a time estimate to the person asking. A **Specimen** is one animal with an idle and one locomotion mode on a plain ground, with one key light and one variant. A **Vignette** is one to three individuals with two or more modes and the transitions between them, in a small habitat whose one affordance supplies the motive, in one variant. A **Study** is anything larger: several modes, a habitat with occluders, depth and ambient life, more than one variant (the frog pond is a Study). A Study is started only when a person chooses it over a proposed Vignette that keeps its core. Sections 12 and 16 describe a Study in full; a Specimen or a Vignette runs every check that applies to what it has (always the motion and soak checks, and the full-scene review) and records the rest as not applicable.
 - **P-16 (MUST)** A Specimen or a Vignette doesn't wait for a board: its first build is the board. Evidence still comes first (P-11). After the first full-scene review (Q-R4, Q-R5, at the default desktop and phone page sizes of `qa:shots` unless others are named), stop and show a person the desktop and phone frames with the creature, action and motive written down, and record their decision in `docs/<ANIMAL>_VISUAL_DIRECTION.md` as its first revision, with those frames as its reference frames and the hierarchy plan (P-14) and habitat jobs (E-34) filled in from the build. From then on P-12 applies as for a Study: a composition change, or growing into a Study, needs an approved revision that covers it. Only a person approves.
+- **P-17 (MUST)** Grade the motion evidence before building, and say the grade to the person asking. **A**: footage from the view the study renders (within about 10° of it), steady, at a frame rate that resolves the motion (P-11's frame-rate rule): everything may be measured from it. **B**: trackable footage from another angle, or handheld: only measures that don't depend on the view are taken as measured (timing: rates, rhythms, durations, shares of time, what happens in what order); shapes (bends, swings, turn radii) are taken as ranges, with the camera's tilt estimated and stated, and the animal's own roll or pitch noted. **C**: no usable footage: shapes and kinematics come from papers (often filmed in the view the study needs) and behaviour is labelled a guess. A lower grade never stops the work; it limits what the motion sheet may call measured. When the footage shows the animal moving in ways the renderer can't draw (rolling, pitching, a flank showing), record it and decide how the renderer shows it before building.
+- **P-18 (MUST)** Close the loop with the reference: track the animal in the footage into curves over time (a midline, footfalls, a path), record the model's same parts at the same frame rate, run the same measurement code on both, and compare them in a table. A number in the motion sheet that the table contradicts is changed, or kept with a written reason. For a grade C study, the comparison is against the papers' published values. A view-dependent mismatch under grade B is checked against the estimated tilt before anything is changed.
+- **P-19 (MUST)** Show the person a side-by-side video at real speed, the reference beside the build and framed alike, early: in the first build, before polish, habitat detail or paperwork, and again after each round of P-18 changes. Their eye is the final check on whether it moves like the real one; it also catches what the measurements can't (a different camera angle, a missing roll). An agent can't judge whether motion looks alive from stills, contact sheets or its own numbers.
 
 ## 2. Architecture
 
@@ -741,6 +750,7 @@ crops. They are recorded in `docs/<ANIMAL>_COMPOSITION_REVIEW.md` (section
 - **Q-R5 (MUST)** On each full-scene review, before looking at a crop, the reviewer writes down the creature they see, its current action and the environmental motive, then compares them with the board's intent (P-12). If any of the three can't be identified without searching the frame, or doesn't match the board, record a composition defect against E-33 even when every numeric test passes. A composition defect blocks sign-off: fix it, or carry it as a known issue (section 15) only with the owner's written acceptance, recorded in the review.
 - **Q-R6 (MUST)** Only after Q-R4 and Q-R5 pass, review enlarged frame-by-frame crops of each key moment (a turn, a take-off, a landing, a stroke, a steering turn) in both renderers (`qa:shots`, `qa:stills`). Crops diagnose detail; they never establish full-scene readability.
 - **Q-R7 (SHOULD)** At least one full-scene review is done cold, by someone who didn't build the scene and hasn't seen its crops that day. The builder already knows where the animals are, so they are the reviewer least likely to notice that the animals are hard to find.
+- **Q-R8 (MUST)** Motion is reviewed at real speed, in a video or a live session, and against the reference (P-19). Frame-stepped sheets and crops find detail faults (a foot sliding, a pose popping) but never establish that the motion is right; a fault visible at real speed (a jump, a held curl, a fish doing laps) blocks sign-off whatever the checks report.
 
 ## 13. Build procedure
 

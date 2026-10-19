@@ -1,279 +1,234 @@
 ---
 name: critter
-description: Build a living, interactive creature study for the web, an animal (frog, beetle, koi, robin, snake, gecko…) in a small habitat that moves the way the real animal moves, with poses and timings taken from slow-motion footage, feet that stay planted, eased poses, a motive for every action, taps and keys, and checks that measure all of it. Use this whenever someone wants an animated animal, a creature scene, a living hero or background, a pond, aquarium, terrarium or bird table on a page, a canvas or WebGL animal, or believable animal locomotion (walking, hopping, swimming, flying, perching, slithering, burrowing), even if they never say "study". Framework-free TypeScript, WebGL2 with a Canvas 2D fallback, and a single offline HTML file.
+description: Build a living, interactive creature study for the web, an animal (frog, beetle, koi, robin, snake, gecko…) in a small habitat that moves the way the real animal moves. Its motion is tuned against footage of the real animal, tracked into curves and measured the same way as the build, and shown side by side with the reference at real speed. Feet stay planted, poses ease, every action has a motive, taps and keys work, and checks measure all of it. Use this whenever someone wants an animated animal, a creature scene, a living hero or background, a pond, aquarium, terrarium or bird table on a page, a canvas or WebGL animal, or believable animal locomotion (walking, hopping, swimming, flying, perching, slithering, burrowing), even if they never say "study". Framework-free TypeScript, WebGL2 with a Canvas 2D fallback.
 ---
 
 # Critter
 
-> **Draft.** The kit and the small examples this file describes don't exist
-> yet; `docs/CRITTER_KIT_PLAN.md` says what will be extracted from the frog
-> pond and in what order. Until then, work inside the `critters` repository
-> and copy from `packages/frog-pond` (the table under Setup says where each
-> piece lives today). The rules are those of `docs/CREATURE_STUDY_SPEC.md`;
-> rule IDs (`C-3`, `L-11`, …) point there, and the spec wins where the two
-> differ.
+Work inside the `critters` repository. The rules are those of
+`docs/CREATURE_STUDY_SPEC.md`; rule IDs (`P-18`, `C-3`, …) point there, and
+the spec wins where the two differ. The kit is `packages/critter-kit`; the
+examples are the frog pond (a Study), the cockroach (a Specimen, measured at
+250 fps) and the koi (a Specimen, tuned against tracked footage).
 
 This skill makes small living scenes: three frogs on lily pads that breathe,
-blink, hop, swim and climb out, or a beetle crossing leaf litter toward the
-shade of a log. A visitor believes the animal because it moves the way the
-real one does, and it does things for reasons they can see. Every rule below
-is a check on one of those two things.
+blink, hop and swim, a cockroach walking its tripod to a crumb, a koi
+cruising a murky pond. A visitor believes the animal because it moves the
+way the real one does, and does things for reasons they can see.
 
 ## The one idea that matters
 
-**It moves the way the real one moves, because it wants something.** Don't
-invent motion. Every pose, timing and contact comes from footage of the real
-animal, and every action has a motive in the world: food, a threat, rest, a
-destination. Nothing moves to fill time or because the page loaded (P-1, P-2).
+**It moves the way the real one moves, because it wants something.** Every
+pose, timing and contact comes from the real animal, and every action has a
+motive in the world: food, a threat, rest, a destination (P-1, P-2).
+
+**And you can't tell whether it does by looking at your own work.** An agent
+can't judge whether motion looks alive from stills, contact sheets or its own
+numbers. Two koi were built that way, every check passing, and both looked
+dead: one swung its tail 2.7 times too far, the next held its body curled for
+seconds, did laps of its pond and jumped when touched. What fixed it was the
+loop below: track the real animal in footage, measure the build the same way,
+compare the numbers, and show a person both side by side at real speed. The
+first round of that loop made the koi "clearly more alive" in an afternoon.
+
+A study fails in three ways:
+
+- **Invented.** The motion is a stack of plausible guesses. Nothing is
+  wrong that a check can name; it just isn't how the animal moves. Cure: the
+  reference loop (P-17 to P-19).
+- **Puppet.** A foot slides while the body turns, the animal spins on the
+  spot, a pose pops in one frame, it moves because a timer fired. Cure:
+  pins, eased poses, the motion checks.
+- **Lost.** Every measurement passes and a visitor can't find the animal.
+  Cure: a creature-first composition, reviewed as a full scene before crops
+  (P-14, E-33).
 
 What the footage shows is often not what people guess:
 
-| Animal and action      | What gets guessed                      | What the real one does                                                                                                                            |
-| ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frog swimming straight | The hind legs alternate                | Both kick at once; alternating kicks swim measurably slower (Nauwelaerts and Aerts)                                                               |
-| Toad or frog landing   | It lands on all fours at once          | The forelimbs take the landing, aimed along the flight path well before touchdown (Cox and Gillis 2017)                                           |
-| Beetle walking         | Legs move one at a time, or feet slide | A tripod at speed: three legs down, three swinging; slow insects drift toward tetrapod and wave patterns (Full and Tu 1991; Wosnitza et al. 2013) |
-| Lizard walking         | It walks like a dog                    | A slow walk with the forefoot lagging the hind foot by 40–50 % of the stride; dogs and cats lag about 25 % (Usherwood and Self Davies 2017)       |
-| Koi swimming           | The whole body wiggles evenly          | The front fifth barely moves; the sideways sweep grows to about 0.10 body lengths at the tail, one wave per body length (carangiform)             |
-| Songbird in flight     | It flaps steadily, or glides           | It flap-bounds: bursts of wingbeats with the wings folded between them (zebra finch about 28.5 beats/s)                                           |
-| Snake moving           | It picks a mode by speed               | The surface picks the mode (undulation, concertina, rectilinear, sidewinding); in undulation the body follows the head's path (Jayne 1986)        |
+| Animal and action       | What gets guessed                      | What the real one does                                                                                                              |
+| ----------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Frog swimming straight  | The hind legs alternate                | Both kick at once; alternating kicks swim measurably slower (Nauwelaerts and Aerts)                                                 |
+| Beetle or roach walking | Legs move one at a time, or feet slide | A tripod: three legs down, three swinging (the cockroach, measured at 250 fps)                                                      |
+| Lizard walking          | It walks like a dog                    | The forefoot lags the hind foot by 40–50 % of the stride; dogs and cats about 25 % (Usherwood and Self Davies 2017)                 |
+| Koi cruising            | Slow, lazy, with long glides           | Tail beating about 1.1 times a second most of the time, short coasts, wide turns of 1–2 body lengths; it banks into turns (tracked) |
+| Koi touched             | A lab C-start                          | A pond koi swishes away along a curve; a snapped C reads as a jump                                                                  |
+| Songbird in flight      | It flaps steadily, or glides           | It flap-bounds: bursts of wingbeats with the wings folded between them                                                              |
+| Snake moving            | It picks a mode by speed               | The surface picks the mode; in undulation the body follows the head's path (Jayne 1986)                                             |
 
-Sources, links and caveats are in `docs/CRITTER_PRIOR_WORK.md`. Most of these
-come from abstracts and surveys; confirm them against footage for each new
-study. The frog pond's own timings (its crouch, its push, the 52 ms between
-its hind legs) are design values that no source backs yet (spec section 15):
-don't copy them as facts.
+Sources and caveats: `docs/CRITTER_PRIOR_WORK.md`, the footage logs, and
+`docs/MOVEMENT_LIBRARY.md`.
 
-A study fails in two ways, both seen in practice:
+## Workflow: the reference loop
 
-- **Puppet.** A foot slides while the body turns, the animal spins on the
-  spot, a pose changes in one frame, paired limbs fall out of step for no
-  reason, it moves because a timer fired. A visitor can't say what's wrong,
-  only that it looks fake.
-- **Lost.** Every measurement passes and a visitor can't find the animal. The
-  habitat outshines it, and close-up crops hide the problem because each crop
-  is already centred on the animal (P-14, E-33).
+Steps 2 to 7 are the core and come before habitat, polish or paperwork.
 
-The cure for a puppet is footage and pins. The cure for lost is a
-creature-first composition, reviewed as a full scene before any crop.
+1. **Size it** (P-15). Tell the user the size and a time estimate first.
+   **Specimen**: one animal, an idle and one locomotion mode, plain ground,
+   one variant; about half a day including the loop. **Vignette**: one to
+   three individuals, two or more modes, a small habitat whose one
+   affordance is the motive; one to two days. **Study**: the frog pond's
+   scale; propose a Vignette instead and build the Study only if the user
+   chooses it. Run `date` at each step; if a step runs past twice its share,
+   say where it stands.
 
-**Small signs of life carry it.** A throat pulse, a blink, eyes that follow a
-firefly, a weight shift add more than any large action (B-8). Individuals
-differ in size, colouring, markings and breathing rate, so no two move in
-sync (B-7, H-2). Idle behaviour is small; larger actions are irregular and
-individual (P-9).
+2. **Find the reference and grade it** (P-11, P-17). Look in
+   `docs/MOVEMENT_LIBRARY.md` and `docs/<ANIMAL>_FOOTAGE_LOG.md` first and
+   reuse what applies. Otherwise find footage: clips the user supplies,
+   Creative Commons clips (Wikimedia Commons), journal supplementary videos.
+   Downloading needs the user's OK each time. Then grade it and say the
+   grade:
 
-## Workflow
+   | Grade | Footage                                                                                                       | What you may call measured                                                                                                                   |
+   | ----- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+   | A     | From the view you render (within ~10°), steady, fast enough (120 fps for a 75 ms event; 240 for insect steps) | Everything: shapes, bends, swings, timing                                                                                                    |
+   | B     | Trackable, but another angle or handheld                                                                      | Timing (rates, rhythms, durations, shares of time, order of events) as measured; shapes as ranges, with the camera's tilt estimated and said |
+   | C     | None usable                                                                                                   | Shapes and kinematics from papers (often filmed in your view); behaviour labelled a guess                                                    |
 
-Work in this order. Write the evidence, the act and the rig before any scene
-code: most of the quality is decided there.
+   A lower grade never stops the work; it changes what you may claim. Check
+   these before trusting a clip:
+   - **The whole file is there.** Run `ffprobe`, then count the frames.
+   - **The camera's tilt.** A body's width-to-length ratio shouldn't change
+     with its heading in a true top view. If it does, the view is tilted:
+     about 30° for the koi clip (0.16 across the frame, 0.22 up it).
+   - **The animal's own 3D motion.** Note rolling, pitching or a flank
+     showing. If the animal does it, the renderer has to draw it (step 5).
 
-1. **Size it before you start** (P-15). Tell the user which size the request is and
-   roughly how long it will take, before any other work.
-   - **Specimen**: one animal, an idle and one locomotion mode, on a plain
-     ground with one key light; taps on the animal and the ground; one
-     variant. About 1–2 hours. Build it without asking.
-   - **Vignette**: one to three individuals, two or more modes and the
-     transitions between them, a small habitat whose one affordance supplies
-     the motive (a perch, food, cover, water), one variant. About 3–6 hours.
-     Say so, then build it unless the user asked for something quick.
-   - **Study**: the frog pond's scale: several modes, a habitat with
-     occluders, depth and ambient life, two variants, both renderers, the
-     single file and every check in the spec's QA table. Days, not hours. Do
-     not start it. Give the estimate, propose a Vignette that keeps the core,
-     list what the Study would add, and build the Study only when the user
-     chooses it.
-   - Whatever the size, have a page that opens in the browser within the
-     first hour, and deepen it from there. Run `date` at the start and at each
-     step; when a step runs past twice its share, tell the user where it
-     stands and what is left.
-2. **Evidence first.** Find slow-motion footage and locomotion papers for the
-   species and write `docs/<ANIMAL>_FOOTAGE_LOG.md`: for each source a stable
-   URL, the time range watched, an **Observation** of only what is visible,
-   and a separate **Inference** (P-11). You can't watch a video in a browser:
-   extract frames with `ffmpeg` from a clip the user provides, or rely on
-   papers and frame-by-frame studies with published timings, and record which.
-   Mark touchdown and lift-off on a contact sheet of frames, or track the feet
-   with DeepLabCut or SLEAP after labelling a few dozen frames. Record the
-   capture frame rate and the slow-motion factor: ratios such as duty factor
-   and phase survive an unknown factor, but absolute times don't, and a 75 ms
-   event needs at least 120 fps (240 for insect steps and wingbeats). Use
-   clips the user supplies or that carry a Creative Commons licence (YouTube's
-   terms forbid downloading), and keep measurements, URLs and time ranges in
-   the log rather than the frames.
-   Then write the motion sheet as a small pure module, `<animal>-motion.ts`:
-   body dimensions in body lengths, and for each mode its key poses with
-   timings, its contact rule and its turning rule. The world and the motion
-   checks both read it, so the animal and the check can't disagree. A number
-   with no source is marked as a guess. A generated image is never evidence
-   (P-13).
-3. **Name the act.** In one sentence: which animal, doing what, for what
-   motive, the way the real one does it. "A ground beetle walks a tripod gait
-   across damp litter toward the shade under a log, stops to sweep its
-   antennae, and runs when tapped." Pick its locomotion modes from the
-   catalogue (`references/locomotion.md`). If you can't name a motive, the
-   animal doesn't move.
-4. **Rig list.** Write the body before you draw it (B-1 to B-5): blended
-   ellipses for the body; each limb a chain of tapered capsules, with segment
-   lengths in body lengths, a root at the hip or shoulder, and joint angles
-   at the folded and extended keys; spines as 8–13 points with a width
-   profile; toe or feather fans. Each limb gets one extension value that bends
-   every joint, a yaw about its root and a spread; the body gets stretch, lean
-   and slip. List the signs of life and how each individual differs.
-5. **Plan the ground.** A Specimen stands on the kit's plain ground. Anything
-   larger plans its habitat (`references/environment.md`): one signed
-   distance function for where animals may go, shared by the world, every
-   renderer and the hit test (E-1); the affordances that supply motives
-   (E-20); a behavioural job for every prominent element, quieted near the
-   animal (E-34, E-35); what is drawn over what in each state (E-6); one key
-   light per variant (P-7); a designed picture edge (E-11); layouts from a
-   phone at aspect 0.91 to a wide screen at 1.48 (E-15, E-16).
-6. **Build the world first, in Node.** Pure, seeded, no DOM or timers (A-1,
-   A-3); `step(dt)` with dt clamped to 50 ms (A-4); exactly one named state
-   per animal, each authoring its own pose curves (H-1); jittered timers so
-   individuals never move in sync (H-2); no temporary state without an end
-   and a way home (H-6); `check()` listing every broken rule it can detect
-   (A-11). Step it in Node from the first day and run the soak.
-7. **Pose and contact.** `pose()` turns channels into capsules every frame
-   (B-3). A foot touching a surface is pinned in the surface's own frame; each
-   frame the leg is re-aimed at its pin and its reach solved (C-1). A settled
-   animal keeps every foot pinned while it breathes (C-2). A foot moves only by
-   stepping (C-3), and turning on a surface is a sequence of steps pivoting
-   near the hips, never a rotation of the rig (C-4, L-6). Values ease with
-   `v += (target − v) · (1 − e^(−rate·dt))` or follow an authored curve;
-   legged gaits run on the kit's footfall clock (`gait.ts`), filled with the
-   phases, stride lengths and duty factors from the footage log (L-30);
-   nothing snaps in one frame except inside a push or a kick (P-5, B-4). In
-   water or air, heading changes only while moving, along a curve (P-4). The
-   frog's on-pad turn (`turnOnPad` in `frog-world.ts`) is the worked example.
-8. **Render.** A WebGL2 renderer and a Canvas 2D fallback draw the same world
-   (A-7, A-8); every colour lives in one theme module (A-6); shared geometry
-   is written once in TypeScript and the GLSL generated from it or checked
-   against it. A shadow keeps the ground-sized footprint and height only
-   offsets it along the light, blurs and fades it (L-10). Every shadow falls
-   away from the key light; every highlight faces it (V-5).
-9. **Make it live.** Taps are tested against the drawn shapes, with a larger
-   target for touch (B-2, I-2); every tap gets a visible response (I-1); a
-   committed animal only flinches, and a short cooldown stops repeated taps
-   resetting it (H-3); Enter or Space triggers a central action (I-3). A still
-   shows until the first frame (F-2), the loop stops off screen (F-5), and
-   reduced motion gets one described still and no loop (I-5).
-10. **Verify like a critic.** The owner finds faults by watching, so you watch
-    first. Read every PNG you make.
-    - **Run the motion checks to zero.** Planted-foot slide, turning while
-      still, mirroring, curvature, one-frame pose jumps and rotation spikes
-      (`qa:motion`), then the soaks: `check()` empty, no non-finite poses, no
-      state held past 40 s (`qa:soak`). Report the numbers, not PASS. A
-      failure is fixed in the world or the renderer that causes it, never
-      hidden in another layer (Q-R2).
-    - **Full scene before crops.** At desktop and phone page size, at 100 %,
-      write down the creature you see, its action and its motive before
-      opening anything closer. If you can't name all three without searching,
-      that's a composition defect, whatever the numbers say (Q-R4, Q-R5).
-      Then watch at least 30 seconds live.
-    - **Contact sheets of every key moment**, slowed: a turn, a take-off, a
-      landing, a stroke, a steering turn. A foot that slides or a pose that
-      pops shows between two frames of a sheet long before it shows at speed.
-    - **Then crops**, in both renderers and every variant (Q-R6).
+3. **Track it into curves** (P-18). Extract frames with ffmpeg; never trust a
+   tracker you haven't checked on overlays by eye.
+   - **Pale fish or another contrasty body from above:**
+     `qa/tools/footage/spine.mjs` (midline per frame), checked with an
+     overlay sheet.
+   - **Legged animals:** `track.mjs` and `footfalls.mjs`, checked with
+     `sheet.mjs --stances` (the cockroach).
+   - **Measure:** `qa/tools/footage/spine-measure.mjs` for swimmers. For
+     walkers, the gait measures in `qa/gait.mjs`.
+   - **Record it:** write what was measured, its grade, its noise and its
+     limits in the footage log. One example: the koi's measured "turn rate"
+     turned out to be mostly its head wagging with each beat.
+
+4. **Name the act, write the motion sheet.** One sentence: which animal,
+   doing what, for what motive. Then `<animal>-motion.ts`: every number the
+   world moves by, each tagged **measured**, **tracked** (grade B),
+   **literature**, **inferred** or **guess**. The world and the checks both
+   read it.
+
+5. **Build the smallest thing that moves.** One animal, plain ground, the
+   kit's primitives: `gait.ts` for legs, `swim.ts` for spines,
+   `contact.ts` for pins. The world is pure and seeded, stepped in Node from
+   the first hour (A-1 to A-4), with `check()` for every rule it can detect.
+   Draw it with one renderer, roughly; looks come later.
+
+   If the footage showed roll or pitch, give the renderer a way to show it
+   now. The koi slides its skin across its outline to bank, and foreshortens
+   its head to lift it.
+
+6. **Compare** (P-18). Record the model's same parts at the footage's frame
+   rate, run the same measurement code on it, and print both side by side.
+   When a number disagrees, **find the cause before changing a number**:
+   - **Break it down by state.** The koi's excess bend was all in cruising.
+   - **Check the sign.** A mean _signed_ bend of +0.47 meant laps of the
+     pond, not weaving.
+   - **Run a controlled case.** A dead-straight swim showed the wave itself
+     was fine and the steering wasn't.
+   - **Match conditions.** Compare unfed with unfed: food every 10 s hid
+     every glide.
+
+   Some causes aren't motion at all: the koi circled because its pond was
+   only five body lengths across. A size or habitat fix is the user's call
+   (P-12).
+
+7. **Show the side-by-side** (P-19). Make a real-speed video: the reference,
+   the build and, after a round of changes, the previous build, all framed
+   alike (`qa/tools/footage/follow-koi.mjs` for the koi). Send it to the user in the
+   first build and after every round of step 6. Their eye is the final check
+   and catches what the numbers can't. The koi's tilted camera was spotted
+   this way. Repeat steps 6 and 7 until they say it moves like the real one.
+
+8. **Then the rest**, in this order:
+   - **Ground** (`references/environment.md`): one boundary shared by world,
+     renderers and hit test (E-1); affordances that supply motives (E-20); a
+     job for every habitat element, quiet near the animal (E-34, E-35).
+   - **Pose and contact:** pinned feet (C-1 to C-5); eased poses (P-5,
+     B-4); heading changes only along a curve in water or air (P-4).
+   - **Render:** WebGL2 and Canvas 2D drawing the same world (A-7, A-8),
+     one theme (A-6). Shared geometry written once. The koi draws every
+     part as textured triangles from one painted atlas, so both renderers
+     use the same pixels.
+   - **Make it live:** taps tested against the drawn shapes (B-2, I-2); a
+     visible answer to every tap (I-1); a committed animal only flinches
+     (H-3); Enter or Space (I-3); reduced motion gets a still (I-5).
+
+9. **Verify like a critic.**
+   - **Motion checks and soaks to zero**, reported as numbers:
+     `qa:motion`, `qa:soak`, `qa:swim`, `qa:gait`.
+   - **Motion at real speed only** (Q-R8): stepped sheets find detail
+     faults, never prove the motion right. A jump, a held curl or a fish
+     doing laps blocks sign-off whatever the checks say. When one is found,
+     add a check that would have caught it (the koi's `koiJump`).
+   - **Full scene before crops:** at desktop and phone size, write down the
+     creature, its action and its motive before opening anything closer
+     (Q-R4, Q-R5).
 
 ## Approval
 
-A **Study** needs an approved board before any production scene code:
-`docs/<ANIMAL>_VISUAL_DIRECTION.md`, signed off by a person (P-12). A
-**Specimen** or a **Vignette** is built first, after the footage log: its
-first build is the board (P-16). Stop after the first full-scene review, show
-the user the desktop and phone frames with the creature, action and motive you
-wrote down, and record their decision in `docs/<ANIMAL>_VISUAL_DIRECTION.md` as
-its first revision. After that, a composition change (habitat, palette,
-camera, scale, where the animals sit), or growing into a Study, needs the
-user's OK. An agent may prepare a board or a review; it never signs one off.
+A **Specimen** or **Vignette** is built first; its first full-scene frames
+and its side-by-side go to the user, whose decision is recorded as the first
+revision of `docs/<ANIMAL>_VISUAL_DIRECTION.md` (P-16). After that, a
+composition change (habitat, palette, camera, scale, where the animal sits)
+needs their OK. A **Study** needs an approved board before production scene
+code (P-12). An agent prepares boards and reviews; it never signs one off.
 
 ## Craft rules (short form)
 
-The rules that separate a living animal from an animated drawing. Each was a
-real fault in the frog study, and most are measured.
-
-- **Pinned feet stay put.** A planted foot holds within 0.06 body lengths of
-  its pin. The frog meets this for the median and not yet for the tail: when
-  the body settles after a landing, a pin can end up beyond the leg's compact
-  reach and the foot gives (spec section 15). Re-pin an out-of-reach foot with
-  a small settling step rather than hauling the leg straight (C-5).
-- **Turns on a surface are steps.** The frog turns at most about 43° on the
-  spot; the rest of a larger turn happens in the crouch and is spread across
-  the flight (H-4, L-9).
+- **Pinned feet stay put**, within 0.06 body lengths of the pin; an
+  out-of-reach foot takes a small settling step (C-5).
+- **Turns on a surface are steps**, never a rotation of the rig (C-4, L-6).
+- **Nothing jumps.** No drawn part moves further in one frame than its
+  fastest real motion allows (the koi: 0.08 body lengths at 60 fps). A rigid
+  rotation of a whole body in a few frames reads as a teleport.
+- **Bodies don't hold a curve.** A slowing swimmer straightens within about
+  a second (`relaxSwimBody`); a held curl reads as dead.
 - **Mirrored means mirrored.** Paired limbs split only for steering, loading
-  or a stumble (P-6). A steering stroke is the only asymmetric one: the
-  outside leg drives fully, the inside one up to 40 ms later and about 30 %
-  shorter (L-11).
-- **No rotation spikes.** Angular acceleration stays under 400 rad/s²; a frog
-  take-off once measured 1,600 before its fix (Q-21). The limit is hand-tuned,
-  not from the literature.
-- **Bent, not straight.** Keep joints visibly bent from the camera; a straight
-  chain reads as a stick figure. Full extension belongs to the push (B-6).
-- **Trailing limbs show the turn.** Limbs that aren't planted swing to the
-  outside of a turn from a smoothed turn rate, and the body lags its path, so
-  a turn reads as a bend (L-13).
-- **Every drawn part respects the boundary.** Containment holds the body's
-  centre, but trailing legs reach behind it: the frog's slipped under the bank
-  as it turned back from the shore until every knee, ankle and toe was
-  checked (L-16, E-2).
-- **Draw and hit-test the same shapes.** A toe, a fin or a wingtip counts as
-  the animal (B-2). A tap on scenery drawn over the animal goes to the
-  scenery (E-7).
-- **Motives you can see.** Ambient life has a source and a place, and animals
-  notice it: eyes follow the fireflies, a tongue strikes when one drifts
-  within reach (E-23, E-25). Only usable things are affordances (E-21).
-- **One light.** One key light per variant; a time of day is a palette on the
-  same scene, geometry and behaviour (P-7, E-30).
-- **The habitat serves the animal.** Where the animal sits or moves, the
-  habitat's contrast, saturation, fine detail and movement stay below the
-  animal's own. Keep an element that has a job and quiet it; remove one that
-  has none (E-34, E-35).
-- **A good neighbour on the page.** Lazy load near the viewport, a still until
-  the first frame, shaders compiled in parallel, static layers painted once in
-  a worker, adaptive resolution, nothing allocated per frame, everything
-  released on dispose (section 10).
+  or a stumble (P-6, L-11).
+- **No rotation spikes:** angular acceleration under 400 rad/s² (Q-21).
+- **Trailing parts show the turn.** Fins and unplanted limbs lag through
+  springs (`secondary.ts`), and the body banks into it (L-13).
+- **Every drawn part respects the boundary** (L-16, E-2). **Draw and
+  hit-test the same shapes** (B-2).
+- **Size the world to the animal's real speed.** A fish swimming at its
+  measured speed in a pond five body lengths across does laps.
+- **One key light**; every shadow falls away from it (P-7, V-5).
+- **The habitat serves the animal** (E-34, E-35).
+- **A good neighbour on the page:** lazy loading, a still until the first
+  frame, nothing allocated per frame, everything released on dispose
+  (section 10).
 
 ## Setup
 
-Until the kit is extracted, most pieces live in the frog pond (paths under
-`packages/frog-pond/src` unless marked); extracted ones are in
-`packages/critter-kit/src`:
+| Piece                                                                                  | Where                                                                  |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Maths, seeded random, easing, angle deltas                                             | `critter-kit/src/math.ts`, `motion.ts`                                 |
+| Limb chains, pins and steps                                                            | `critter-kit/src/rig.ts`, `contact.ts`                                 |
+| Footfall clock: phases, stride, duty, advanced by distance                             | `critter-kit/src/gait.ts` (`qa:gait`)                                  |
+| Spine swimmer: body on the head's path, tail-growing wave, beat and glide, relax, bank | `critter-kit/src/swim.ts`, `chain.ts`, `wave.ts` (`qa:swim`)           |
+| Passive springs for fins, antennae                                                     | `critter-kit/src/secondary.ts`                                         |
+| Hit test, containment                                                                  | `critter-kit/src/hit.ts`, `contain.ts`                                 |
+| Scene controller, picture edge, shader compile                                         | `critter-kit/src/scene.ts`, `edge.ts`, `gl.ts`                         |
+| Footage: contact sheets, marker tracking, footfalls, gait                              | `qa/tools/footage/sheet.mjs`, `track.mjs`, `footfalls.mjs`, `gait.mjs` |
+| Footage: a fish's midline, and the same measures on footage and model                  | `qa/tools/footage/spine.mjs`, `spine-measure.mjs`                      |
+| Headless Chrome driver and shots                                                       | `qa/lib/chrome.mjs`, `qa/browser/shots.mjs`                            |
 
-| Piece                                                                                  | Today                                          | Kit module (planned)             |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------- |
-| Clamp, smoothstep, seeded random, per-item seeds, GLSL floats                          | `critter-kit/src/math.ts` (extracted)          | `kit/math.ts`                    |
-| Easing, angle deltas, springs                                                          | `critter-kit/src/motion.ts` (extracted)        | `kit/motion.ts`                  |
-| Limb chains: end point, reach, capsules from channels                                  | `critter-kit/src/rig.ts` (extracted)           | `kit/rig.ts`                     |
-| Pins and steps: anchor, re-aim and solve reach, step on an arc                         | `critter-kit/src/contact.ts` (extracted)       | `kit/contact.ts`                 |
-| Footfall timing: each leg's phase, stride and duty against speed, advanced by distance | `critter-kit/src/gait.ts` (new; `qa:gait`)     | `kit/gait.ts`                    |
-| Hit test against drawn capsules and ellipses                                           | `critter-kit/src/hit.ts` (extracted)           | `kit/hit.ts`                     |
-| Containment and boundary clearance for every drawn part                                | `critter-kit/src/contain.ts` (extracted)       | `kit/contain.ts`                 |
-| Scene controller: canvas, loop, input, fallback, resolution                            | `critter-kit/src/scene.ts` (extracted)         | `kit/scene.ts`                   |
-| Shader compile without stalling                                                        | `critter-kit/src/gl.ts` (extracted)            | `kit/gl.ts`                      |
-| Static layers painted in a worker, cached and debounced                                | `frog-bank-layer.ts`, `frog-bank-worker*.ts`   | `kit/bake.ts`                    |
-| Picture edge, its mask and focus ring                                                  | `pictureEdge`, `bankMaskUrl`, `pictureRingUrl` | `kit/edge.ts`                    |
-| Motion and soak checks                                                                 | `qa/motion.mjs`, `qa/soak.mjs` (frog-specific) | `scripts/motion.mjs`, `soak.mjs` |
-| Headless Chrome driver, shots and contact sheets                                       | `qa/lib/chrome.mjs`, `qa/browser/shots.mjs`    | `scripts/drive.mjs`              |
-
-The frog pond is the large example: a Study. It was built before the footage
-log, board and full-scene review rules, so it has none of those artifacts yet,
-and its planted-foot tail is a known issue (spec section 15). Take its
-mechanics, not its paperwork.
+Examples to copy from: the cockroach (`packages/cockroach-floor`: measured
+gait, pinned feet, footfall clock) and the koi (`packages/koi`: tracked
+evidence, the swim primitive, one atlas for both renderers, roll and head
+lift). The frog pond is the large example, built before the footage and
+review rules. Take its mechanics, not its numbers (spec section 15).
 
 ## References
 
-Read these as you need them (planned; each is drawn from a spec section):
-
-- `references/locomotion.md`: the eight modes, their pose keys, contact and
-  turning rules and checks (spec section 7).
-- `references/environment.md`: boundaries, occluders and taps, the picture
-  edge, aspect ratios, affordances, ambient life, wind and weather, habitat
-  jobs (section 8).
-- `references/light.md`: palettes, depth, shadows and variants (section 9).
-- `references/performance.md`: loading, workers, resolution, the per-pixel
-  loop (section 10).
-- `references/verify.md`: every check, its threshold, and the full-scene
-  review (sections 12 and 13.1).
-- `references/evidence.md`: the footage log, motion sheet, board and review
-  templates (section 13.1).
+- `docs/CREATURE_STUDY_SPEC.md`: every rule; section 7 (locomotion), 8
+  (environment), 12 (QA), 13.1 (review artifact templates).
+- `docs/MOVEMENT_LIBRARY.md`: which animals and modes already have evidence.
+- `docs/KOI_FOOTAGE_LOG.md`: a worked grade-B log, tracked and measured.
+- `docs/COCKROACH_FOOTAGE_LOG.md`: a worked grade-A log, measured frame by
+  frame.
