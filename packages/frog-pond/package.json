@@ -26,11 +26,6 @@
       "types": "./dist/types/theme.d.ts",
       "source": "./src/theme.ts",
       "default": "./dist/theme.js"
-    },
-    "./paint": {
-      "types": "./dist/types/paint.d.ts",
-      "source": "./src/paint.ts",
-      "default": "./dist/paint.js"
     }
   },
   "dependencies": {

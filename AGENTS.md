@@ -17,8 +17,10 @@ here) and for people.
 ## Standing decisions
 
 - **No sound anywhere.** No audio code, controls or copy.
-- The frog study's variants are **Night | Day** (theme keys `night`, `day`;
-  titles Night Chorus, Day Chorus).
+- The frog study is **Day only** for now (theme key `day`, title Day Chorus).
+  The owner dropped Night on 2026-10-27 with the move to the grainy flat
+  meadow style ("no night. just day for now"); a night look would need its
+  own board in that style.
 - **No new runtime dependencies.** Dev dependencies need the owner's OK,
   except the ones already here (esbuild, TypeScript, oxlint, oxfmt). Don't add
   Playwright as a dependency: the browser checks use its headless shell only.

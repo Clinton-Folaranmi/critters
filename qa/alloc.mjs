@@ -1,4 +1,4 @@
-// Garbage made per frame: bytes allocated by world.step() and reedBlades().
+// Garbage made per frame: bytes allocated by world.step().
 //   npm run qa:alloc   (runs node with --expose-gc)
 import { buildNodeModules } from './lib/prepare.mjs';
 import { createReport } from './lib/report.mjs';
@@ -10,7 +10,6 @@ if (typeof globalThis.gc !== 'function') {
 }
 await buildNodeModules();
 const { FrogWorld } = await import('./.out/world.mjs');
-const { REED_BLADES, reedBlades } = await import('./.out/bank.mjs');
 const report = createReport('alloc');
 
 /** Fewest bytes per call over a few runs: V8 books other work (compiling, feedback) to the heap now and then. */
@@ -37,13 +36,4 @@ report.measure(
   THRESHOLDS.alloc.stepBytesPerFrame,
 );
 
-const ends = new Float32Array(REED_BLADES * 4);
-const shape = new Float32Array(REED_BLADES * 4);
-const box = new Float32Array(4);
-for (let i = 0; i < 20000; i++) reedBlades(1.48, i / 60, ends, shape, box);
-report.measure(
-  'reedBlades() bytes per call',
-  measure((i) => reedBlades(1.48, i / 60, ends, shape, box), 600),
-  THRESHOLDS.alloc.reedBytesPerCall,
-);
 report.finish();

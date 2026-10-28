@@ -1,5 +1,51 @@
 # Handoff
 
+**Latest (2026-10-28), read this first.** The older notes below still hold
+where this section doesn't override them.
+
+- **Team mode.** Past the first rough build, a critter is built by a team:
+  the session that loads the skill is the orchestrator (contract, briefs,
+  reviews, the owner) and never edits creature code; specialists do the
+  work: `critter-footage`, `critter-motion`, `critter-look`. Playbook:
+  `skills/critter/references/team.md`. Agent definitions:
+  `.claude/agents/*.md` (Claude Code) and `.codex/agents/*.toml` (Codex).
+  Each animal's working files (contract, briefs, verbatim reports, reviews)
+  live in `reports/<animal>/team/` (gitignored). Subagents can't write
+  report files in Claude Code: they return the report and the orchestrator
+  saves it verbatim.
+- **Looks are stylised now; motion stays measured.** The owner dropped
+  realism (2026-10-25/27): the preferred look is a **grainy flat meadow**
+  illustration (flat colour fields, one fine grain over everything, edges cut
+  against it, flat offset shadow bands, sparse details, open centre). Footage
+  gives the motion and the animal's identity, not its appearance. The skill
+  doesn't say this yet (next step: add "pick a style early, judge the look
+  against the style" to SKILL.md).
+- **Frog pond, rebuilt (this commit).** Day only (AGENTS.md), water only, the
+  grainy flat style with soft caustics and drifting leaf shade; board
+  approved in `docs/FROG_VISUAL_DIRECTION.md` r0. The bank, reeds, grass,
+  bed, fireflies, the bank worker and Night are gone; frog motion is
+  unchanged (bit-identical with the bank switched off). `npm run check`
+  passes; `qa:browser` passes except `qa:first` under machine load. Spec
+  prose in E-1, E-4, E-6, E-8–E-10, E-30, I-6, F-4, V-2, V-4 still
+  describes the old bank/Night (recorded in section 15).
+- **Ladybug Specimen** lives in its own repo,
+  `~/critter-test` (built from the skill as a
+  test of working outside this repo). Approved board: clover in paving
+  bricks, grainy flat style (`docs/LADYBUG_VISUAL_DIRECTION.md` r6); built
+  in round 5. Open for the owner: the cramped phone arena, slow straight runs
+  on the bricks, full-bleed picture. See its
+  `reports/ladybug/team/round-5/review.md`.
+- **Snake:** work in progress by another session (`packages/snake`,
+  `studies/snake`, its docs), committed here as it stood so nothing is lost.
+  Its visual-direction decisions (habitat, framing) are still open.
+- **Turtle:** scrapped by the owner (files moved to the Trash).
+- **Skill additions** (`skills/critter/SKILL.md`): working from another
+  project ($CRITTERS as toolbox), footage is for motion not habitat, size the
+  camera by body width (≥ about 3 % of picture height), the look bar, team
+  mode.
+
+## Earlier notes (2026-10-19)
+
 Where the work stands, for the next session to pick up without the
 conversation that produced it. Branch `critter-skill` (not pushed; `main`
 is behind it and a fast-forward away). Updated 2026-10-19.

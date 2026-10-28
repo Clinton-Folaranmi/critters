@@ -1,12 +1,12 @@
-// Taps land on what is visible: the picture's mask vs the tap rule
-// (pictureEdge ≤ 1), grass drawn over the water counted as bank, and real
-// clicks on the demo (corners outside the picture, the bank, a reed), the
-// tap cooldown, and the keyboard.
+// Taps land on what is drawn: the picture's mask (the rounded rectangle)
+// against the tap rule (pictureEdge ≤ 1), then real clicks on the demo:
+// just outside each rounded corner (nothing), open water, a pad, the board's
+// corner pad 11 (drawn, so tappable), the tap cooldown, and the keyboard.
 import { THRESHOLDS } from '../thresholds.mjs';
 
 export default async ({ page, pages, site, report }) => {
   const T = THRESHOLDS.hit;
-  // 1. The mask as drawn vs the tap rule, and the bank layer's coverage vs the water.
+  // 1. The mask as drawn vs the tap rule.
   await page.goto(`${pages}bake.html`);
   for (const [w, h] of [
     [880, 595],
@@ -20,24 +20,15 @@ export default async ({ page, pages, site, report }) => {
       const c = document.createElement('canvas'); c.width = w; c.height = h;
       const g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
       const mask = g.getImageData(0, 0, w, h).data;
-      const layer = paintBank(w, h, 'night');
-      const lay = layer.getContext('2d').getImageData(0, 0, w, h).data;
-      const cover = bankMask(layer);
-      let faintAccepted = 0, visibleRejected = 0, visible = 0, overhang = 0, counted = 0;
+      let faintAccepted = 0, visibleRejected = 0, visible = 0;
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
         const o = (y * w + x) * 4, m = mask[o + 3] / 255;
         const wx = (x + .5) / h, wy = 1 - (y + .5) / h;
         const inside = bank.pictureEdge(wx, wy, aspect) <= 1;
         if (inside && m < 0.2) faintAccepted++;
         if (m > 0.6) { visible++; if (!inside) visibleRejected++; }
-        // Opaque bank (grass, earth) drawn where the shore maths says water.
-        if (lay[o + 3] > 200 && bank.shoreDistance(wx, wy, aspect) > 0 && m > 0.3) {
-          overhang++;
-          const cx = Math.min(cover.width - 1, Math.floor(x / w * cover.width)), cy = Math.min(cover.height - 1, Math.floor(y / h * cover.height));
-          if (cover.data[cy * cover.width + cx] / 255 > 0.35) counted++;
-        }
       }
-      return { faintAccepted: faintAccepted / (w * h) * 100, visibleRejected: visibleRejected / visible * 100, overhang, counted: counted / Math.max(1, overhang) * 100 };
+      return { faintAccepted: faintAccepted / (w * h) * 100, visibleRejected: visibleRejected / visible * 100 };
     })()`);
     const tag = `${w}×${h}`;
     report.measure(
@@ -50,60 +41,62 @@ export default async ({ page, pages, site, report }) => {
       +r.visibleRejected.toFixed(2),
       T.visibleRejected,
     );
-    report.measure(
-      `${tag}: grass over the water counted as bank (${r.overhang} px)`,
-      +r.counted.toFixed(1),
-      T.overhangCounted,
-    );
   }
 
-  // 2. Real clicks on the demo.
+  // 2. Real clicks on the demo (frozen, so nothing moves between aiming and clicking).
   await page.goto(`${site}?dpr=fixed`);
   await page.ready();
+  await page.freeze();
   const rect = await page.eval(
     `(() => { const r = document.querySelector('canvas').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()`,
   );
   const toPx = (x, y) => [rect[0] + x * rect[3], rect[1] + (1 - y) * rect[3]];
   const probe = async (px, py) => {
     const before = await page.eval('__critterTaps()');
-    const motes = await page.eval('__critterWorld.motes.filter((m) => m.life > 0).length');
     await page.click(px, py);
     await page.sleep(120);
     const after = await page.eval('__critterTaps()');
-    const moved = Object.keys(after).filter((k) => after[k] !== (before[k] ?? 0));
-    return {
-      results: moved.join(',') || 'nothing',
-      motes: (await page.eval('__critterWorld.motes.filter((m) => m.life > 0).length')) > motes,
-    };
-  };
-  for (const [label, fx, fy] of [
-    ['top-right', 0.985, 0.02],
-    ['bottom-right', 0.985, 0.98],
-    ['top-left', 0.015, 0.02],
-  ]) {
-    const r = await probe(rect[0] + rect[2] * fx, rect[1] + rect[3] * fy);
-    report.measure(`click in the ${label} corner (outside the picture)`, r.results, { equals: 'nothing' });
-  }
-  const onBank = await probe(...toPx(0.45, 0.12));
-  report.expect(
-    'click on the bank: counts as bank and lifts motes',
-    onBank.results === 'bank' && onBank.motes,
-    `${onBank.results}, motes ${onBank.motes}`,
-  );
-  const reed = await page.eval(`(() => {
-    const a = ${rect[2] / rect[3]};
-    for (let y = 0.4; y < 0.75; y += 0.002) for (let x = 0.02; x < 0.4; x += 0.002)
-      if (__critterBank.reedAt(x, y, a, -0.002) && !__critterBank.reedAt(x, y - 0.03, a, 0)) return [x, y];
-    return null;
-  })()`);
-  report.expect('found a reed blade to click', Boolean(reed));
-  if (reed) {
-    const onReed = await probe(...toPx(reed[0], reed[1]));
-    report.expect(
-      'click on a reed: counts as bank and lifts motes',
-      onReed.results === 'bank' && onReed.motes,
-      `${onReed.results}, motes ${onReed.motes}`,
+    return (
+      Object.keys(after)
+        .filter((k) => after[k] !== (before[k] ?? 0))
+        .join(',') || 'nothing'
     );
+  };
+  // 2 CSS px in from each corner of the canvas: outside the rounded corner (radius 0.03 of the height).
+  for (const [label, fx, fy] of [
+    ['top-left', 0, 0],
+    ['top-right', 1, 0],
+    ['bottom-left', 0, 1],
+    ['bottom-right', 1, 1],
+  ]) {
+    const r = await probe(rect[0] + (fx ? rect[2] - 2 : 2), rect[1] + (fy ? rect[3] - 2 : 2));
+    report.measure(`click in the ${label} corner (outside the picture)`, r, { equals: 'nothing' });
+  }
+  // Targets from the world: open water well clear of pads and frogs, a free
+  // pad's middle, and pad 11's part inside the picture.
+  const targets = await page.eval(`(() => {
+    const w = __critterWorld, a = ${rect[2] / rect[3]};
+    const clearOfFrogs = (x, y) => w.frogs.every((f, i) => w.frogDistance(i, x, y) > 0.05);
+    let water = null;
+    for (let y = 0.15; y < 0.85 && !water; y += 0.01) for (let x = 0.15; x < a - 0.15 && !water; x += 0.01)
+      if (w.pads.every((p) => Math.hypot(x - p.x, y - p.y) > p.radius + 0.05) && clearOfFrogs(x, y)) water = [x, y];
+    const free = w.pads.find((p, i) => i < 4 && p.occupant < 0 && clearOfFrogs(p.x, p.y));
+    const p11 = w.pads[11];
+    let corner = null;
+    if (p11) for (let k = 0; k <= 20 && !corner; k++) {
+      // Walk from the pad's centre toward the picture's middle until the point is inside the picture.
+      const t = k / 20 * 0.9, x = p11.x + (a / 2 - p11.x) * t * p11.radius / Math.hypot(a / 2 - p11.x, 0.5 - p11.y), y = p11.y + (0.5 - p11.y) * t * p11.radius / Math.hypot(a / 2 - p11.x, 0.5 - p11.y);
+      if (__critterBank.pictureEdge(x, y, a) < 0.97 && clearOfFrogs(x, y) && w.pads.every((p, i) => i === 11 || Math.hypot(x - p.x, y - p.y) > p.radius)) corner = [x, y];
+    }
+    return { water, pad: free ? [free.x, free.y] : null, corner };
+  })()`);
+  for (const [label, at, expected] of [
+    ['open water', targets.water, 'water'],
+    ['a free pad', targets.pad, 'pad'],
+    ['pad 11 in the top-left corner', targets.corner, 'pad'],
+  ]) {
+    if (!at) report.expect(`found ${label} to click`, false);
+    else report.measure(`click on ${label}`, await probe(...toPx(at[0], at[1])), { equals: expected });
   }
   const cool =
     await page.eval(`(() => { const f = __critterWorld.frogs[0]; __critterAdvance(1); const before = __critterTaps().frog ?? 0;

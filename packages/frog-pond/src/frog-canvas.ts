@@ -1,27 +1,73 @@
-import { REED_BLADES, REED_HEADS, REED_SHADOW, WATER_CX, WATER_CY, reedBlades, shelfDepth } from './frog-bank';
-import { bakeCaustics, trackBank } from './frog-bank-layer';
-import { CAUSTIC_CELL, CAUSTIC_CELLS } from './frog-caustics';
-import { TAU, seeded, smoothstep } from '@critters/critter-kit';
-import { FROG_LOOKS, FROG_PALETTES, FROG_TONGUE, SUN_GLOW, type FrogTheme } from './frog-theme';
-import type { FrogRenderer, FrogRendererHooks } from './frog-webgl';
-import { FORE_TOE, FROG_CAPSULES, HIND_TOE, type Frog, type FrogWorld, type Pad } from './frog-world';
+import { TAU } from '@critters/critter-kit';
+import {
+  CAUSTIC_TILE,
+  GRAIN_TILE,
+  SHADE_SCALE,
+  glslNoise,
+  causticTileJob,
+  makeDrift,
+  makeGrainTile,
+  type GrainTile,
+  type SpriteAtlas,
+} from './frog-caustics';
+import { RIPPLE_ARCS, RIPPLE_SLOTS } from './frog-shaders';
+import {
+  FROG_LINES,
+  FROG_LOOKS,
+  FROG_PALETTE,
+  FROG_SPOTS,
+  FROG_TONGUE,
+  HALO_GROW,
+  LILY,
+  LOOSE_PETALS,
+  PAD_BAND,
+  RIPPLE,
+  SHADE_CLUSTERS,
+  lighten,
+  shadeCentre,
+} from './frog-theme';
+import {
+  atlasBaker,
+  canvasRatio,
+  frogOrder,
+  rippleArcs,
+  type FrogRenderer,
+  type FrogRendererHooks,
+} from './frog-webgl';
+import { FORE_TOE, FROG_CAPSULES, FROG_LIFT, HIND_TOE, type Frog, type FrogWorld, type Pad } from './frog-world';
 
-// The no-WebGL version of the frog pond: the same world, rig, palette and
-// composition as the shader, drawn as a simpler illustration with Canvas 2D
-// paths and gradients rather than a per-pixel port. Loaded only when WebGL
-// can't be used.
+// The no-WebGL version of the frog pond: the same world, rig, palette, shapes
+// and order as the shader (frog-shaders.ts), drawn with Canvas 2D. What never
+// changes shape (the pads, the shade's leaves) is painted once per size with
+// its edges cut against the grain, then moved, turned and laid on each frame;
+// the frogs are flat paths; the caustics are posterised each frame at a third
+// of the resolution; and the grain and drift go over everything as
+// soft-light, the same formula the shader uses. Loaded only when WebGL can't
+// be used.
 
 type RGB = readonly [number, number, number];
-const to255 = (c: readonly number[]): RGB => [c[0] * 255, c[1] * 255, c[2] * 255];
-/** Each frog's look (FROG_LOOKS), in 0 … 255. */
+const css = (c: RGB) => `rgb(${Math.round(c[0] * 255)}, ${Math.round(c[1] * 255)}, ${Math.round(c[2] * 255)})`;
+const P = FROG_PALETTE;
+const COLOURS = {
+  water: css(P.water),
+  ripple: css(P.ripple),
+  white: css(P.white),
+  petalInner: css(P.petalInner),
+  gold: css(P.gold),
+  ink: css(P.ink),
+  shadow: css(P.shadow),
+  shadowDeep: css(P.shadowDeep),
+  tongue: css(FROG_TONGUE),
+};
 const LOOKS = FROG_LOOKS.map((look) => ({
-  skin: to255(look.skin),
-  mark: to255(look.mark),
-  belly: to255(look.belly),
-  iris: to255(look.iris),
+  skin: css(look.skin),
+  mark: css(look.mark),
+  accent: css(look.accent),
+  iris: css(look.iris),
+  highlight: css(lighten(look.skin, 0.24)),
+  lid: css(lighten(look.skin, -0.15)),
   bars: look.bars,
 }));
-type Look = (typeof LOOKS)[number];
 // Leg capsule radii (start, end) by part, as in legsSDF.
 const LEG_RADII = [
   [0.125, 0.074],
@@ -30,1169 +76,720 @@ const LEG_RADII = [
   [0.05, 0.038],
   [0.038, 0.028],
 ] as const;
-// Draws a shadow this far off-canvas so only its blurred copy shows.
-const FAR = 20000;
-/**
- * By day, how much the caustics brighten the bed on average (per unit of
- * caustic strength), where they fall. In the shader the moving web does that
- * with many fine, broken lines; here the bed is lit by this much when it's
- * baked, and the moving web on top stays faint.
- */
-const CAUSTIC_MEAN = 0.34;
-/**
- * The two copies of the caustic web: drift (x, y, in heights per second,
- * as in the shader), scale, turn and strength.
- */
-const CAUSTIC_COPIES = [
-  [0.011, 0.006, 1, 0, 0.8],
-  [-0.008, 0.01, 0.71, 0.5, 0.55],
-] as const;
+const SUN = P.sun;
+const SUN_LENGTH = Math.hypot(SUN[0], SUN[1]);
+/** Away from the key light: every band falls this way (down-left). */
+const AWAY = [-SUN[0] / SUN_LENGTH, -SUN[1] / SUN_LENGTH] as const;
+/** The caustics are posterised at one pixel in this many. */
+const CAUSTIC_STEP = 3;
+/** The warp is worked out on a grid this many caustic pixels apart, and blended between. */
+const WARP_STEP = 8;
 
-const rgba = (c: RGB, alpha = 1, scale = 1) =>
-  `rgba(${Math.round(Math.min(255, c[0] * scale))}, ${Math.round(Math.min(255, c[1] * scale))}, ${Math.round(Math.min(255, c[2] * scale))}, ${alpha})`;
-
-/** Small, soft, horizontally streaked noise for the water surface. */
-function makeWaterTexture() {
-  const width = 96;
-  const height = 48;
-  const random = seeded(9127);
-  const grid = Array.from({ length: 13 * 25 }, () => random());
-  const at = (x: number, y: number) => grid[(y % 13) * 25 + (x % 25)];
-  const texture = document.createElement('canvas');
-  texture.width = width;
-  texture.height = height;
-  const ctx = texture.getContext('2d');
-  if (!ctx) return null;
-  const image = ctx.createImageData(width, height);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const gx = (x / width) * 8;
-      const gy = (y / height) * 12;
-      const ix = Math.floor(gx);
-      const iy = Math.floor(gy);
-      const fx = gx - ix;
-      const fy = gy - iy;
-      const sx = fx * fx * (3 - 2 * fx);
-      const sy = fy * fy * (3 - 2 * fy);
-      const top = at(ix, iy) + (at(ix + 1, iy) - at(ix, iy)) * sx;
-      const bottom = at(ix, iy + 1) + (at(ix + 1, iy + 1) - at(ix, iy + 1)) * sx;
-      const v = top + (bottom - top) * sy;
-      const o = (y * width + x) * 4;
-      image.data[o] = 150 + v * 60;
-      image.data[o + 1] = 140 + v * 50;
-      image.data[o + 2] = 190 + v * 50;
-      image.data[o + 3] = Math.round(v * v * 255);
-    }
-  }
-  ctx.putImageData(image, 0, 0);
-  return texture;
-}
-
-/** The caustic tile with its crisp cell edges softened: the tile over a blurred copy of itself. */
-function softTile(tile: ImageBitmap | OffscreenCanvas | HTMLCanvasElement) {
-  const soft = document.createElement('canvas');
-  soft.width = tile.width;
-  soft.height = tile.height;
-  const g = soft.getContext('2d');
-  if (!g) return soft;
-  // Blurred across the tile's wrap too, so it still tiles seamlessly.
-  g.filter = 'blur(0.7px)';
-  for (const dx of [-1, 0, 1]) for (const dy of [-1, 0, 1]) g.drawImage(tile, dx * tile.width, dy * tile.height);
-  g.filter = 'none';
-  g.globalAlpha = 0.45;
-  g.drawImage(tile, 0, 0);
-  return soft;
-}
-
-/** Fixed dorsal markings per look, in frog-local body lengths. */
-function makeMarkings() {
-  const random = seeded(311);
-  const spots = (count: number, x0: number, x1: number, ySpan: number, r0: number, r1: number) =>
-    Array.from({ length: count }, () => ({
-      x: x0 + random() * (x1 - x0),
-      y: (random() * 2 - 1) * ySpan,
-      rx: r0 + random() * (r1 - r0),
-      ry: r0 + random() * (r1 - r0),
-      a: random() * Math.PI,
-    }));
-  return [
-    spots(11, -0.44, 0.14, 0.19, 0.028, 0.05),
-    spots(16, -0.44, 0.3, 0.2, 0.008, 0.014),
-    spots(3, -0.36, 0.05, 0.14, 0.03, 0.045),
-  ];
-}
+const canvasOf = (width: number, height: number) => {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.ceil(width));
+  c.height = Math.max(1, Math.ceil(height));
+  return c;
+};
 
 export function createFrogCanvas(
   canvas: HTMLCanvasElement,
   world: FrogWorld,
   ripples: Float32Array,
-  theme: FrogTheme = 'night',
   hooks: FrogRendererHooks = {},
 ): FrogRenderer {
   const context = canvas.getContext('2d');
   if (!context) throw new Error('2D canvas context creation failed.');
   const ctx = context;
-  const palette = FROG_PALETTES[theme];
-  const day = theme === 'day';
-  const LIGHT = to255(palette.light);
-  const SUN = palette.sun;
-  const sunLength = Math.hypot(SUN[0], SUN[1]);
-  // Shadows fall away from the key light: down and to the left.
-  const away = [-SUN[0] / sunLength, -SUN[1] / sunLength] as const;
-  const texture = makeWaterTexture();
-  // By day, the caustic tile (made off the main thread, like the bank).
-  let caustic: HTMLCanvasElement | null = null;
-  let causticsReady = !day;
-  if (day) {
-    bakeCaustics(192).then(
-      (tile) => {
-        caustic = softTile(tile);
-        causticsReady = true;
-        hooks.onChange?.();
-      },
-      (error: unknown) => console.error('[frog-pond] Could not make the caustics.', error),
-    );
-  }
-  const markings = makeMarkings();
-  const crest = to255(palette.rippleCrest);
-  const trough = to255(palette.rippleTrough);
-  const flyGlow = to255(palette.flyGlow);
-  const flyBody = to255(palette.flyBody);
-  const glintRandom = seeded(77);
-  const glints = Array.from({ length: day ? 70 : 46 }, () => ({
-    u: 0.45 + glintRandom() * 0.6,
-    v: 0.5 + glintRandom() * 0.55,
-    phase: glintRandom() * TAU,
-    rate: 0.6 + glintRandom() * 1.4,
-    size: 0.5 + glintRandom(),
-  }));
-  let bedLayer: HTMLCanvasElement | null = null;
-  let columnLayer: HTMLCanvasElement | null = null;
-  // By day: the caustic web's strength by depth (a mask), and a layer to
-  // build each frame's web in before it is masked and added.
-  let causticMask: HTMLCanvasElement | null = null;
-  let causticLayer: HTMLCanvasElement | null = null;
-  // The bank, baked off the main thread (frog-bank-layer.ts).
-  const bank = trackBank(theme, () => hooks.onChange?.());
-  let ready = false;
-  let clock = 0;
+
+  // ---- Baked once ----------------------------------------------------------------
+  // The caustic tile, painted a slice at a time; its brightness is read once it's done.
+  const causticJob = causticTileJob(256);
+  let causticReady = false;
+  const causticAlpha = new Float32Array(256 * 256);
+  const readCaustics = () => {
+    causticReady = causticJob.work(6);
+    if (!causticReady) return;
+    const g = (causticJob.tile as HTMLCanvasElement | OffscreenCanvas).getContext('2d') as
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
+    const data = g?.getImageData(0, 0, 256, 256).data;
+    if (data) for (let i = 0; i < 256 * 256; i++) causticAlpha[i] = data[i * 4 + 3] / 255;
+  };
+  const sampleCaustic = (u: number, v: number) => {
+    const x = (u - Math.floor(u)) * 256 - 0.5;
+    const y = (v - Math.floor(v)) * 256 - 0.5;
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const fx = x - x0;
+    const fy = y - y0;
+    const i0 = x0 & 255;
+    const i1 = (x0 + 1) & 255;
+    const j0 = (y0 & 255) * 256;
+    const j1 = ((y0 + 1) & 255) * 256;
+    const a = causticAlpha[j0 + i0];
+    const b = causticAlpha[j0 + i1];
+    const c = causticAlpha[j1 + i0];
+    const d = causticAlpha[j1 + i1];
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+  };
+  const causticTones = [
+    [Math.round(P.causticLow[0] * 255), Math.round(P.causticLow[1] * 255), Math.round(P.causticLow[2] * 255)],
+    [Math.round(P.causticHigh[0] * 255), Math.round(P.causticHigh[1] * 255), Math.round(P.causticHigh[2] * 255)],
+  ];
+
+  // ---- Baked per size --------------------------------------------------------------
   let h = 1;
+  let width = 0;
+  let height = 0;
+  let ratio = 1;
   let aspect = 1;
-  const reedEnds = new Float32Array(REED_BLADES * 4);
-  const reedShape = new Float32Array(REED_BLADES * 4);
-  const reedBox = new Float32Array(4);
+  let grain: GrainTile | null = null;
+  let paper: CanvasPattern | null = null;
+  let drift: HTMLCanvasElement | null = null;
+  let driftAspect = 0;
+  let causticCanvas: HTMLCanvasElement | null = null;
+  let causticImage: ImageData | null = null;
+  let warp = new Float32Array(0);
+  let warpColumns = 0;
+  /** The pads and the shade, painted once per size (paintAtlas, shared with the WebGL renderer). */
+  const baker = atlasBaker(world, () => hooks.onChange?.());
+  let atlas: SpriteAtlas | null = null;
+  let ready = false;
 
   const sx = (x: number) => x * h;
   const sy = (y: number) => (1 - y) * h;
-  /** 0 at the bank … 1 in the middle, as pondDepth() in the shader (without its floor noise). */
-  const depthAt = (x: number, y: number) => shelfDepth(x, y, aspect);
 
-  // ---- Water ------------------------------------------------------------------
-  /** The riverbed: silt, sandy patches toward the shallows, lit stones. */
-  const paintBed = (width: number, height: number) => {
-    const layer = document.createElement('canvas');
-    layer.width = width;
-    layer.height = height;
-    const g = layer.getContext('2d');
-    if (!g) return null;
-    const mud = to255(palette.mud);
-    const mudDark = to255(palette.mudDark);
-    const sand = to255(palette.sand);
-    const light = palette.bedLight;
-    g.fillStyle = rgba(mudDark, 1, light);
-    g.fillRect(0, 0, width, height);
-    const bedRandom = seeded(4821);
-    // Silt and sand in soft overlapping patches, the sand toward the bank.
-    for (let i = 0; i < 70; i++) {
-      const u = bedRandom() * aspect;
-      const v = bedRandom();
-      const shallow = 1 - depthAt(u, v);
-      const radius = height * (0.05 + bedRandom() * 0.09);
-      const sandy = bedRandom() < 0.25 + shallow * 0.5;
-      const patch = g.createRadialGradient(sx(u), sy(v), 0, sx(u), sy(v), radius);
-      patch.addColorStop(0, rgba(sandy ? sand : mud, sandy ? 0.3 + shallow * 0.3 : 0.45, light));
-      patch.addColorStop(1, rgba(sandy ? sand : mud, 0, light));
-      g.fillStyle = patch;
-      g.fillRect(sx(u) - radius, sy(v) - radius, radius * 2, radius * 2);
-    }
-    // Stones: a few larger ones anywhere, pebbles gathering toward the
-    // bank. Each is a dark bed around it, the stone, and its lit top.
-    const dark = to255(palette.stoneDark);
-    const pale = to255(palette.stoneLight);
-    for (let i = 0; i < 420; i++) {
-      const u = bedRandom() * aspect;
-      const v = bedRandom();
-      const shallow = 1 - depthAt(u, v);
-      const pebble = bedRandom() < 0.78;
-      if (bedRandom() > (pebble ? 0.18 + shallow * 0.75 : 0.35 + shallow * 0.3)) continue;
-      const r = height * (pebble ? 0.004 + bedRandom() * 0.007 : 0.012 + bedRandom() * 0.016);
-      const stretch = 0.6 + bedRandom() * 0.4;
-      const angle = bedRandom() * TAU;
-      const tone = bedRandom();
-      const colour: RGB = [
-        dark[0] + (pale[0] - dark[0]) * (0.3 + 0.65 * tone),
-        dark[1] + (pale[1] - dark[1]) * (0.3 + 0.65 * tone),
-        dark[2] + (pale[2] - dark[2]) * (0.3 + 0.65 * tone),
-      ];
-      g.save();
-      g.translate(sx(u), sy(v));
-      g.rotate(angle);
-      g.fillStyle = rgba([0, 0, 0], 0.22);
-      g.beginPath();
-      g.ellipse(0, 0, r * 1.35, r * stretch * 1.35, 0, 0, TAU);
-      g.fill();
-      g.fillStyle = rgba(colour, 0.9, light * 0.66);
-      g.beginPath();
-      g.ellipse(0, 0, r, r * stretch, 0, 0, TAU);
-      g.fill();
-      g.restore();
-      // The lit top, toward the key light.
-      const top = g.createRadialGradient(
-        sx(u) + SUN[0] * r * 0.35,
-        sy(v) - SUN[1] * r * 0.35,
-        0,
-        sx(u),
-        sy(v),
-        r * 1.05,
-      );
-      top.addColorStop(0, rgba(colour, 0.55, light));
-      top.addColorStop(1, rgba(colour, 0, light));
-      g.fillStyle = top;
-      g.beginPath();
-      g.arc(sx(u), sy(v), r, 0, TAU);
-      g.fill();
-    }
-    if (causticMask) {
-      // The average light of the caustics, where they fall (see CAUSTIC_MEAN).
-      const lit = document.createElement('canvas');
-      lit.width = width;
-      lit.height = height;
-      const l = lit.getContext('2d');
-      if (l) {
-        l.drawImage(layer, 0, 0);
-        l.globalCompositeOperation = 'destination-in';
-        l.drawImage(causticMask, 0, 0);
-        g.globalCompositeOperation = 'lighter';
-        g.globalAlpha = Math.min(1, palette.caustics * CAUSTIC_MEAN);
-        g.drawImage(lit, 0, 0);
-        g.globalCompositeOperation = 'source-over';
-        g.globalAlpha = 1;
-      }
-    }
-    return layer;
-  };
+  /** The grain at a device pixel of the picture. */
+  const grainAt = (x: number, y: number) =>
+    grain ? grain.grain[(((y | 0) & (GRAIN_TILE - 1)) * GRAIN_TILE) | ((x | 0) & (GRAIN_TILE - 1))] : 0.5;
 
-  /**
-   * Everything between the bed and the air: the water column deepening in
-   * colour toward the middle, the sky reflected, and the glow of the light.
-   */
-  const paintColumn = (width: number, height: number) => {
-    const layer = document.createElement('canvas');
-    layer.width = width;
-    layer.height = height;
-    const g = layer.getContext('2d');
-    if (!g) return null;
-    // Deep out in the open water, shelving toward the bank at the lower left.
-    const cx = width * WATER_CX;
-    const cy = sy(WATER_CY);
-    const shallowAlpha = 1 - Math.exp(-0.22 * palette.turbidity);
-    const deepAlpha = 1 - Math.exp(-1.72 * palette.turbidity);
-    g.save();
-    g.translate(cx, cy);
-    g.scale(1.25, 1);
-    const column = g.createRadialGradient(0, 0, 0, 0, 0, height * 0.72);
-    column.addColorStop(0, rgba(to255(palette.waterDeep), deepAlpha));
-    column.addColorStop(0.55, rgba(to255(palette.waterDeep), (deepAlpha + shallowAlpha) * 0.55));
-    column.addColorStop(1, rgba(to255(palette.waterShallow), shallowAlpha));
-    g.fillStyle = column;
-    g.fillRect(-width, -height, width * 2, height * 2);
-    g.restore();
-    // The sky reflected in the surface.
-    const sky = to255(palette.sky);
-    const reflect = g.createLinearGradient(0, height, 0, 0);
-    reflect.addColorStop(0, rgba(sky, palette.skyReflect * 0.7));
-    reflect.addColorStop(1, rgba(sky, palette.skyReflect));
-    g.fillStyle = reflect;
-    g.fillRect(0, 0, width, height);
-    // The light itself, reflected from beyond the top-right corner.
-    g.save();
-    g.translate(width * SUN_GLOW[0], (1 - SUN_GLOW[1]) * height);
-    g.scale(1, 0.55);
-    const glow = g.createRadialGradient(0, 0, 0, 0, 0, height * 0.9);
-    glow.addColorStop(0, rgba(LIGHT, day ? 0.26 : 0.78));
-    glow.addColorStop(0.45, rgba(LIGHT, day ? 0.1 : 0.28));
-    glow.addColorStop(1, rgba(LIGHT, 0));
-    g.fillStyle = glow;
-    g.fillRect(-width, -height * 2, width * 2, height * 4);
-    g.restore();
-    return layer;
-  };
-
-  /**
-   * How strongly the caustics show at each point: they fade over deeper
-   * water (as in water() in the shader) and stop at the bank.
-   */
-  const paintCausticMask = (width: number, height: number) => {
-    const scale = 4;
-    const small = document.createElement('canvas');
-    small.width = Math.ceil(width / scale);
-    small.height = Math.ceil(height / scale);
-    const g = small.getContext('2d');
-    if (!g) return null;
-    const image = g.createImageData(small.width, small.height);
-    for (let j = 0; j < small.height; j++) {
-      for (let i = 0; i < small.width; i++) {
-        const x = ((i + 0.5) * scale) / height;
-        const y = 1 - ((j + 0.5) * scale) / height;
-        const depth = depthAt(x, y);
-        const strength = (1 - depth * 0.35) * smoothstep(-0.005, 0.02, depth);
-        image.data[(j * small.width + i) * 4 + 3] = Math.round(strength * 255);
-      }
-    }
-    g.putImageData(image, 0, 0);
-    const mask = document.createElement('canvas');
-    mask.width = width;
-    mask.height = height;
-    const m = mask.getContext('2d');
-    m?.drawImage(small, 0, 0, width, height);
-    return mask;
-  };
-
-  /** Pads and swimming frogs shade the bed, further out over deep water. */
-  const drawBedShadows = () => {
-    ctx.save();
-    ctx.shadowColor = `rgba(0, 0, 0, ${palette.shadow * (day ? 0.85 : 0.6)})`;
-    ctx.fillStyle = '#000';
-    world.pads.forEach((pad, index) => {
-      const reach = 0.006 + depthAt(pad.x, pad.y) * palette.bedShadowReach;
-      ctx.shadowBlur = h * (0.006 + depthAt(pad.x, pad.y) * 0.02);
-      ctx.shadowOffsetX = FAR + away[0] * reach * h;
-      ctx.shadowOffsetY = -away[1] * reach * h;
-      ctx.save();
-      ctx.translate(-FAR, 0);
-      padPath(pad, index);
-      ctx.fill();
-      ctx.restore();
-    });
-    for (const frog of world.frogs) {
-      if (frog.submerge < 0.02) continue;
-      const reach = 0.006 + depthAt(frog.x, frog.y) * palette.bedShadowReach;
-      ctx.shadowBlur = h * 0.012;
-      ctx.shadowOffsetX = FAR + away[0] * reach * h;
-      ctx.shadowOffsetY = -away[1] * reach * h;
-      ctx.save();
-      ctx.translate(sx(frog.x) - FAR, sy(frog.y));
-      ctx.rotate(-frog.bodyHeading);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, frog.size * h * 0.62, frog.size * h * 0.36, 0, 0, TAU);
-      ctx.globalAlpha = 0.8;
-      ctx.fill();
-      ctx.restore();
-    }
-    ctx.restore();
-  };
-
-  const drawWater = (time: number, width: number) => {
-    if (bedLayer) ctx.drawImage(bedLayer, 0, 0);
-    if (caustic && causticLayer && causticMask) {
-      // Two copies of the caustic web sliding past each other, at the same
-      // scales and speeds as the WebGL scene; the second turned a little, so
-      // the two never line up into a regular net (the shader bends them
-      // with the surface instead). Then faded with depth, as in water().
-      const tile = h * CAUSTIC_CELL * CAUSTIC_CELLS;
-      const g = causticLayer.getContext('2d');
+  const fit = () => {
+    const w = canvas.width;
+    const hh = canvas.height;
+    const r = canvasRatio(canvas);
+    const sizeChanged = w !== width || hh !== height;
+    width = w;
+    height = hh;
+    h = hh;
+    aspect = w / Math.max(1, hh);
+    if (!grain || grain.ratio !== r || !paper) {
+      ratio = r;
+      grain = makeGrainTile(r);
+      const tile = canvasOf(GRAIN_TILE, GRAIN_TILE);
+      const g = tile.getContext('2d');
       if (g) {
-        g.globalCompositeOperation = 'source-over';
-        g.clearRect(0, 0, width, h);
-        for (const [vx, vy, scale, turn, alpha] of CAUSTIC_COPIES) {
-          const size = tile * scale;
-          const ox = (((time * vx * h) % size) + size) % size;
-          const oy = (((time * vy * h) % size) + size) % size;
-          g.save();
-          g.globalAlpha = alpha;
-          g.translate(width / 2, h / 2);
-          g.rotate(turn);
-          const reach = Math.hypot(width, h) / 2 + size;
-          for (let x = -reach + ox; x < reach; x += size) {
-            for (let y = -reach + oy; y < reach; y += size) g.drawImage(caustic, x, y, size, size);
-          }
-          g.restore();
+        const image = g.createImageData(GRAIN_TILE, GRAIN_TILE);
+        for (let i = 0; i < GRAIN_TILE * GRAIN_TILE; i++) {
+          const v = grain.pixels[i * 4 + 1];
+          image.data[i * 4] = v;
+          image.data[i * 4 + 1] = v;
+          image.data[i * 4 + 2] = v;
+          image.data[i * 4 + 3] = 255;
         }
-        g.globalCompositeOperation = 'destination-in';
-        g.drawImage(causticMask, 0, 0);
-        ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.globalAlpha = Math.min(1, palette.caustics * 0.2);
-        ctx.drawImage(causticLayer, 0, 0);
-        ctx.restore();
+        g.putImageData(image, 0, 0);
+      }
+      paper = ctx.createPattern(tile, 'repeat');
+    }
+    const rounded = Math.round(aspect * 100) / 100;
+    if (rounded !== driftAspect) {
+      driftAspect = rounded;
+      const map = makeDrift(rounded);
+      drift = canvasOf(map.width, map.height);
+      const g = drift.getContext('2d');
+      if (g) {
+        const image = g.createImageData(map.width, map.height);
+        image.data.set(map.pixels);
+        g.putImageData(image, 0, 0);
       }
     }
-    drawBedShadows();
-    if (columnLayer) ctx.drawImage(columnLayer, 0, 0);
-    if (texture) {
-      // Slow drifting streaks, a little brighter under the glow.
-      const drift = (((time * 0.012 * h) % width) + width) % width;
-      ctx.save();
-      ctx.globalAlpha = day ? 0.06 : 0.09;
-      ctx.globalCompositeOperation = 'screen';
-      ctx.drawImage(texture, -drift, 0, width, h);
-      ctx.drawImage(texture, width - drift, 0, width, h);
-      ctx.restore();
+    if (sizeChanged || !causticCanvas) {
+      causticCanvas = canvasOf(w / CAUSTIC_STEP, hh / CAUSTIC_STEP);
+      causticImage = causticCanvas.getContext('2d')?.createImageData(causticCanvas.width, causticCanvas.height) ?? null;
+      warpColumns = Math.ceil(causticCanvas.width / WARP_STEP) + 2;
+      warp = new Float32Array(warpColumns * (Math.ceil(causticCanvas.height / WARP_STEP) + 2) * 2);
     }
-    for (const glint of glints) {
-      const twinkle = Math.max(0, Math.sin(time * glint.rate + glint.phase)) ** (day ? 8 : 4);
-      if (twinkle < 0.05) continue;
-      const x = glint.u * aspect;
-      const y = glint.v;
-      const near = Math.exp(-(((x - aspect * SUN_GLOW[0]) * 1.05) ** 2 + ((y - SUN_GLOW[1]) * 1.9) ** 2) * 2.6);
-      ctx.fillStyle = rgba(LIGHT, twinkle * (day ? 0.2 + near * 0.8 : 0.12 + near * 0.6));
+    if (grain) baker.fit(hh, ratio, grain);
+    atlas = baker.atlas;
+  };
+
+  // ---- Water ------------------------------------------------------------------------
+  /** The caustic field posterised into two tones (caustics() in the shader), at a third of the size. */
+  const drawCaustics = (time: number) => {
+    if (!causticCanvas || !causticImage) return;
+    const cw = causticCanvas.width;
+    const ch = causticCanvas.height;
+    const unit = CAUSTIC_STEP / h; // world units per caustic pixel
+    // The warp, on a coarse grid.
+    const rows = Math.ceil(ch / WARP_STEP) + 2;
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < warpColumns; i++) {
+        const px = (i * WARP_STEP + 0.5) * unit;
+        const py = 1 - (j * WARP_STEP + 0.5) * unit;
+        const o = (j * warpColumns + i) * 2;
+        warp[o] = glslNoise(px * 2.3 + time * 0.07, py * 2.3 + time * 0.07) - 0.5;
+        warp[o + 1] = glslNoise(px * 2.3 + 17 - time * 0.06, py * 2.3 + 17 - time * 0.06) - 0.5;
+      }
+    }
+    const d = causticImage.data;
+    const [low, high] = causticTones;
+    const steps = P.causticSteps;
+    const jitter = P.causticJitter;
+    const tile = CAUSTIC_TILE;
+    const ax = (time * 0.011) / tile;
+    const ay = (time * 0.006) / tile;
+    const bx = (time * -0.008) / (tile * 0.71);
+    const by = (time * 0.01) / (tile * 0.71);
+    for (let y = 0; y < ch; y++) {
+      const gy = y / WARP_STEP;
+      const j = gy | 0;
+      const fy = gy - j;
+      const wy = 1 - (y + 0.5) * unit;
+      for (let x = 0; x < cw; x++) {
+        const gx = x / WARP_STEP;
+        const i = gx | 0;
+        const fx = gx - i;
+        const o00 = (j * warpColumns + i) * 2;
+        const o01 = o00 + warpColumns * 2;
+        const wxw =
+          (warp[o00] * (1 - fx) + warp[o00 + 2] * fx) * (1 - fy) + (warp[o01] * (1 - fx) + warp[o01 + 2] * fx) * fy;
+        const wyw =
+          (warp[o00 + 1] * (1 - fx) + warp[o00 + 3] * fx) * (1 - fy) +
+          (warp[o01 + 1] * (1 - fx) + warp[o01 + 3] * fx) * fy;
+        const wx = (x + 0.5) * unit;
+        const qx = (wx + wxw * 0.18) / tile;
+        const qy = (wy + wyw * 0.18) / tile;
+        // Texture v runs down the tile from its top row; world y runs up.
+        const a = sampleCaustic(qx - ax, qy - ay);
+        const b = sampleCaustic(qx / 0.71 - bx, qy / 0.71 - by);
+        const v = a * 0.45 + b * 0.3 + a * b * 1.1 + (grainAt(x * CAUSTIC_STEP, y * CAUSTIC_STEP) - 0.5) * jitter;
+        const o = (y * cw + x) * 4;
+        const tone = v > steps[1] ? high : v > steps[0] ? low : null;
+        if (tone) {
+          d[o] = tone[0];
+          d[o + 1] = tone[1];
+          d[o + 2] = tone[2];
+          d[o + 3] = 255;
+        } else d[o + 3] = 0;
+      }
+    }
+    causticCanvas.getContext('2d')?.putImageData(causticImage, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(causticCanvas, 0, 0, cw * CAUSTIC_STEP, ch * CAUSTIC_STEP);
+  };
+
+  const arcs = new Float32Array(RIPPLE_SLOTS * RIPPLE_ARCS * 2);
+  const drawRipples = (time: number) => {
+    ctx.strokeStyle = COLOURS.ripple;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = Math.max(1.4 * ratio, 0.0032 * h);
+    for (let i = 0; i < RIPPLE_SLOTS; i++) {
+      const start = ripples[i * 4 + 2];
+      const age = time - start;
+      if (start <= 0 || age < 0 || age >= RIPPLE.life) continue;
+      const x = ripples[i * 4];
+      const y = ripples[i * 4 + 1];
+      rippleArcs(x, y, arcs, i * RIPPLE_ARCS * 2);
+      const r0 = RIPPLE.start + age * RIPPLE.speed;
+      ctx.globalAlpha = 0.9 * (1 - age / RIPPLE.life) * Math.min(1, ripples[i * 4 + 3] * 2);
       ctx.beginPath();
-      ctx.ellipse(sx(x), sy(y), h * 0.006 * glint.size, h * 0.0016, -0.4, 0, TAU);
+      for (let ring = 0; ring < 2; ring++) {
+        const r = r0 - ring * RIPPLE.gap;
+        if (r <= 0.012) continue;
+        for (let k = 0; k < 3; k++) {
+          const o = i * RIPPLE_ARCS * 2 + (ring * 3 + k) * 2;
+          const a0 = arcs[o];
+          const len = arcs[o + 1];
+          ctx.moveTo(sx(x + Math.cos(a0) * r), sy(y + Math.sin(a0) * r));
+          ctx.arc(sx(x), sy(y), r * h, -a0, -(a0 + len), true);
+        }
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  // ---- Pads, the lily, petals, midges -----------------------------------------------
+  const placePad = (pad: Pad, dx: number, dy: number) => {
+    // A sprite painted for another height (while a new one paints) is scaled to fit.
+    const bob = (1 + pad.bob * Math.sin(pad.bobPhase) * 0.03) * (atlas ? h / atlas.h : 1);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(sx(pad.x + dx), sy(pad.y + dy));
+    ctx.rotate(-pad.angle);
+    ctx.scale(bob, bob);
+  };
+  const drawPads = () => {
+    if (!atlas) return;
+    const image = atlas.canvas;
+    ctx.globalCompositeOperation = 'multiply';
+    for (let i = 0; i < world.pads.length; i++) {
+      const at = atlas.bands[i];
+      placePad(world.pads[i], AWAY[0] * PAD_BAND, AWAY[1] * PAD_BAND);
+      ctx.drawImage(image, at.x, at.y, at.half * 2, at.half * 2, -at.half, -at.half, at.half * 2, at.half * 2);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < world.pads.length; i++) {
+      const pad = world.pads[i];
+      const at = atlas.leaves[i];
+      placePad(pad, 0, 0);
+      ctx.drawImage(image, at.x, at.y, at.half * 2, at.half * 2, -at.half, -at.half, at.half * 2, at.half * 2);
+      // A tap or a landing leaves a pale ring that closes as it fades.
+      if (pad.press > 0.05) {
+        ctx.strokeStyle = COLOURS.ripple;
+        ctx.globalAlpha = pad.press * 0.5;
+        const k = atlas.h; // the transform already scales sprites to the canvas
+        ctx.lineWidth = 0.0032 * k;
+        ctx.beginPath();
+        ctx.arc(pad.pressX * k, -pad.pressY * k, pad.radius * k * (0.28 + (1 - pad.press) * 0.25), 0, TAU);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  };
+
+  const petalRing = (cx: number, cy: number, size: number, turn: number, ring: boolean) => {
+    const r = size * (ring ? 0.62 : 1);
+    ctx.beginPath();
+    for (let k = 0; k < LILY.petals; k++) {
+      const a = turn + (k / LILY.petals) * TAU + (ring ? Math.PI / LILY.petals : 0);
+      const px = sx(cx + Math.cos(a) * r * 0.55);
+      const py = sy(cy + Math.sin(a) * r * 0.55);
+      ctx.moveTo(px + Math.cos(-a) * r * 0.55 * h, py + Math.sin(-a) * r * 0.55 * h);
+      ctx.ellipse(px, py, r * 0.55 * h, r * 0.24 * h, -a, 0, TAU);
+    }
+    ctx.fill();
+  };
+  const drawLily = () => {
+    const pad = world.pads[LILY.pad];
+    if (pad) {
+      const cx = pad.x + LILY.dx;
+      const cy = pad.y + LILY.dy;
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = COLOURS.shadowDeep;
+      petalRing(cx + AWAY[0] * 0.008, cy + AWAY[1] * 0.008, LILY.size, LILY.turn, false);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = COLOURS.white;
+      petalRing(cx, cy, LILY.size, LILY.turn, false);
+      ctx.fillStyle = COLOURS.petalInner;
+      petalRing(cx, cy, LILY.size, LILY.turn, true);
+      ctx.fillStyle = COLOURS.gold;
+      ctx.beginPath();
+      ctx.arc(sx(cx), sy(cy), LILY.size * 0.16 * h, 0, TAU);
       ctx.fill();
     }
-    for (let i = 0; i < ripples.length; i += 4) {
-      const age = time - ripples[i + 2];
-      if (ripples[i + 2] <= 0 || age < 0 || age > 3) continue;
-      const fade = Math.exp(-age * 1.3) * ripples[i + 3];
-      const radius = age * 0.17 * h;
-      ctx.lineWidth = Math.max(1, h * 0.0022);
-      ctx.strokeStyle = rgba(crest, fade * palette.rippleCrest[3]);
+    for (let i = 0; i < LOOSE_PETALS.length; i++) {
+      const [u, v, a] = LOOSE_PETALS[i];
+      const x = u * aspect;
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = COLOURS.shadow;
       ctx.beginPath();
-      ctx.arc(sx(ripples[i]), sy(ripples[i + 1]), radius, 0, TAU);
-      ctx.stroke();
-      if (radius > h * 0.03) {
-        ctx.strokeStyle = rgba(trough, fade * palette.rippleTrough[3]);
-        ctx.beginPath();
-        ctx.arc(sx(ripples[i]), sy(ripples[i + 1]), radius - h * 0.022, 0, TAU);
-        ctx.stroke();
-      }
-    }
-  };
-
-  // ---- Pads -------------------------------------------------------------------
-  const padPath = (pad: Pad, index: number, grow = 1) => {
-    const bob = pad.bob * Math.sin(pad.bobPhase);
-    const radius = pad.radius * (1 + bob * 0.03) * grow;
-    const half = pad.notch / 2;
-    const damageAt = index * 2.3 + 2;
-    ctx.beginPath();
-    ctx.moveTo(sx(pad.x), sy(pad.y));
-    const steps = 56;
-    for (let s = 0; s <= steps; s++) {
-      const a = half + (s / steps) * (TAU - pad.notch);
-      let r = radius * (1 + 0.016 * Math.sin(a * 5 + index * 1.7) + 0.008 * Math.sin(a * 13 + index * 4.1));
-      if (pad.damage > 0) {
-        const bite = Math.cos(a - damageAt);
-        r *= 1 - pad.damage * 0.2 * Math.max(0, (bite - 0.985) / 0.015);
-      }
-      const wa = a + pad.angle;
-      ctx.lineTo(sx(pad.x + Math.cos(wa) * r), sy(pad.y + Math.sin(wa) * r));
-    }
-    ctx.closePath();
-  };
-
-  const drawPad = (pad: Pad, index: number) => {
-    const cx = sx(pad.x);
-    const cy = sy(pad.y);
-    const r = pad.radius * h;
-    // A soft contact shadow on the water.
-    ctx.save();
-    ctx.shadowColor = `rgba(0, 0, 0, ${palette.padShadow})`;
-    ctx.shadowBlur = h * 0.012;
-    ctx.shadowOffsetX = FAR + away[0] * h * 0.0072;
-    ctx.shadowOffsetY = -away[1] * h * 0.0072;
-    ctx.translate(-FAR, 0);
-    padPath(pad, index);
-    ctx.fillStyle = '#000';
-    ctx.fill();
-    ctx.restore();
-
-    padPath(pad, index);
-    const leaf = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    const padA = to255(palette.padA);
-    const padB = to255(palette.padB);
-    leaf.addColorStop(0, rgba(padA, 1, 0.95));
-    leaf.addColorStop(0.3, rgba(padA, 1, 1.12));
-    leaf.addColorStop(1, rgba(padB, 1, 0.98));
-    ctx.fillStyle = leaf;
-    ctx.fill();
-    ctx.save();
-    ctx.clip();
-    // Age yellows the rim inward; young pads keep a bronze edge.
-    const aged = ctx.createRadialGradient(cx, cy, r * 0.45, cx, cy, r);
-    aged.addColorStop(0, rgba(to255(palette.padAged), 0));
-    aged.addColorStop(1, rgba(to255(palette.padAged), pad.age * 0.8));
-    ctx.fillStyle = aged;
-    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-    // Veins.
-    ctx.strokeStyle = day ? 'rgba(20, 45, 12, .3)' : 'rgba(8, 20, 8, .28)';
-    ctx.lineWidth = Math.max(0.8, h * 0.0012);
-    ctx.beginPath();
-    for (let v = 0; v < 13; v++) {
-      const a = pad.angle + pad.notch / 2 + ((v + 0.5) / 13) * (TAU - pad.notch);
-      ctx.moveTo(cx + Math.cos(a) * r * 0.1, cy - Math.sin(a) * r * 0.1);
-      ctx.lineTo(cx + Math.cos(a) * r * 0.86, cy - Math.sin(a) * r * 0.86);
-    }
-    ctx.stroke();
-    // A frog's weight, and the dimple left by a tap or landing.
-    const c = Math.cos(pad.angle);
-    const s = Math.sin(pad.angle);
-    const dip = (lx: number, ly: number, amount: number, reach: number, alpha: number) => {
-      if (amount < 0.02) return;
-      const px = cx + (lx * c - ly * s) * h;
-      const py = cy - (lx * s + ly * c) * h;
-      const shade = ctx.createRadialGradient(px, py, 0, px, py, r * reach);
-      shade.addColorStop(0, `rgba(0, 0, 0, ${amount * alpha})`);
-      shade.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = shade;
-      ctx.fillRect(px - r, py - r, r * 2, r * 2);
-    };
-    dip(pad.loadX, pad.loadY, pad.load, 0.6, 0.2);
-    dip(pad.pressX, pad.pressY, pad.press, 0.36, 0.38);
-    // Sheen on the sunward side.
-    const sheen = ctx.createLinearGradient(cx - SUN[0] * r, cy + SUN[1] * r, cx + SUN[0] * r, cy - SUN[1] * r);
-    sheen.addColorStop(0.55, rgba(LIGHT, 0));
-    sheen.addColorStop(1, rgba(LIGHT, day ? 0.12 : 0.16));
-    ctx.fillStyle = sheen;
-    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-    ctx.restore();
-    // Upturned rim.
-    padPath(pad, index);
-    ctx.lineWidth = Math.max(1, h * 0.0026);
-    ctx.strokeStyle = pad.age < 0.3 ? rgba(to255(palette.padYoung), 0.55, 1.8) : 'rgba(150, 175, 105, .3)';
-    ctx.stroke();
-    if (pad.press > 0.05) {
-      const px = cx + (pad.pressX * c - pad.pressY * s) * h;
-      const py = cy - (pad.pressX * s + pad.pressY * c) * h;
-      ctx.strokeStyle = rgba(LIGHT, pad.press * 0.25);
+      ctx.ellipse(sx(x + AWAY[0] * 0.004), sy(v + AWAY[1] * 0.004), 0.011 * h, 0.0048 * h, -a, 0, TAU);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = COLOURS.white;
       ctx.beginPath();
-      ctx.arc(px, py, r * (0.28 + (1 - pad.press) * 0.25), 0, TAU);
-      ctx.stroke();
+      ctx.ellipse(sx(x), sy(v), 0.011 * h, 0.0048 * h, -a, 0, TAU);
+      ctx.fill();
     }
   };
 
-  // ---- Frogs ------------------------------------------------------------------
+  const drawMidges = () => {
+    for (let i = 0; i < world.flies.length; i++) {
+      const fly = world.flies[i];
+      const seen = fly.respawn > 0 ? 0 : fly.fade;
+      if (seen < 0.05) continue;
+      const lift = 0.01 + fly.height * 0.05;
+      ctx.globalAlpha = seen;
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = COLOURS.shadow;
+      ctx.beginPath();
+      ctx.arc(sx(fly.x + AWAY[0] * lift), sy(fly.y + AWAY[1] * lift), 1.4 * ratio, 0, TAU);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.8 * seen;
+      ctx.fillStyle = COLOURS.ink;
+      ctx.beginPath();
+      ctx.arc(sx(fly.x), sy(fly.y), 1.3 * ratio, 0, TAU);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  // ---- Frogs ------------------------------------------------------------------------
   const capsule = (ax: number, ay: number, bx: number, by: number, ra: number, rb: number) => {
     const dx = bx - ax;
     const dy = by - ay;
     const len = Math.hypot(dx, dy) || 1;
     const nx = -dy / len;
     const ny = dx / len;
-    ctx.moveTo(ax + nx * ra, ay + ny * ra);
-    ctx.lineTo(bx + nx * rb, by + ny * rb);
+    // Wound the same way as the arcs below, so with the nonzero rule
+    // overlapping parts add up instead of cancelling into dark outlines.
+    ctx.moveTo(ax - nx * ra, ay - ny * ra);
     ctx.lineTo(bx - nx * rb, by - ny * rb);
-    ctx.lineTo(ax - nx * ra, ay - ny * ra);
+    ctx.lineTo(bx + nx * rb, by + ny * rb);
+    ctx.lineTo(ax + nx * ra, ay + ny * ra);
     ctx.closePath();
     ctx.moveTo(ax + ra, ay);
     ctx.arc(ax, ay, ra, 0, TAU);
     ctx.moveTo(bx + rb, by);
     ctx.arc(bx, by, rb, 0, TAU);
   };
-
-  // The body is a union of ellipses (as in bodySDF). For clean outlines it
-  // is traced as one polygon: from a point inside the torso, each ray's
-  // furthest crossing of any of the ellipses.
-  const outline = new Float32Array(72 * 2);
-  const bodyPath = (frog: Frog) => {
-    const x = -frog.lean;
-    const sac = frog.throat;
-    const shapes: Array<readonly [number, number, number, number]> = [
-      [x - 0.1, 0, 0.4, 0.265],
-      [x - 0.3, 0, 0.19, 0.235],
-      [x + 0.24, 0, 0.24, 0.222],
-      [x + 0.41, 0, 0.1, 0.12],
-    ];
-    for (const side of [1, -1]) {
-      shapes.push([x + 0.27, 0.155 * side, 0.078, 0.078]);
-      const r = 0.02 + sac * (side > 0 ? 1.06 : 0.94) * 0.075;
-      shapes.push([x + 0.17, (0.2 + sac * 0.06) * side, r, r]);
-    }
-    const count = outline.length / 2;
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * TAU;
-      const c = Math.cos(a);
-      const s = Math.sin(a);
-      let reach = 0;
-      for (const [ex, ey, rx, ry] of shapes) {
-        // |(t·dir − centre) / radii| = 1, far root.
-        const ox = x - ex;
-        const A = (c * c) / (rx * rx) + (s * s) / (ry * ry);
-        const B = 2 * ((c * ox) / (rx * rx) + (s * -ey) / (ry * ry));
-        const C = (ox * ox) / (rx * rx) + (ey * ey) / (ry * ry) - 1;
-        const disc = B * B - 4 * A * C;
-        if (disc >= 0) reach = Math.max(reach, (-B + Math.sqrt(disc)) / (2 * A));
-      }
-      outline[i * 2] = x + c * reach;
-      outline[i * 2 + 1] = s * reach;
-    }
-    ctx.beginPath();
-    ctx.moveTo(outline[0], outline[1]);
-    for (let i = 1; i < count; i++) ctx.lineTo(outline[i * 2], outline[i * 2 + 1]);
-    ctx.closePath();
+  const ellipsePath = (x: number, y: number, rx: number, ry: number, turn: number) => {
+    ctx.moveTo(x + Math.cos(turn) * rx, y + Math.sin(turn) * rx);
+    ctx.ellipse(x, y, rx, ry, turn, 0, TAU);
   };
-
   /** Frog-local transform: snout along +x, left along +y, body lengths. */
-  const frogTransform = (frog: Frog, lift: number) => {
+  const frogTransform = (frog: Frog, lift: number, dx = 0, dy = 0) => {
     const scale = frog.size * h * (1 + frog.z * lift);
-    ctx.translate(sx(frog.x), sy(frog.y));
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(sx(frog.x + dx), sy(frog.y + dy));
     ctx.rotate(-frog.bodyHeading);
     ctx.scale(scale * frog.bodyStretch, -scale / frog.bodyStretch);
   };
-
-  const legPoints = (index: number, k: number) => {
-    const o = (index * FROG_CAPSULES + k) * 4;
-    const c = world.capsules;
-    return [c[o], c[o + 1], c[o + 2], c[o + 3]] as const;
-  };
-
-  const drawShadow = (frog: Frog, index: number) => {
-    const height = frog.z;
-    const strength = palette.shadow * (1 - Math.min(1, height / 0.3) * 0.45);
-    // Cast away from the key light, which is up and to the right.
-    const reach = (0.0094 + height * 0.336) * h;
-    ctx.save();
-    ctx.shadowColor = `rgba(0, 0, 0, ${strength})`;
-    ctx.shadowBlur = frog.size * h * (0.06 + height * 1.2);
-    ctx.shadowOffsetX = FAR + away[0] * reach;
-    ctx.shadowOffsetY = -away[1] * reach;
-    ctx.translate(-FAR, 0);
-    // Ground-sized: the shadow never takes the frog's lift.
-    frogTransform(frog, 0);
-    ctx.fillStyle = '#000';
-    bodyPath(frog);
-    for (let k = 0; k < FROG_CAPSULES; k++) {
-      const [ax, ay, bx, by] = legPoints(index, k);
-      const part = k % 5;
-      capsule(ax, ay, bx, by, LEG_RADII[part][0], LEG_RADII[part][1]);
-      if (part === 2) {
-        ctx.moveTo(bx + 0.12, by);
-        ctx.arc(bx + (bx - ax) * 0.4, by + (by - ay) * 0.4, 0.12, 0, TAU);
-      }
+  const bodyPath = (frog: Frog) => {
+    const x = -frog.lean;
+    const sac = frog.throat;
+    ellipsePath(x - 0.1, 0, 0.4, 0.265, 0);
+    ellipsePath(x - 0.3, 0, 0.19, 0.235, 0);
+    ellipsePath(x + 0.24, 0, 0.24, 0.222, 0);
+    ellipsePath(x + 0.41, 0, 0.1, 0.12, 0);
+    for (let side = -1; side <= 1; side += 2) {
+      ellipsePath(x + 0.27, 0.155 * side, 0.078, 0.078, 0);
+      const r = 0.02 + sac * (side > 0 ? 1.06 : 0.94) * 0.075;
+      ellipsePath(x + 0.17, (0.2 + sac * 0.06) * side, r, r, 0);
     }
-    ctx.fill();
-    ctx.restore();
   };
-
-  const drawFoot = (
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number,
-    hind: boolean,
-    web: number,
-    look: Look,
-    dim: number,
-  ) => {
-    const len = Math.hypot(bx - ax, by - ay) || 1;
-    const dx = (bx - ax) / len;
-    const dy = (by - ay) / len;
-    const base = Math.atan2(dy, dx);
+  const caps = (index: number, k: number, j: number) => world.capsules[(index * FROG_CAPSULES + k) * 4 + j];
+  const footPath = (ax: number, ay: number, bx: number, by: number, hind: boolean, web: number) => {
+    const base = Math.atan2(by - ay, bx - ax);
     const toes = hind ? 5 : 4;
     const spread = hind ? 0.18 + 0.38 * web : 0.62;
     const reach = hind ? HIND_TOE : FORE_TOE;
-    const toeR = hind ? 0.018 : 0.013;
-    const tips: Array<readonly [number, number, number]> = [];
+    const toeR = hind ? 0.02 : 0.016;
     for (let i = 0; i < toes; i++) {
       const k = (i / (toes - 1)) * 2 - 1;
       const a = base + k * spread;
       const l = reach * (0.72 + 0.28 * Math.sin((k * 0.8 + 1) * 1.35));
-      tips.push([a, bx + Math.cos(a) * l, by + Math.sin(a) * l]);
+      capsule(bx, by, bx + Math.cos(a) * l, by + Math.sin(a) * l, toeR, toeR * 1.25);
     }
     if (hind && web > 0.05) {
-      // Webbing between the toes, scalloped, letting the water through.
-      ctx.beginPath();
+      const edge = reach * (0.7 + 0.16 * web);
       ctx.moveTo(bx, by);
       for (let i = 0; i < toes; i++) {
-        const edge = reach * (0.72 + 0.16 * web);
-        const [a] = tips[i];
+        const a = base + ((i / (toes - 1)) * 2 - 1) * spread;
         ctx.lineTo(bx + Math.cos(a) * edge, by + Math.sin(a) * edge);
         if (i < toes - 1) {
-          const mid = (a + tips[i + 1][0]) / 2;
-          ctx.lineTo(bx + Math.cos(mid) * edge * 0.78, by + Math.sin(mid) * edge * 0.78);
+          const mid = a + spread / (toes - 1);
+          ctx.lineTo(bx + Math.cos(mid) * edge * 0.8, by + Math.sin(mid) * edge * 0.8);
         }
       }
       ctx.closePath();
-      ctx.fillStyle = rgba(look.skin, 0.7, 0.95 * dim);
-      ctx.fill();
     }
-    ctx.strokeStyle = rgba(look.skin, 1, 0.72 * dim);
-    ctx.lineWidth = toeR * 2.2;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    for (const [, tx, ty] of tips) {
-      ctx.moveTo(bx, by);
-      ctx.lineTo(tx, ty);
+  };
+  const legsPath = (frog: Frog, index: number) => {
+    for (let k = 0; k < FROG_CAPSULES; k++) {
+      const part = k % 5;
+      const ax = caps(index, k, 0);
+      const ay = caps(index, k, 1);
+      const bx = caps(index, k, 2);
+      const by = caps(index, k, 3);
+      capsule(ax, ay, bx, by, LEG_RADII[part][0], LEG_RADII[part][1]);
+      if (part === 2 || part === 4) footPath(ax, ay, bx, by, part === 2, k < 5 ? frog.webL : frog.webR);
     }
-    ctx.stroke();
-    ctx.fillStyle = rgba(look.belly, 1, 0.62 * dim);
-    ctx.beginPath();
-    for (const [, tx, ty] of tips) {
-      ctx.moveTo(tx + toeR * 1.3, ty);
-      ctx.arc(tx, ty, toeR * 1.3, 0, TAU);
+  };
+  /** The legs for a shadow, as the shader's shadowLegs: capsules, and each foot as a disc. */
+  const shadowLegsPath = (index: number) => {
+    for (let k = 0; k < FROG_CAPSULES; k++) {
+      const part = k % 5;
+      const ax = caps(index, k, 0);
+      const ay = caps(index, k, 1);
+      const bx = caps(index, k, 2);
+      const by = caps(index, k, 3);
+      capsule(ax, ay, bx, by, LEG_RADII[part][0], LEG_RADII[part][1]);
+      if (part === 2 || part === 4) {
+        const len = part === 2 ? HIND_TOE : FORE_TOE;
+        const l = Math.hypot(bx - ax, by - ay) || 1;
+        const cx = bx + ((bx - ax) / l) * len * 0.45;
+        const cy = by + ((by - ay) / l) * len * 0.45;
+        ctx.moveTo(cx + len * 0.5, cy);
+        ctx.arc(cx, cy, len * 0.5, 0, TAU);
+      }
     }
-    ctx.fill();
+  };
+  const segmentPath = (line: readonly number[], x0: number) => {
+    ctx.moveTo(x0 + line[0], line[1]);
+    ctx.lineTo(x0 + line[2], line[3]);
   };
 
   const drawFrog = (frog: Frog, index: number) => {
     const look = LOOKS[frog.palette % LOOKS.length];
-    // Submerged frogs go dim and blue-dark, as if seen through water.
-    const dim = 1 - frog.submerge * 0.45;
-    ctx.save();
-    ctx.globalAlpha = 1 - frog.submerge * 0.4;
-    frogTransform(frog, 0.35);
+    const swimming = frog.submerge >= 0.02;
     ctx.lineCap = 'round';
-
-    // Legs, beneath the body: dark edge, then the limb, then cross-bars.
-    for (const pass of [0, 1]) {
+    // The flat shadow band: ground-sized, away from the light; further, softer
+    // and fainter in the air.
+    if (!swimming) {
+      const reach = 0.007 + frog.z * 0.3;
+      frogTransform(frog, 0, AWAY[0] * reach, AWAY[1] * reach);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = 1 - Math.min(0.4, frog.z);
+      ctx.fillStyle = frog.z > 0.02 ? COLOURS.shadow : COLOURS.shadowDeep;
+      if (frog.z > 0.02) ctx.filter = `blur(${(frog.z * 6 * ratio).toFixed(1)}px)`;
       ctx.beginPath();
-      for (let k = 0; k < FROG_CAPSULES; k++) {
-        const part = k % 5;
-        const [ax, ay, bx, by] = legPoints(index, k);
-        const grow = pass === 0 ? 1 : 0.78;
-        capsule(ax, ay, bx, by, LEG_RADII[part][0] * grow, LEG_RADII[part][1] * grow);
-      }
-      ctx.fillStyle = rgba(look.skin, 1, (pass === 0 ? 0.5 : 0.84) * dim);
+      bodyPath(frog);
+      shadowLegsPath(index);
       ctx.fill();
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-over';
     }
-    ctx.strokeStyle = rgba(look.mark, look.bars);
-    ctx.lineWidth = 0.035;
+    ctx.globalAlpha = swimming ? 1 - frog.submerge * 0.4 : 1;
+    frogTransform(frog, FROG_LIFT);
+    ctx.fillStyle = look.skin;
+    ctx.beginPath();
+    legsPath(frog, index);
+    ctx.fill();
+    // The body's own band falls on the legs beside it.
+    const self = 0.0075 * (1 + frog.z * 0.35);
+    ctx.save();
+    ctx.clip();
+    frogTransform(frog, FROG_LIFT, AWAY[0] * self, AWAY[1] * self);
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = COLOURS.shadow;
+    ctx.beginPath();
+    bodyPath(frog);
+    ctx.fill();
+    ctx.restore();
+    frogTransform(frog, FROG_LIFT);
+    // Leg bars, as flat dark shapes across thighs and shins.
+    const alpha = ctx.globalAlpha;
+    ctx.globalAlpha = alpha * look.bars;
+    ctx.fillStyle = look.mark;
     ctx.beginPath();
     for (let k = 0; k < FROG_CAPSULES; k++) {
       const part = k % 5;
       if (part > 1) continue;
-      const [ax, ay, bx, by] = legPoints(index, k);
-      const len = Math.hypot(bx - ax, by - ay) || 1;
-      const nx = -(by - ay) / len;
-      const ny = (bx - ax) / len;
-      for (const t of part === 0 ? [0.3, 0.62] : [0.25, 0.5, 0.75]) {
-        const r = (LEG_RADII[part][0] + (LEG_RADII[part][1] - LEG_RADII[part][0]) * t) * 0.8;
-        const px = ax + (bx - ax) * t;
-        const py = ay + (by - ay) * t;
-        ctx.moveTo(px + nx * r, py + ny * r);
-        ctx.lineTo(px - nx * r, py - ny * r);
+      const ax = caps(index, k, 0);
+      const ay = caps(index, k, 1);
+      const bx = caps(index, k, 2);
+      const by = caps(index, k, 3);
+      const turn = Math.atan2(by - ay, bx - ax);
+      for (let j = 0; j < (part === 0 ? 2 : 3); j++) {
+        const t = part === 0 ? (j === 0 ? 0.32 : 0.64) : j === 0 ? 0.28 : j === 1 ? 0.55 : 0.8;
+        const r = (LEG_RADII[part][0] + (LEG_RADII[part][1] - LEG_RADII[part][0]) * t) * 0.82;
+        ellipsePath(ax + (bx - ax) * t, ay + (by - ay) * t, 0.024, r, turn);
       }
     }
-    ctx.stroke();
-    for (let k = 0; k < FROG_CAPSULES; k++) {
-      const part = k % 5;
-      if (part !== 2 && part !== 4) continue;
-      const [ax, ay, bx, by] = legPoints(index, k);
-      drawFoot(ax, ay, bx, by, part === 2, k < 5 ? frog.webL : frog.webR, look, dim);
-    }
-
-    // Body: a dark rim where it turns under, then the skin.
+    ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = look.skin;
+    ctx.beginPath();
     bodyPath(frog);
-    ctx.strokeStyle = rgba(look.skin, 1, 0.3 * dim);
-    ctx.lineWidth = 0.035;
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.fillStyle = rgba(look.skin, 1, dim);
     ctx.fill();
-    ctx.save();
-    ctx.clip();
+    // Markings, before the lean.
     const x0 = -frog.lean;
-    ctx.translate(x0, 0);
-    const [blotches, speckles, spots] = markings;
-    ctx.fillStyle = rgba(look.mark, 0.85);
-    ctx.beginPath();
-    const addSpots = (list: typeof blotches) => {
-      for (const spot of list) {
-        ctx.moveTo(spot.x + spot.rx, spot.y);
-        ctx.ellipse(spot.x, spot.y, spot.rx, spot.ry, spot.a, 0, TAU);
-      }
-    };
-    if (frog.palette === 0) addSpots(blotches);
-    else if (frog.palette === 1) addSpots(speckles);
-    else addSpots(spots);
-    ctx.fill();
-    ctx.lineCap = 'round';
-    if (frog.palette === 0) {
-      ctx.strokeStyle = rgba(look.belly, 0.18);
-      ctx.lineWidth = 0.014;
-      ctx.stroke();
-    } else if (frog.palette === 1) {
-      // Pale mid-back stripe and a dark mask through each eye.
-      ctx.strokeStyle = rgba(look.belly, 0.5);
-      ctx.lineWidth = 0.035;
+    const spots = FROG_SPOTS[frog.palette % FROG_SPOTS.length];
+    const lines = FROG_LINES[frog.palette % FROG_LINES.length];
+    ctx.strokeStyle = look.accent;
+    for (const line of lines) {
+      if (line[5] < 0.5) continue;
+      ctx.lineWidth = line[4];
       ctx.beginPath();
-      ctx.moveTo(-0.46, 0);
-      ctx.lineTo(0.42, 0);
-      ctx.stroke();
-      ctx.strokeStyle = rgba(look.mark, 0.75);
-      ctx.lineWidth = 0.05;
-      ctx.beginPath();
-      for (const side of [1, -1]) {
-        ctx.moveTo(0.08, (0.16 - 0.19 * 0.35) * side);
-        ctx.lineTo(0.44, (0.16 + 0.17 * 0.35) * side);
-      }
-      ctx.stroke();
-    } else {
-      // Gold ridges down each side of the back.
-      ctx.strokeStyle = rgba(look.belly, 0.5);
-      ctx.lineWidth = 0.032;
-      ctx.beginPath();
-      for (const side of [1, -1]) {
-        ctx.moveTo(-0.42, (0.15 + 0.42 * 0.07) * side);
-        ctx.quadraticCurveTo(-0.1, (0.15 + 0.007) * side, 0.24, (0.15 - 0.24 * 0.07) * side);
-      }
+      segmentPath(line, x0);
       ctx.stroke();
     }
-    ctx.translate(-x0, 0);
-    // Rounded back: darker toward the edges, the pale belly showing along
-    // the flanks, and a soft wet sheen down the spine toward the light.
-    const dome = ctx.createRadialGradient(x0 - 0.02, 0, 0.05, x0 - 0.02, 0, 0.52);
-    dome.addColorStop(0, 'rgba(255, 255, 240, .07)');
-    dome.addColorStop(0.62, 'rgba(0, 0, 0, 0)');
-    dome.addColorStop(1, 'rgba(0, 0, 0, .42)');
-    ctx.fillStyle = dome;
-    ctx.fillRect(-1, -1, 2, 2);
-    // The pale belly glows in from the edge: the shadow of a frame around
-    // the body, falling inside it.
-    ctx.save();
-    ctx.shadowColor = rgba(look.belly, 0.4, 0.62 * dim);
-    ctx.shadowBlur = frog.size * h * 0.045;
+    if (frog.palette === 0) {
+      ctx.fillStyle = look.accent;
+      ctx.beginPath();
+      for (const s of spots) ellipsePath(x0 + s.x, s.y, s.rx + HALO_GROW, s.r + HALO_GROW, s.a);
+      ctx.fill();
+    }
+    ctx.strokeStyle = look.mark;
+    for (const line of lines) {
+      if (line[5] > 0.5) continue;
+      ctx.lineWidth = line[4];
+      ctx.beginPath();
+      segmentPath(line, x0);
+      ctx.stroke();
+    }
+    ctx.fillStyle = look.mark;
     ctx.beginPath();
-    ctx.rect(-2, -2, 4, 4);
-    ctx.moveTo(outline[0], outline[1]);
-    for (let i = outline.length / 2 - 1; i >= 1; i--) ctx.lineTo(outline[i * 2], outline[i * 2 + 1]);
-    ctx.closePath();
-    ctx.fillStyle = '#000';
+    for (const s of spots) ellipsePath(x0 + s.x, s.y, s.rx, s.r, s.a);
     ctx.fill();
-    ctx.restore();
-    // The sheen follows the world light, which turns with the frog.
+    // One highlight down the back, toward the light (which turns with the frog).
     const c = Math.cos(-frog.bodyHeading);
     const s = Math.sin(-frog.bodyHeading);
     const lx = SUN[0] * c - SUN[1] * s;
     const ly = SUN[0] * s + SUN[1] * c;
-    ctx.save();
-    ctx.translate(x0 - 0.06 + lx * 0.07, ly * 0.07);
-    ctx.scale(1, 0.24);
-    const sheen = ctx.createRadialGradient(0, 0, 0, 0, 0, 0.26);
-    sheen.addColorStop(0, 'rgba(255, 245, 215, .2)');
-    sheen.addColorStop(1, 'rgba(255, 245, 215, 0)');
-    ctx.fillStyle = sheen;
-    ctx.fillRect(-0.3, -0.3, 0.6, 0.6);
-    ctx.restore();
-    ctx.restore();
-
-    // Throat sacs pale as they swell.
-    if (frog.throat > 0.2) {
-      ctx.fillStyle = rgba(look.belly, (frog.throat - 0.2) * 0.8, 0.95);
-      ctx.beginPath();
-      for (const side of [1, -1]) {
-        const r = 0.02 + frog.throat * (side > 0 ? 1.06 : 0.94) * 0.075;
-        const y = (0.2 + frog.throat * 0.06) * side;
-        ctx.moveTo(x0 + 0.17 + r, y);
-        ctx.arc(x0 + 0.17, y, r * 0.9, 0, TAU);
-      }
-      ctx.fill();
-    }
-
-    // Eyes: iris, horizontal pupil turned toward what the frog watches,
-    // a catch-light, and lids for blinking.
-    const closed = Math.max(frog.blink > 0.5 ? 1 : 0, frog.startle * 0.35);
-    for (const side of [1, -1]) {
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.fillStyle = look.highlight;
+    ctx.beginPath();
+    ellipsePath(x0 - 0.04 + lx * 0.06, ly * 0.07, 0.26, 0.06, 0);
+    ctx.fill();
+    ctx.globalAlpha = alpha;
+    // Eyes: iris, a dark bar pupil, one catch-light; a lid to blink.
+    for (let side = -1; side <= 1; side += 2) {
       const ex = x0 + 0.27;
       const ey = 0.155 * side;
-      ctx.fillStyle = rgba(look.skin, 1, 0.45 * dim);
-      ctx.beginPath();
-      ctx.arc(ex, ey, 0.078, 0, TAU);
-      ctx.fill();
-      if (closed >= 1) {
-        ctx.fillStyle = rgba(look.skin, 1, 0.8 * dim);
+      if (frog.blink > 0.5) {
+        ctx.fillStyle = look.lid;
         ctx.beginPath();
-        ctx.arc(ex, ey, 0.062, 0, TAU);
+        ctx.arc(ex, ey, 0.06, 0, TAU);
         ctx.fill();
         continue;
       }
-      const iris = ctx.createRadialGradient(ex, ey, 0, ex, ey, 0.062);
-      iris.addColorStop(0, rgba(look.iris, 1, dim));
-      iris.addColorStop(1, rgba(look.iris, 1, 0.7 * dim));
-      ctx.fillStyle = iris;
+      ctx.fillStyle = look.iris;
       ctx.beginPath();
-      ctx.arc(ex, ey, 0.062, 0, TAU);
+      ctx.arc(ex, ey, 0.06, 0, TAU);
       ctx.fill();
-      const px = ex + (Math.cos(frog.look) - 1) * 0.016;
-      const py = ey + Math.sin(frog.look) * 0.016;
-      ctx.fillStyle = '#080806';
+      ctx.fillStyle = COLOURS.ink;
       ctx.beginPath();
-      ctx.ellipse(px, py, 0.046, 0.024 * (1 - closed * 0.6), 0, 0, TAU);
+      ellipsePath(ex + (Math.cos(frog.look) - 1) * 0.014, ey + Math.sin(frog.look) * 0.014, 0.046, 0.022, 0);
       ctx.fill();
-      ctx.fillStyle = 'rgba(255, 250, 235, .65)';
+      ctx.globalAlpha = alpha * 0.9;
+      ctx.fillStyle = COLOURS.white;
       ctx.beginPath();
-      ctx.arc(ex + lx * 0.03, ey + ly * 0.03, 0.013, 0, TAU);
+      ctx.arc(ex + lx * 0.028, ey + ly * 0.028, 0.013, 0, TAU);
       ctx.fill();
+      ctx.globalAlpha = alpha;
     }
-    ctx.restore();
-
+    // Tongue, out to the midge it is catching.
     if (frog.tongue > 0) {
-      const mx = frog.x + Math.cos(frog.heading) * frog.size * 0.46;
-      const my = frog.y + Math.sin(frog.heading) * frog.size * 0.46;
-      ctx.strokeStyle = rgba(to255(FROG_TONGUE));
-      ctx.lineWidth = frog.size * h * 0.05;
-      ctx.lineCap = 'round';
+      const scale = frog.size * (1 + frog.z * FROG_LIFT);
+      const tx = frog.tongueX - frog.x;
+      const ty = frog.tongueY - frog.y;
+      const tc = Math.cos(-frog.bodyHeading);
+      const ts = Math.sin(-frog.bodyHeading);
+      const qx = (tx * tc - ty * ts) / scale / frog.bodyStretch;
+      const qy = ((tx * ts + ty * tc) / scale) * frog.bodyStretch;
+      const mx = 0.46 + x0;
+      const endX = mx + (qx - mx) * frog.tongue;
+      const endY = qy * frog.tongue;
+      ctx.fillStyle = COLOURS.tongue;
       ctx.beginPath();
-      ctx.moveTo(sx(mx), sy(my));
-      ctx.lineTo(sx(mx + (frog.tongueX - mx) * frog.tongue), sy(my + (frog.tongueY - my) * frog.tongue));
-      ctx.stroke();
+      capsule(mx, 0, endX, endY, 0.028, 0.022);
+      ctx.moveTo(endX + 0.045, endY);
+      ctx.arc(endX, endY, 0.045, 0, TAU);
+      ctx.fill();
     }
+    // A swimmer is seen through the water.
+    if (swimming) {
+      ctx.globalAlpha = frog.submerge * 0.45 * (1 - frog.submerge * 0.4);
+      ctx.fillStyle = COLOURS.water;
+      ctx.beginPath();
+      bodyPath(frog);
+      legsPath(frog, index);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
 
   const drawWake = (frog: Frog) => {
     if (frog.speed < 0.004) return;
-    const strength = Math.min(frog.speed * 7, 1);
-    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.translate(sx(frog.x), sy(frog.y));
     ctx.rotate(-frog.bodyHeading);
     const s = frog.size * h;
-    ctx.strokeStyle = rgba(LIGHT, (day ? 0.24 : 0.16) * strength);
-    ctx.lineWidth = Math.max(1, h * 0.002);
+    const strength = Math.min(frog.speed * 7, 1) * 0.6;
+
+    ctx.strokeStyle = COLOURS.ripple;
+    ctx.lineWidth = 0.0026 * h;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = strength;
     ctx.beginPath();
-    for (const side of [1, -1]) {
-      ctx.moveTo(-0.35 * s, 0.2 * side * s);
-      ctx.quadraticCurveTo(-1.2 * s, 0.6 * side * s, -2.2 * s, 1.05 * side * s);
-    }
+    ctx.moveTo(-0.6 * s, 0.33 * s);
+    ctx.lineTo(-2.2 * s, 1.05 * s);
+    ctx.moveTo(-0.6 * s, -0.33 * s);
+    ctx.lineTo(-2.2 * s, -1.05 * s);
     ctx.stroke();
-    ctx.restore();
+    ctx.globalAlpha = 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
   };
 
-  // ---- Fireflies and reeds -------------------------------------------------------
-  const drawFlies = (reflections: boolean) => {
-    if (day) {
-      drawMidges(reflections);
-      return;
+  // ---- Shade, grain ------------------------------------------------------------------
+  const centre = new Float32Array(2);
+  const drawShade = (time: number) => {
+    if (!atlas) return;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.imageSmoothingEnabled = true;
+    for (let i = 0; i < SHADE_CLUSTERS.length; i++) {
+      const at = atlas.shade[i];
+      shadeCentre(SHADE_CLUSTERS[i], aspect, time, centre, 0);
+      const reach = SHADE_CLUSTERS[i].reach + 0.03;
+      if (centre[0] < -reach || centre[0] > aspect + reach || centre[1] < -reach || centre[1] > 1 + reach) continue;
+      const size = at.half * 2;
+      const shown = (size / SHADE_SCALE) * (h / atlas.h);
+      ctx.drawImage(
+        atlas.canvas,
+        at.x,
+        at.y,
+        size,
+        size,
+        sx(centre[0]) - shown / 2,
+        sy(centre[1]) - shown / 2,
+        shown,
+        shown,
+      );
     }
-    for (const fly of world.flies) {
-      if (fly.respawn > 0 || fly.glow <= 0.01) continue;
-      const x = sx(fly.x);
-      const y = sy(reflections ? fly.y - fly.height : fly.y);
-      const r = h * (reflections ? 0.022 : 0.03);
-      glow(x, y, r, reflections ? fly.glow * 0.25 : fly.glow * 0.5, reflections ? 0 : fly.glow);
-    }
-    for (const mote of world.motes) {
-      const shine = world.moteGlow(mote);
-      if (shine <= 0.01) continue;
-      const x = sx(mote.x);
-      const y = sy(reflections ? mote.y - mote.height : mote.y);
-      glow(x, y, h * (reflections ? 0.022 : 0.03), shine * (reflections ? 0.25 : 0.5), reflections ? 0 : shine);
-    }
-  };
-  /** A firefly: a soft halo, and (unless it's a reflection) a bright core. */
-  const glow = (x: number, y: number, r: number, halo: number, core: number) => {
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
-    gradient.addColorStop(0, rgba(flyGlow, halo, 0.95));
-    gradient.addColorStop(1, rgba(flyGlow, 0, 0.95));
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-    if (core > 0) {
-      ctx.fillStyle = rgba(flyGlow, Math.min(1, core * 1.3), 1.1);
-      ctx.beginPath();
-      ctx.arc(x, y, Math.max(1, h * 0.0028), 0, TAU);
-      ctx.fill();
-    }
+    ctx.globalCompositeOperation = 'source-over';
   };
 
-  /** By day the flies are midges: a speck, flickering wings, a shadow below. */
-  const drawMidges = (shadows: boolean) => {
-    const count = world.flies.length + world.motes.length;
-    for (let i = 0; i < count; i++) {
-      const fly = i < world.flies.length ? world.flies[i] : null;
-      const mote = fly ? null : world.motes[i - world.flies.length];
-      const seen = fly ? (fly.respawn > 0 ? 0 : fly.fade) : world.moteGlow(mote!);
-      if (seen < 0.05) continue;
-      const { x: fx, y: fy, height } = fly ?? mote!;
-      if (shadows) {
-        // Cast away from the light, like everything else (as in the shader).
-        const x = sx(fx + away[0] * height * 0.6);
-        const y = sy(fy + away[1] * height * 0.6);
-        const r = h * 0.006;
-        const shade = ctx.createRadialGradient(x, y, 0, x, y, r);
-        shade.addColorStop(0, `rgba(0, 0, 0, ${0.2 * seen})`);
-        shade.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = shade;
-        ctx.fillRect(x - r, y - r, r * 2, r * 2);
-        continue;
-      }
-      const x = sx(fx);
-      const y = sy(fy);
-      const beat = 0.5 + 0.5 * Math.sin(clock * 60 + i * 1.7);
-      ctx.fillStyle = rgba(flyGlow, (0.3 + beat * 0.2) * seen);
-      ctx.beginPath();
-      ctx.ellipse(x - h * 0.0032, y - h * 0.0008, h * 0.0026, h * 0.0014, 0, 0, TAU);
-      ctx.ellipse(x + h * 0.0032, y - h * 0.0008, h * 0.0026, h * 0.0014, 0, 0, TAU);
-      ctx.fill();
-      ctx.fillStyle = rgba(flyBody, 0.9 * seen);
-      ctx.beginPath();
-      ctx.arc(x, y, Math.max(1, h * 0.0017), 0, TAU);
-      ctx.fill();
+  const drawGrain = () => {
+    ctx.globalCompositeOperation = 'soft-light';
+    if (paper) {
+      ctx.fillStyle = paper;
+      ctx.fillRect(0, 0, width, height);
     }
+    if (drift) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(drift, 0, 0, width, height);
+    }
+    ctx.globalCompositeOperation = 'source-over';
   };
 
-  // The reeds: the blades reedBlades() lays out (as reeds() in the shader).
-  const bladePath = (k: number, dx = 0, dy = 0) => {
-    const rootX = reedEnds[k * 4];
-    const rootY = reedEnds[k * 4 + 1];
-    const ax = reedEnds[k * 4 + 2] - rootX;
-    const ay = reedEnds[k * 4 + 3] - rootY;
-    const len = Math.hypot(ax, ay) || 1;
-    const nx = -ay / len;
-    const ny = ax / len;
-    const steps = 14;
-    ctx.beginPath();
-    for (let pass = 0; pass < 2; pass++) {
-      for (let i = 0; i <= steps; i++) {
-        const t = (pass ? steps - i : i) / steps;
-        const bow = Math.sin(t * Math.PI) * reedShape[k * 4 + 1];
-        const breadth = (reedShape[k * 4] * (1 - t * 0.88) + 0.0005) * (pass ? -1 : 1);
-        const x = sx(rootX + ax * t + nx * (bow + breadth) + dx);
-        const y = sy(rootY + ay * t + ny * (bow + breadth) + dy);
-        if (!pass && !i) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-    }
-    ctx.closePath();
-  };
-  const drawReeds = (time: number) => {
-    reedBlades(aspect, time, reedEnds, reedShape, reedBox);
-    // Shadows first, falling away from the light.
-    ctx.fillStyle = `rgba(0, 0, 0, ${palette.shadow * 0.45})`;
-    for (let k = 0; k < REED_BLADES; k++) {
-      bladePath(k, away[0] * REED_SHADOW, away[1] * REED_SHADOW);
-      ctx.fill();
-    }
-    const near = to255(palette.reedNear);
-    const far = to255(palette.reedFar);
-    const edge = to255(palette.reedEdge);
-    for (let k = 0; k < REED_BLADES; k++) {
-      const tone = reedShape[k * 4 + 2];
-      const colour: RGB = [
-        near[0] + (far[0] - near[0]) * tone,
-        near[1] + (far[1] - near[1]) * tone,
-        near[2] + (far[2] - near[2]) * tone,
-      ];
-      bladePath(k);
-      ctx.fillStyle = rgba(colour, 0.97);
-      ctx.fill();
-      // The sunward edge catches warm light toward the tip.
-      const rootX = reedEnds[k * 4];
-      const rootY = reedEnds[k * 4 + 1];
-      const ax = reedEnds[k * 4 + 2] - rootX;
-      const ay = reedEnds[k * 4 + 3] - rootY;
-      const len = Math.hypot(ax, ay) || 1;
-      ctx.strokeStyle = rgba(edge, 0.25 + tone * 0.4, 0.64);
-      ctx.lineWidth = Math.max(0.8, h * 0.0012);
-      ctx.beginPath();
-      for (let i = 4; i <= 14; i++) {
-        const t = i / 14;
-        const bow = Math.sin(t * Math.PI) * reedShape[k * 4 + 1] - (reedShape[k * 4] * (1 - t * 0.88) + 0.0005);
-        const x = sx(rootX + ax * t - (ay / len) * bow);
-        const y = sy(rootY + ay * t + (ax / len) * bow);
-        if (i === 4) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-    // A seed head on one stem in each clump, four fifths of the way up.
-    const head = to255(palette.reedHead);
-    const rim = to255(palette.reedHeadRim);
-    for (const [k, halfWidth, halfLength] of REED_HEADS) {
-      const rootX = reedEnds[k * 4];
-      const rootY = reedEnds[k * 4 + 1];
-      const tipX = reedEnds[k * 4 + 2];
-      const tipY = reedEnds[k * 4 + 3];
-      ctx.save();
-      ctx.translate(sx(rootX + (tipX - rootX) * 0.8), sy(rootY + (tipY - rootY) * 0.8));
-      ctx.rotate(Math.atan2(tipX - rootX, tipY - rootY));
-      ctx.fillStyle = rgba(head);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, halfWidth * h, halfLength * h, 0, 0, TAU);
-      ctx.fill();
-      ctx.strokeStyle = rgba([head[0] + rim[0], head[1] + rim[1], head[2] + rim[2]], 0.8);
-      ctx.lineWidth = Math.max(1, h * 0.0015);
-      ctx.stroke();
-      ctx.restore();
-    }
-  };
-
-  const drawVignette = (width: number) => {
-    ctx.save();
-    ctx.translate(width / 2, h / 2);
-    ctx.scale((aspect * 0.68) / 0.78, 1);
-    const r = h * 0.78;
-    // The shader's smoothstep(.95, .3, r), in stops.
-    const vignette = ctx.createRadialGradient(0, 0, r * 0.3, 0, 0, r * 0.95);
-    for (let i = 0; i <= 6; i++) {
-      const t = i / 6;
-      vignette.addColorStop(t, `rgba(0, 0, 0, ${(1 - palette.vignette) * smoothstep(0, 1, t)})`);
-    }
-    ctx.fillStyle = vignette;
-    ctx.fillRect(-r * 2, -r * 2, r * 4, r * 4);
-    ctx.restore();
-  };
-
+  const order = new Int32Array(3);
   const renderer: FrogRenderer = {
     get ready() {
       return ready;
     },
-    get bank() {
-      return bank.bank;
-    },
     draw(time) {
-      clock = time;
-      const { width, height } = canvas;
-      bank.fit(width, height);
-      const baked = bank.bank;
-      if (!baked || !causticsReady) return;
-      h = height;
-      aspect = width / Math.max(1, height);
-      if (!bedLayer || bedLayer.width !== width || bedLayer.height !== height) {
-        if (caustic) {
-          causticMask = paintCausticMask(width, height);
-          causticLayer = document.createElement('canvas');
-          causticLayer.width = width;
-          causticLayer.height = height;
-        }
-        bedLayer = paintBed(width, height);
-        columnLayer = paintColumn(width, height);
-      }
+      if (!causticReady) readCaustics();
+      fit();
+      if (!atlas || !causticReady) return;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      drawWater(time, width);
-      drawFlies(true);
-      world.frogs.forEach((frog, i) => {
-        if (frog.submerge < 0.02) return;
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = COLOURS.water;
+      ctx.fillRect(0, 0, width, height);
+      drawCaustics(time);
+      drawRipples(time);
+      const count = frogOrder(world, order);
+      for (let n = 0; n < count; n++) {
+        const frog = world.frogs[order[n]];
+        if (frog.submerge < 0.02) continue;
         drawWake(frog);
-        drawFrog(frog, i);
-        // Water over a swimming frog.
-        ctx.save();
-        frogTransform(frog, 0);
-        ctx.globalAlpha = frog.submerge * 0.35;
-        bodyPath(frog);
-        ctx.fillStyle = rgba(to255(palette.waterDeep), 1, day ? 1 : 0.9);
-        ctx.fill();
-        ctx.restore();
-      });
-      world.pads.forEach(drawPad);
-      // The bank over the water's edge (and over a swimmer close to it).
-      // While the canvas is being resized the last bank is stretched to fit.
-      ctx.drawImage(baked.image, 0, 0, width, height);
-      // Frogs on pads or in the air come after the bank: a leap near the
-      // shore passes over the grass.
-      world.frogs.forEach((frog, i) => {
-        if (frog.submerge >= 0.02) return;
-        drawShadow(frog, i);
-        drawFrog(frog, i);
-      });
-      drawFlies(false);
-      drawReeds(time);
-      drawVignette(width);
+        drawFrog(frog, order[n]);
+      }
+      drawPads();
+      drawLily();
+      drawMidges();
+      for (let n = 0; n < count; n++) {
+        const frog = world.frogs[order[n]];
+        if (frog.submerge >= 0.02) continue;
+        drawFrog(frog, order[n]);
+      }
+      drawShade(time);
+      drawGrain();
       ready = true;
     },
     dispose() {
-      bank.dispose();
-      bedLayer = null;
-      columnLayer = null;
-      causticMask = null;
-      causticLayer = null;
+      baker.dispose();
+      atlas = null;
+      causticCanvas = null;
+      causticImage = null;
+      drift = null;
+      paper = null;
     },
   };
   return renderer;

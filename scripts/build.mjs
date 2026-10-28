@@ -5,15 +5,12 @@
 //   node scripts/build.mjs site [--dev]    dist/site (dist/site-dev: dev helpers on)
 //   node scripts/build.mjs standalone      dist/standalone/frogs.html
 //
-// No bundler beyond esbuild: the scene loads its Canvas 2D fallback and the
-// page-side bank painter as split chunks, and the bank painter's worker is
-// its own classic script, frog-bank-worker.js, next to them (see
-// packages/frog-pond/src/frog-bank-worker-factory.ts).
+// No bundler beyond esbuild: each scene loads its Canvas 2D fallback as a
+// split chunk.
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { buildStandalone } from './build-standalone.mjs';
@@ -21,12 +18,11 @@ import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
 
 const PACKAGE = 'packages/frog-pond';
 const KIT = 'packages/critter-kit';
-const WORKER = `${PACKAGE}/src/frog-bank-worker.ts`;
 
 const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
 
-/** Modules plus the worker script into `outdir`; returns the output sizes. */
-async function buildModules(entryPoints, outdir, dev, bankWorker = true) {
+/** Modules into `outdir`; returns the output sizes. */
+async function buildModules(entryPoints, outdir, dev) {
   const modules = await build({
     ...browserOptions(dev),
     entryPoints,
@@ -38,23 +34,7 @@ async function buildModules(entryPoints, outdir, dev, bankWorker = true) {
     metafile: true,
     plugins: [glslMinify],
   });
-  if (!bankWorker) return modules.metafile.outputs;
-  // The chunk that starts the worker resolves './frog-bank-worker.js'
-  // against its own URL, so the worker goes in that chunk's folder.
-  const starter = Object.entries(modules.metafile.outputs).find(([, output]) =>
-    Object.keys(output.inputs).some((input) => input.endsWith('frog-bank-worker-factory.ts')),
-  );
-  if (!starter) throw new Error('No output starts the bank worker.');
-  const worker = await build({
-    ...browserOptions(dev),
-    entryPoints: [WORKER],
-    outfile: `${dirname(starter[0])}/frog-bank-worker.js`,
-    format: 'iife',
-    sourcemap: dev ? 'linked' : false,
-    metafile: true,
-    plugins: [glslMinify],
-  });
-  return { ...modules.metafile.outputs, ...worker.metafile.outputs };
+  return modules.metafile.outputs;
 }
 
 /** The kit: ESM and declarations (the frog package's declarations refer to them). */
@@ -76,7 +56,7 @@ export async function buildPackage() {
   await buildKit();
   const outdir = `${PACKAGE}/dist`;
   await rm(outdir, { recursive: true, force: true });
-  const entries = ['index', 'world', 'bank', 'theme', 'paint'];
+  const entries = ['index', 'world', 'bank', 'theme'];
   await buildModules(Object.fromEntries(entries.map((name) => [name, `${PACKAGE}/src/${name}.ts`])), outdir, false);
   execFileSync('npx', ['tsc', '-p', `${PACKAGE}/tsconfig.build.json`], { stdio: 'inherit' });
   console.log(`${outdir} (${entries.join(', ')}, types)`);
@@ -94,12 +74,16 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   await cp('studies/frogs/stills', `${frogs}/stills`, { recursive: true });
   // The cockroach Specimen (packages/cockroach-floor): no stills or single file yet.
   const cockroach = `${outdir}/cockroach`;
-  await buildModules({ main: 'studies/cockroach/main.ts' }, cockroach, dev, false);
+  await buildModules({ main: 'studies/cockroach/main.ts' }, cockroach, dev);
   for (const file of ['index.html', 'page.css']) await cp(`studies/cockroach/${file}`, `${cockroach}/${file}`);
   // The koi Specimen (packages/koi): no stills or single file yet.
   const koi = `${outdir}/koi`;
-  await buildModules({ main: 'studies/koi/main.ts' }, koi, dev, false);
+  await buildModules({ main: 'studies/koi/main.ts' }, koi, dev);
   for (const file of ['index.html', 'page.css']) await cp(`studies/koi/${file}`, `${koi}/${file}`);
+  // The grass snake Specimen (packages/snake): WebGL2 + Canvas 2D fallback.
+  const snake = `${outdir}/snake`;
+  await buildModules({ main: 'studies/snake/main.ts' }, snake, dev);
+  for (const file of ['index.html', 'page.css']) await cp(`studies/snake/${file}`, `${snake}/${file}`);
   // A GitHub Pages site shouldn't be run through Jekyll.
   await writeFile(`${outdir}/.nojekyll`, '');
   if (!dev && !quiet) {
@@ -110,7 +94,7 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
       );
     }
   }
-  if (!quiet) console.log(`${outdir}/ (frogs/, cockroach/, koi/)`);
+  if (!quiet) console.log(`${outdir}/ (frogs/, cockroach/, koi/, snake/)`);
   return { outdir: frogs, outputs };
 }
 

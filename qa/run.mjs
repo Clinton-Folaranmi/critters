@@ -35,7 +35,6 @@ export const BROWSER = [
   'lifecycle',
   'offscreen',
   'loss',
-  'reshuffle',
   'bake',
   'first',
   'gpu',

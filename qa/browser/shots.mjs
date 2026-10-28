@@ -1,73 +1,75 @@
-// Full scenes first, then enlarged crops for review by eye, both lights × both
-// renderers (spec Q-R4 to Q-R6). Into qa/.out/shots: the whole page as a
-// visitor sees it, scene in view, at desktop (1400 × 1000) and phone (375 ×
-// 800) size; then crops of the focus ring, the reeds, motes after a tap on
-// the grass, a midge (or firefly) and its shadow, and by day the caustics.
-// sheet.html shows the full scenes at page size and keeps the crops folded
-// away until the full-scene review is written down.
+// Full scenes first, then enlarged crops for review by eye, both renderers
+// (spec Q-R4 to Q-R6). Into qa/.out/shots: the whole page as a visitor sees
+// it, scene in view, at desktop (1400 × 1000) and phone (375 × 800) size;
+// then crops of the focus ring, a ripple after a tap on open water, a midge
+// and its shadow, and the caustics. sheet.html shows the full scenes at page
+// size and keeps the crops folded away until the full-scene review is
+// written down.
+//
+// Desktop is captured at 1× and the phone at 2×: in the headless shell,
+// Page.captureScreenshot hangs once this WebGL scene's canvas is above about
+// 1.5 Mpx (desktop at 2× is 2.8 Mpx). Review 2× desktop detail live instead.
 import { writeFileSync } from 'node:fs';
 
-export const browser = { width: 1400, height: 1000, dsf: 2 };
+export const browser = { width: 1400, height: 1000, dsf: 1 };
 const DESKTOP = { width: 1400, height: 1000 };
 const PHONE = { width: 375, height: 800 };
 
 export default async ({ page, site, report }) => {
   const files = [];
-  for (const light of ['night', 'day']) {
-    for (const renderer of ['webgl2', 'canvas']) {
-      const tag = `${light}-${renderer}`;
-      const url = `${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}${light === 'day' ? '#day' : ''}`;
-      await page.goto(url);
-      await page.ready();
-      await page.sleep(400);
-      // The whole viewport, not the canvas: the page around the scene is part of the composition.
-      const inView = () => page.eval(`document.querySelector('.stage').scrollIntoView({ block: 'center' })`);
-      await inView();
-      await page.sleep(200);
-      files.push(await page.shot(`qa/.out/shots/full-desktop-${tag}.png`));
-      await page.viewport(PHONE.width, PHONE.height, 2, true);
-      await page.sleep(400); // past the 200 ms bake debounce
-      await inView();
-      await page.sleep(200);
-      files.push(await page.shot(`qa/.out/shots/full-phone-${tag}.png`));
-      await page.viewport(DESKTOP.width, DESKTOP.height, 2);
-      await page.sleep(300);
-      // Focus ring, by keyboard.
-      await page.eval(`document.querySelector('canvas').focus()`);
-      await page.tab();
-      await page.tab(true);
-      await page.sleep(200);
-      const stage = await page.eval(
-        `(() => { const r = document.querySelector('.stage').getBoundingClientRect(); return { x: Math.max(0, r.x - 20), y: Math.max(0, r.y - 20), width: r.width + 40, height: r.height + 40 }; })()`,
-      );
-      files.push(await page.shot(`qa/.out/shots/focus-${tag}.png`, stage));
-      await page.eval('document.activeElement.blur()');
-      await page.freeze();
-      const r = await page.eval(
-        `(() => { const r = document.querySelector('canvas').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()`,
-      );
-      const a = r[2] / r[3];
-      const at = (x, y, w, h) => ({ x: r[0] + x * r[3], y: r[1] + (1 - y) * r[3], width: w * r[3], height: h * r[3] });
-      const box = await page.eval(
-        `(() => { const e = new Float32Array(40), s = new Float32Array(40), box = new Float32Array(4); __critterBank.reedBlades(${a}, 0, e, s, box); __critterAdvance(0); return [...box]; })()`,
-      );
-      files.push(
-        await page.shot(
-          `qa/.out/shots/reeds-${tag}.png`,
-          at(box[0] - 0.08, box[3] + 0.05, box[2] - box[0] + 0.2, box[3] - box[1] + 0.12),
-        ),
-      );
-      await page.eval(`(() => { __critterTap(${a * 0.42}, 0.12); __critterAdvance(0.45); })()`);
-      files.push(await page.shot(`qa/.out/shots/motes-${tag}.png`, at(a * 0.42 - 0.12, 0.28, 0.24, 0.24)));
-      await page.eval(`(() => { const w = __critterWorld; w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; f.glow = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
-        const f = w.flies[0]; f.x = 0.62 * ${a}; f.y = 0.52; f.height = 0.08; f.vx = f.vy = 0; __critterAdvance(0); })()`);
-      files.push(await page.shot(`qa/.out/shots/midge-${tag}.png`, at(0.62 * a - 0.08, 0.6, 0.16, 0.16)));
-      if (light === 'day') files.push(await page.shot(`qa/.out/shots/caustics-${tag}.png`, at(0.6, 0.72, 0.4, 0.26)));
-    }
+  for (const renderer of ['webgl2', 'canvas']) {
+    const tag = renderer;
+    const url = `${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}`;
+    await page.goto(url);
+    await page.ready();
+    await page.sleep(400);
+    // The whole viewport, not the canvas: the page around the scene is part of the composition.
+    const inView = () => page.eval(`document.querySelector('.stage').scrollIntoView({ block: 'center' })`);
+    await inView();
+    await page.sleep(200);
+    files.push(await page.shot(`qa/.out/shots/full-desktop-${tag}.png`));
+    await page.viewport(PHONE.width, PHONE.height, 2, true);
+    await page.sleep(400); // past the 200 ms bake debounce
+    await inView();
+    await page.sleep(200);
+    files.push(await page.shot(`qa/.out/shots/full-phone-${tag}.png`));
+    await page.viewport(DESKTOP.width, DESKTOP.height, 1);
+    await page.sleep(300);
+    // Focus ring, by keyboard.
+    await page.eval(`document.querySelector('canvas').focus()`);
+    await page.tab();
+    await page.tab(true);
+    await page.sleep(200);
+    const stage = await page.eval(
+      `(() => { const r = document.querySelector('.stage').getBoundingClientRect(); return { x: Math.max(0, r.x - 20), y: Math.max(0, r.y - 20), width: r.width + 40, height: r.height + 40 }; })()`,
+    );
+    files.push(await page.shot(`qa/.out/shots/focus-${tag}.png`, stage));
+    await page.eval('document.activeElement.blur()');
+    await page.freeze();
+    const r = await page.eval(
+      `(() => { const r = document.querySelector('canvas').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()`,
+    );
+    const a = r[2] / r[3];
+    const at = (x, y, w, h) => ({ x: r[0] + x * r[3], y: r[1] + (1 - y) * r[3], width: w * r[3], height: h * r[3] });
+    // A tap on open water, clear of pads and frogs; its ripple 0.3 s later.
+    const water = await page.eval(`(() => {
+      const w = __critterWorld;
+      for (let y = 0.3; y < 0.75; y += 0.01) for (let x = 0.3; x < ${a} - 0.3; x += 0.01)
+        if (w.pads.every((p) => Math.hypot(x - p.x, y - p.y) > p.radius + 0.1) && w.frogs.every((f, i) => w.frogDistance(i, x, y) > 0.12)) {
+          __critterTap(x, y); __critterAdvance(0.3); return [x, y];
+        }
+      return null;
+    })()`);
+    if (water)
+      files.push(await page.shot(`qa/.out/shots/ripple-${tag}.png`, at(water[0] - 0.12, water[1] + 0.12, 0.24, 0.24)));
+    await page.eval(`(() => { const w = __critterWorld; w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
+      const f = w.flies[0]; f.x = 0.62 * ${a}; f.y = 0.52; f.height = 0.08; f.vx = f.vy = 0; __critterAdvance(0); })()`);
+    files.push(await page.shot(`qa/.out/shots/midge-${tag}.png`, at(0.62 * a - 0.08, 0.6, 0.16, 0.16)));
+    files.push(await page.shot(`qa/.out/shots/caustics-${tag}.png`, at(0.6, 0.72, 0.4, 0.26)));
   }
   const name = (f) => f.split('/').pop();
   const of = (group) => files.filter((f) => f.includes(`/${group}-`));
-  // Full scenes at their CSS size (the shots are 2× device pixels), one per row, never scaled to fit.
+  // Full scenes at their CSS size (desktop shots are 1×, phone 2× device pixels), one per row, never scaled to fit.
   const full = (group, { width }) =>
     `<h2>${group}</h2>${of(group)
       .map(
@@ -75,7 +77,7 @@ export default async ({ page, site, report }) => {
           `<figure class="full"><img src="${name(f)}" width="${width}"><figcaption>${name(f)} · creature: ______ · action: ______ · motive: ______</figcaption></figure>`,
       )
       .join('')}`;
-  const crops = ['focus', 'reeds', 'motes', 'midge', 'caustics']
+  const crops = ['focus', 'ripple', 'midge', 'caustics']
     .map(
       (group) =>
         `<h3>${group}</h3><section>${of(group)

@@ -1,39 +1,23 @@
 /* The frog pond page, shared by the demo (studies/frogs/index.html) and the
    single-file standalone build, which inlines this file.
-   One page, two lights: a night pond on a dark page, a sunlit one on a
-   pale page (html[data-light]). Painted explicitly for every host theme.
-   No web fonts, just the reader's own serif and sans faces, so it works
-   offline. The pond sits in a bank of earth, stones and grass, whose outer
-   edge fades into the page. */
+   Day Chorus: a sunlit, water-only pond on a pale page, painted explicitly
+   for every host theme. No web fonts, just the reader's own serif and sans
+   faces, so it works offline. The picture is a rectangle with softly
+   rounded corners (board r2). */
 :root {
-  color-scheme: dark;
-  --page: #0d1018;
-  --page-deep: #080a10;
-  --glow: rgba(240, 168, 119, 0.16);
-  --ground: #080a10;
-  --ink: #efe6d8;
-  --muted: #9d97aa;
-  --accent: #f0a877;
-  --dot: #f3e7a0;
-  --dot-glow: 0 0 10px 2px rgba(243, 231, 160, 0.45);
-  --rule: rgba(239, 230, 216, 0.4);
-  --halo: rgba(8, 10, 16, 0.8);
-  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-}
-:root[data-light='day'] {
   color-scheme: light;
   --page: #f1efe6;
   --page-deep: #e7e6da;
   --glow: rgba(255, 244, 205, 0.7);
-  --ground: #466345;
+  --ground: #6ea596;
   --ink: #1f2a1e;
   --muted: #56644f;
   --accent: #4a6a22;
   --dot: #7da23c;
-  --dot-glow: none;
   --rule: rgba(31, 42, 30, 0.58);
   --halo: rgba(250, 247, 238, 0.85);
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 html,
 body {
@@ -67,9 +51,8 @@ body {
   aspect-ratio: 1.48 / 1;
   overflow: hidden;
   background: var(--ground);
-  /* Until the scene applies the bank-shaped edge, a plain soft oval. */
-  -webkit-mask-image: radial-gradient(closest-side, #000 82%, transparent);
-  mask-image: radial-gradient(closest-side, #000 82%, transparent);
+  /* The same edge the scene's mask draws, until it applies it. */
+  border-radius: clamp(10px, 2vw, 18px);
 }
 .animal-study__canvas {
   display: block;
@@ -83,9 +66,9 @@ body {
   outline: 3px solid var(--accent);
   outline-offset: -22px;
 }
-/* Keyboard focus: a ring just outside the picture's ragged edge, following
-   its shape (the scene sets --pond-ring and --pond-ring-halo on .stage),
-   on a halo so it reads against the water and the page alike. */
+/* Keyboard focus: a ring just inside the picture's edge, following its
+   rounded corners (the scene sets --pond-ring and --pond-ring-halo on
+   .stage), on a halo so it reads against the water and the page alike. */
 .stage::before,
 .stage::after {
   position: absolute;
@@ -156,39 +139,6 @@ h1 {
   margin: 0;
   color: var(--muted);
 }
-/* Night | Day */
-.lights {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-}
-.lights button {
-  min-height: 28px;
-  padding: 3px 13px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-  font: 600 11px/1 var(--sans);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease;
-}
-.lights button:hover {
-  color: var(--ink);
-}
-.lights button[aria-pressed='true'] {
-  background: var(--ink);
-  color: var(--page);
-}
-.lights button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
 .hint {
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +160,6 @@ h1 {
   height: 6px;
   border-radius: 50%;
   background: var(--dot);
-  box-shadow: var(--dot-glow);
 }
 kbd {
   font-family: var(--sans);
@@ -221,8 +170,7 @@ kbd {
   color: var(--ink);
 }
 @media (prefers-reduced-motion: reduce) {
-  .animal-study__canvas,
-  .lights button {
+  .animal-study__canvas {
     transition: none;
   }
 }

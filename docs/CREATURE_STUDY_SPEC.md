@@ -122,7 +122,7 @@ by frame in Node.
 - **A-4 (MUST)** Clamp the time step (the frog uses 50 ms) so a stalled tab can't throw anything across the scene.
 - **A-5 (MUST)** The scene controller is framework-free (plain DOM), so the same code runs in an app, in a plain page and in a single offline HTML file. It is mounted with one call that returns a handle with `dispose()`.
 - **A-6 (MUST)** Colours, looks and all visible copy for every variant live in one theme module that every renderer reads. The GPU shader is generated from it; no renderer holds its own colour literals. A study may offer more than one rendering style, but each style's shared palette and material settings are defined centrally.
-- **A-7 (MUST)** Renderers draw the same world. A rendering style changes how that world is drawn, never the animal's behavior, pose or contact. Shared geometry (shore distance, depth, reed blades, the picture's outline) is written once in TypeScript, and where a shader needs it the GLSL is generated from, or checked against, that code (`qa:parity`).
+- **A-7 (MUST)** Renderers draw the same world. A rendering style changes how that world is drawn, never the animal's behavior, pose or contact. Shared geometry and noise (the frog: the picture's outline, pad shapes, the caustics' warp noise) is written once in TypeScript, and where a shader needs it the GLSL is generated from, or checked against, that code (`qa:parity`).
 - **A-8 (MUST)** A GPU renderer and a Canvas 2D fallback. If the GPU context is lost or a shader fails, switch to the fallback at once and retry the GPU a couple of times later (the frog: after 2.5 s, twice). The fallback's code loads only when it's needed.
 - **A-9 (MUST)** The world reports events (ripples, taps and what they hit) instead of drawing them; the controller and renderers respond.
 - **A-10 (MUST)** Dev-only tools (frame stepping, forced fallback, fixed resolution, console hooks) are behind a build-time flag (`import.meta.env.DEV`) and absent from shipped builds (`qa:smoke`, `qa:standalone`). Debug information appears on screen only when asked for with a flag.
@@ -527,9 +527,9 @@ out (section 8.9).
 
 ### 8.1 Boundaries match what's drawn
 
-- **E-1 (MUST)** One function defines the boundary (the frog: `shoreDistance(x, y, aspect)`, positive on water, negative on the bank), shared by the world, both renderers (GLSL generated from the same numbers) and the hit test. JS and GLSL agree to float precision (`qa:parity`: ≤ 1e-5, no sign flips).
+- **E-1 (MUST)** One function defines the boundary (the frog: `shoreDistance(x, y, aspect)`, positive on water, negative on the bank), shared by the world, both renderers (GLSL generated from the same numbers) and the hit test. JS and GLSL agree to float precision. (Since board r2 the frog's shaders draw no boundary; `qa:parity` compares the noise the renderers share and the frames they draw.)
 - **E-2 (MUST)** Containment keeps each animal's body off the boundary with a clearance (the frog: 0.012 plus a margin of 0.8 BL inside the open-water oval), and checks every drawn part, not only the centre (7.3, leg clearance).
-- **E-3 (MUST)** Scenery the animals use is kept clear of the boundary too: a drifting pad is nudged back off the bank (clearance 0.015; `qa:soak`: pad-under-bank frames 0; closest rim measured 0.011).
+- **E-3 (MUST)** Scenery the animals use is kept clear of the boundary too: a drifting pad is nudged back off the bank (the frog, since board r2 all water: a pad drifting off the picture is pulled home by its spring; `qa:soak`: frames with a pad drifted out of the picture, 0).
 - **E-4 (MUST)** Anything the world treats as the boundary is visibly the boundary: the painted bank's waterline follows `shoreDistance`, and details (pebbles at the waterline) are placed along the visible shore, at their intended distance from the water.
 - **E-5 (SHOULD)** Where the scene continues out of the frame (the frog's water runs off the top and right), the swimmable area ends a little inside the picture's edge so animals never swim into the fade.
 
@@ -542,7 +542,7 @@ pads or in the air (drawn over the bank) → fireflies or midges, motes → reed
 and their shadows → vignette and grain → the picture's edge (a CSS mask).
 
 - **E-6 (MUST)** Decide per state what is drawn over what, and write it down. An animal in the air or on a raised perch is drawn over ground scenery (a frog's leap near the shore passes over the grass); a swimmer is drawn under the bank.
-- **E-7 (MUST)** A tap goes to the topmost thing drawn at that point. Scenery drawn over the animals' layer (grass overhanging the water, reeds) takes the tap as scenery (the frog: bank-layer coverage ≥ 0.35 from a ¼-size mask the painter returns, or `reedAt()`), unless an animal drawn over that scenery is there (a frog on a pad or in the air still wins). `qa:hit`: ≥ 85 % of opaque grass over the water counts as bank (measured 92–93 %).
+- **E-7 (MUST)** A tap goes to the topmost thing drawn at that point. Scenery drawn over the animals' layer (grass overhanging the water, reeds) takes the tap as scenery, unless an animal drawn over that scenery is there. (The frog pond has had no occluders since board r2; `qa:hit` checks taps against the drawn picture, water, pads and the corner pad.)
 - **E-8 (MUST)** Every tap on scenery produces a visible response (the frog: a tap on the bank or reeds lifts 4 motes — fireflies at night, midges by day — that drift off over ~1.6 s, and ripples the water if within 0.05 of the waterline).
 - **E-9 (MUST)** Occluders cast shadows in the key light's direction like everything else (the frog's reeds, both renderers).
 - **E-10 (SHOULD)** An occluder's geometry is one data layout used by every renderer and the tap test (the frog: `reedBlades()`, uploaded to the shader as uniforms).
@@ -558,8 +558,8 @@ and their shadows → vignette and grain → the picture's edge (a CSS mask).
 
 - **E-15 (MUST)** The layout works from a phone (375 px wide, aspect 0.91) to a wide screen (aspect 1.48) with no horizontal scroll (`qa:a11y`).
 - **E-16 (MUST)** Positions that matter (perches, stages) have a layout per shape, blended by aspect, not the same shares of the width stretched (the frog: `PAD_HOMES_WIDE` at 1.48 and `PAD_HOMES_NARROW` at 0.91, blended with `smoothstep`; stages rim to rim ≥ 0.035 apart at 0.91). On resize, things drift to their new homes; before the first frame or in the still they snap there.
-- **E-17 (MUST)** Static layers are re-painted for a new size only after the size has held (a true debounce: the frog waits 200 ms; `qa:bake`: ≤ 1 bake asked for during a drag), and the old layer is shown stretched meanwhile.
-- **E-18 (SHOULD)** Scenery placement is stable under small resizes: items placed along the shore with per-item seeds (`qa:reshuffle`: a 1 px wider canvas changes ≤ 2 % of bank pixels, measured 0.8 %; 10 px ≤ 15 %, measured 9.4 %).
+- **E-17 (MUST)** Static layers are re-painted for a new size only after the size has held (a true debounce; the frog doesn't yet, see section 15; `qa:bake`: no long task during a drag), and the old layer is shown stretched meanwhile.
+- **E-18 (SHOULD)** Scenery placement is stable under small resizes: items placed along the shore with per-item seeds (the frog pond checked this with `qa:reshuffle` while it had a painted bank; since board r2 its only scenery is the world's pads, placed by aspect, so the check was retired).
 - **E-19 (SHOULD)** There is a still of the first frame for each shape and variant (section 10).
 
 ### 8.5 Affordances as motives
@@ -588,7 +588,7 @@ The frog study has no wind or weather yet; its reeds sway with time
 ### 8.8 Time-of-day variants as palettes
 
 - **E-30 (MUST)** A time of day is a palette applied to the same scene, geometry and behaviour (the frog's Night and Day differ only in `FROG_PALETTES`, copy, and fireflies becoming midges). Copy, title and labels are written for each variant.
-- **E-31 (MUST)** Each variant has a brightness target: mean luma (0–255, Rec. 601 weights) inside the visible picture, bank included, where the picture's mask is over half opaque. The renderers stay within 5 of each other (`qa:luma`).
+- **E-31 (MUST)** Each variant has a brightness target: mean luma (0–255, Rec. 601 weights) inside the visible picture, where the picture's mask is over half opaque (the frog: Day only since 2026-10-27, target 133 … 143 around board r2's 138). The renderers stay within 5 of each other (`qa:luma`).
 - **E-32 (MUST)** The key light's direction may change between variants but each variant has one; shadows follow it (P-7). `qa:midge` checks a small flier's shadow in both renderers.
 
 ### 8.9 Creature-first hierarchy and habitat jobs
@@ -599,10 +599,9 @@ The frog study has no wind or weather yet; its reeds sway with time
 
 <!-- variants:start -->
 
-| Variant              | Mean luma | 10th–90th percentile (frog, measured) | Floor                         | Sky reflection | Grain   |
-| -------------------- | --------- | ------------------------------------- | ----------------------------- | -------------- | ------- |
-| Night (Night Chorus) | 35 … 40   | 19–66 WebGL, 21–57 Canvas             | a hint, lit toward the light  | 0.35–0.55      | ± 0.025 |
-| Day (Day Chorus)     | 85 … 90   | 61–111 WebGL, 63–110 Canvas           | plainly, with moving caustics | 0.05–0.1       | ± 0.02  |
+| Variant          | Mean luma | 10th–90th percentile (frog, measured) | Floor                                               | Sky reflection | Grain                   |
+| ---------------- | --------- | ------------------------------------- | --------------------------------------------------- | -------------- | ----------------------- |
+| Day (Day Chorus) | 133 … 143 | 112–158 WebGL, 112–158 Canvas         | none (water only, board r2); soft two-tone caustics | none           | board r2 (`FROG_GRAIN`) |
 
 <!-- variants:end -->
 
@@ -624,7 +623,7 @@ can't be seen, and cheap per frame. Each rule names the frog's implementation
 and the check.
 
 - **F-1 (MUST) Lazy load near the viewport.** The page ships only the caption, the switch and a still; the scene's code loads when its container comes within 300 px of the viewport (an `IntersectionObserver` with `rootMargin: '300px 0px'`). Frog demo: 4.9 KB of JS with the page, 66.1 KB (26.5 KB gzip) as the pond comes near (`qa:size`).
-- **F-2 (MUST) A still until the first frame.** Until the first full frame is drawn the canvas is hidden (`opacity: 0`) and the container shows a WebP still of that very frame (the frog: `studies/frogs/stills/{night,day}-{wide,narrow}.webp`, 35–53 KB, regenerated by `qa:stills`). The world waits (no time passes) until the first frame, so the still and the first live frame match.
+- **F-2 (MUST) A still until the first frame.** Until the first full frame is drawn the canvas is hidden (`opacity: 0`) and the container shows a WebP still of that very frame (the frog: `studies/frogs/stills/day-{wide,narrow}.webp`, 46–55 KB, regenerated by `qa:stills`). The world waits (no time passes) until the first frame, so the still and the first live frame match.
 - **F-3 (MUST) Parallel shader compile.** Compile and link without waiting (`KHR_parallel_shader_compile`; `startProgram()` in the kit's `gl.ts` polls `COMPLETION_STATUS_KHR`); the renderer only "gets ready" until it completes.
 - **F-4 (MUST) Paint static layers in a worker.** The bank and the caustic tile are painted in a worker with `OffscreenCanvas` and sent back as `ImageBitmap`s, with a main-thread fallback if workers or `OffscreenCanvas` are missing or the worker fails to load. Baked layers are cached by (width, height, variant), 3 kept, so a renderer swap or a switch back to a variant reuses them; an idle worker stops itself after 15 s.
 - **F-5 (MUST) Pause off screen.** The loop runs only while the scene is at least partly on screen (`IntersectionObserver`) and the tab is visible (`visibilitychange`); `qa:offscreen`: 0 animation frames scrolled away.
@@ -651,7 +650,7 @@ expensive, return early after each layer in turn and time it.
 - **I-4 (MUST)** A visible focus ring that follows the picture's edge (E-13).
 - **I-5 (MUST)** With reduced motion: no loop at all; one finished still; `role="img"` with the still's own description; not focusable; the instructions hidden (`qa:rm`).
 - **I-6 (MUST)** A variant switch (the frog: Night | Day) is real buttons with `aria-pressed` (or links with `aria-current` when each variant has its own address); the variant may also be chosen in the address (`#day`).
-- **I-7 (MUST)** Text contrast ≥ 4.5:1 and non-text (the switch's outline) ≥ 3:1 against the page in every variant (`qa:a11y`).
+- **I-7 (MUST)** Text contrast ≥ 4.5:1 and non-text (a switch's outline; the frog's keyboard-focus ring against the water and its halo) ≥ 3:1 in every variant (`qa:a11y`).
 - **I-8 (MUST)** A single self-contained HTML file that works offline: a doctype, `lang`, UTF-8, a viewport meta, `body { margin: 0 }`, no external requests, the worker started from the page's own script, working in a sandboxed iframe without storage (`qa:standalone`; the build fails if any basic is missing).
 
 ## 12. QA
@@ -663,77 +662,74 @@ meet yet (section 15): the check reports it as KNOWN and doesn't fail.
 
 <!-- qa-table:start -->
 
-| ID   | Check                         | Measures                                                                                        | Pass                              | Threshold                         | Script                  |
-| ---- | ----------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------- | ----------------------- |
-| Q-1  | Broken rules                  | `check()` issues over 10 min untouched, 5 min tapped, 10 min resizing, aspects 1.48 and 0.91    | = 0                               | `soak.checkIssues`                | `npm run qa:soak`       |
-| Q-2  | Non-finite poses              | frames with NaN or infinite pose values, same soaks                                             | = 0                               | `soak.nanFrames`                  | `npm run qa:soak`       |
-| Q-3  | Scenery clear of the boundary | frames with a pad under the bank                                                                | = 0                               | `soak.padUnderBankFrames`         | `npm run qa:soak`       |
-| Q-4  | Swimmers on the water         | samples with a swimmer's body or any limb over the bank                                         | = 0 samples                       | `soak.swimmerOverBank`            | `npm run qa:soak`       |
-| Q-5  | Toes on the grass             | deepest toe over the bank from a frog on a pad (drawn over it)                                  | ≤ 0.02 world units                | `soak.drawnOverToe`               | `npm run qa:soak`       |
-| Q-6  | Getting stuck                 | longest stretch in any temporary state                                                          | ≤ 40 s                            | `soak.longestTemporaryState`      | `npm run qa:soak`       |
-| Q-7  | Swim length                   | median swim over 2 h untouched                                                                  | 3 … 8 s                           | `swims.median`                    | `npm run qa:swims`      |
-| Q-8  | Swim length, long tail        | 90th percentile swim                                                                            | ≤ 12 s                            | `swims.p90`                       | `npm run qa:swims`      |
-| Q-9  | Longest swim                  | longest swim in 2 h                                                                             | ≤ 30 s                            | `swims.longest`                   | `npm run qa:swims`      |
-| Q-10 | Hop rate                      | pad jumps per frog per minute                                                                   | 2 … 3.5                           | `swims.padJumpsPerFrogPerMinute`  | `npm run qa:swims`      |
-| Q-11 | Into the water                | share of pad jumps that end in the water                                                        | 0.2 … 0.36                        | `swims.intoWaterShare`            | `npm run qa:swims`      |
-| Q-12 | Planted foot slide            | path a pinned foot travels on its surface per planted stretch, 95th percentile                  | ≤ 0.06 body lengths · known issue | `motion.plantedSlideP95`          | `npm run qa:motion`     |
-| Q-13 | Planted foot at its pin       | distance from the pin, median by state                                                          | ≤ 0.01 body lengths               | `motion.plantedFoot.median`       | `npm run qa:motion`     |
-| Q-14 | Planted foot at its pin, tail | distance from the pin, 95th percentile by state                                                 | ≤ 0.06 body lengths · known issue | `motion.plantedFoot.p95`          | `npm run qa:motion`     |
-| Q-15 | Settle slide                  | foot travel in the second after an on-pad turn ends                                             | ≤ 0.03 body lengths               | `motion.settleSlide`              | `npm run qa:motion`     |
-| Q-16 | Turning while still           | heading change on frames a swimmer moved < 1e-4                                                 | ≤ 0.05 rad                        | `motion.turnWhileStill`           | `npm run qa:motion`     |
-| Q-17 | Mirroring                     | hind left − right a second into straight swimming                                               | ≤ 0.01                            | `motion.mirroring`                | `npm run qa:motion`     |
-| Q-18 | Curvature                     | heading change ÷ distance while swimming, 99th percentile                                       | ≤ 30 per unit distance            | `motion.curvatureP99`             | `npm run qa:motion`     |
-| Q-19 | Pose jumps in pushes          | largest one-frame pose change in the crouch and the air                                         | ≤ 0.4                             | `motion.poseJump.air`             | `npm run qa:motion`     |
-| Q-20 | Pose jumps elsewhere          | largest one-frame pose change in sit, turn, land                                                | ≤ 0.1                             | `motion.poseJump.other`           | `npm run qa:motion`     |
-| Q-21 | Rotation spikes               | largest angular acceleration, by state                                                          | ≤ 400 rad/s²                      | `motion.angularAcceleration`      | `npm run qa:motion`     |
-| Q-22 | Garbage per frame             | bytes allocated per `world.step()`                                                              | ≤ 1024 B                          | `alloc.stepBytesPerFrame`         | `npm run qa:alloc`      |
-| Q-23 | Download, standalone          | the single file's script, minified                                                              | ≤ 100 KB                          | `size.standaloneMin`              | `npm run qa:size`       |
-| Q-24 | Download, standalone gzip     | the same, gzipped                                                                               | ≤ 40 KB                           | `size.standaloneGzip`             | `npm run qa:size`       |
-| Q-25 | Download with the page        | the demo's JS before the pond comes near                                                        | ≤ 8 KB                            | `size.demoFirstLoadMin`           | `npm run qa:size`       |
-| Q-26 | Download on approach          | the scene's JS as the pond comes near, minified                                                 | ≤ 70 KB                           | `size.demoOnApproachMin`          | `npm run qa:size`       |
-| Q-27 | Download on approach, gzip    | the same, gzipped                                                                               | ≤ 28 KB                           | `size.demoOnApproachGzip`         | `npm run qa:size`       |
-| Q-28 | Stills                        | each first-frame still                                                                          | ≤ 60 KB                           | `size.stillKB`                    | `npm run qa:size`       |
-| Q-29 | Loads cleanly                 | both variants × renderers ready, labelled, no console errors; no dev hooks shipped              | pass                              | —                                 | `npm run qa:smoke`      |
-| Q-30 | Shared geometry               | JS vs GLSL shore and open-water distance, largest difference                                    | ≤ 0.00001                         | `parity.shoreAbs`                 | `npm run qa:parity`     |
-| Q-31 | Shared depth                  | bed depth vs `shelfDepth()`, mean difference                                                    | ≤ 0.03                            | `parity.depthMeanAbs`             | `npm run qa:parity`     |
-| Q-32 | Night brightness              | mean luma inside the picture, each renderer                                                     | 35 … 40                           | `luma.night`                      | `npm run qa:luma`       |
-| Q-33 | Day brightness                | mean luma inside the picture, each renderer                                                     | 85 … 90                           | `luma.day`                        | `npm run qa:luma`       |
-| Q-34 | Renderers match               | WebGL − Canvas mean luma, each variant                                                          | ≤ 5                               | `luma.rendererGap`                | `npm run qa:luma`       |
-| Q-35 | No taps outside the picture   | taps accepted where the mask is under 0.2                                                       | ≤ 0 %                             | `hit.acceptedWhereFaint`          | `npm run qa:hit`        |
-| Q-36 | Visible picture takes taps    | clearly visible picture outside the tap rule                                                    | ≤ 0.5 %                           | `hit.visibleRejected`             | `npm run qa:hit`        |
-| Q-37 | Occluders take taps           | opaque grass over the water counted as bank                                                     | ≥ 85 %                            | `hit.overhangCounted`             | `npm run qa:hit`        |
-| Q-38 | Touch tolerance               | a finger hits a frog a mouse misses                                                             | pass                              | —                                 | `npm run qa:tol`        |
-| Q-39 | Text contrast                 | caption, lede, instructions, switch, both variants                                              | ≥ 4.5                             | `a11y.text`                       | `npm run qa:a11y`       |
-| Q-40 | Outline contrast              | the switch's outline against the page                                                           | ≥ 3                               | `a11y.nonText`                    | `npm run qa:a11y`       |
-| Q-41 | Phone layout                  | sideways overflow at 375 px                                                                     | ≤ 0 px                            | `a11y.phoneOverflow`              | `npm run qa:a11y`       |
-| Q-42 | Reduced motion                | a described still, no loop, not focusable, no instructions                                      | pass                              | —                                 | `npm run qa:rm`         |
-| Q-43 | Shadow direction              | a midge's shadow falls down-left in both renderers, same place                                  | ≤ 3 px                            | `midge.rendererGapPx`             | `npm run qa:midge`      |
-| Q-44 | Single file                   | page basics, no hooks, no requests, worker, switch, sandboxed iframe                            | pass                              | —                                 | `npm run qa:standalone` |
-| Q-45 | Lifecycle                     | heap growth over 80 variant switches after the first 20                                         | ≤ 2 MB                            | `lifecycle.heapGrowthAfterWarmup` | `npm run qa:lifecycle`  |
-| Q-46 | Pause off screen              | animation frames per second scrolled away                                                       | = 0 rAF/s                         | `offscreen.away`                  | `npm run qa:offscreen`  |
-| Q-47 | Runs on screen                | animation frames per second in view                                                             | ≥ 20 rAF/s                        | `offscreen.inView`                | `npm run qa:offscreen`  |
-| Q-48 | Context loss                  | Canvas at once, WebGL retried twice, then Canvas stays; focus kept                              | pass                              | —                                 | `npm run qa:loss`       |
-| Q-49 | Stable scenery                | bank pixels changed by a 1 px wider canvas                                                      | ≤ 2 %                             | `reshuffle.plus1px`               | `npm run qa:reshuffle`  |
-| Q-50 | Debounced bakes               | bakes asked for during a 2 s drag-resize                                                        | ≤ 1                               | `bake.bakesDuringDrag`            | `npm run qa:bake`       |
-| Q-51 | No stalls on resize           | long tasks during the drag                                                                      | = 0                               | `bake.longTasksDuringDrag`        | `npm run qa:bake`       |
-| Q-52 | No stalls on load             | worst long task, navigation to 4 s, shipped builds, 2×                                          | ≤ 80 ms                           | `first.worstLongTask`             | `npm run qa:first`      |
-| Q-53 | Frame cost, GPU               | GPU ms per frame at 1520 × 1027                                                                 | ≤ 15 ms                           | `gpu.gpuMs`                       | `npm run qa:gpu`        |
-| Q-54 | Frame cost, synced            | CPU + GPU ms per frame with a readback                                                          | ≤ 16.7 ms                         | `gpu.syncedMs`                    | `npm run qa:gpu`        |
-| Q-56 | Full-scene composition        | creature, action and motive named before crops; desktop and phone frames; ≥ 30 s live           | signed off                        | —                                 | `npm run qa:shots`      |
-| Q-55 | Review by eye                 | enlarged crops of each key moment, both variants × renderers, only after Q-56                   | reviewed                          | —                                 | `npm run qa:shots`      |
-| Q-57 | Gait stride period            | the kit's gait clock walking a measured gait (the cockroach footage log), relative error        | ≤ 0.05                            | `gait.periodError`                | `npm run qa:gait`       |
-| Q-58 | Gait duty factor              | the same walk, duty factor error                                                                | ≤ 0.03                            | `gait.dutyError`                  | `npm run qa:gait`       |
-| Q-59 | Gait phases                   | the same walk, largest touch-down phase error (circular)                                        | ≤ 0.03                            | `gait.phaseError`                 | `npm run qa:gait`       |
-| Q-60 | Tripod support                | fewest feet down in the kit's tripod at duty factors 0.5–0.7                                    | ≥ 3 feet                          | `gait.tripodSupport`              | `npm run qa:gait`       |
-| Q-61 | Standing still                | gait cycle drift with no distance travelled                                                     | = 0                               | `gait.standingDrift`              | `npm run qa:gait`       |
-| Q-62 | Swim wave amplitude           | the kit's swimmer at a full beat: tail half-amplitude against the one asked for, relative error | ≤ 0.12                            | `swim.tailAmplitudeError`         | `npm run qa:swim`       |
-| Q-63 | Quiet head                    | the same swim: the head's swing as a share of the tail's                                        | ≤ 0.3                             | `swim.headShare`                  | `npm run qa:swim`       |
-| Q-64 | Spine length                  | the same swim: largest relative stretch of a spine segment                                      | ≤ 0.001                           | `swim.stretch`                    | `npm run qa:swim`       |
-| Q-65 | Follow-the-leader             | tail still on a wandering path: furthest spine point off the head's path                        | ≤ 0.01 BL                         | `swim.pathError`                  | `npm run qa:swim`       |
-| Q-66 | Koi soak                      | world issues in 10 min at each aspect, with food dropped and the fish touched                   | = 0                               | `swim.koiIssues`                  | `npm run qa:swim`       |
-| Q-67 | Koi eats                      | share of the dropped food eaten in the same soak                                                | ≥ 0.6                             | `swim.koiFed`                     | `npm run qa:swim`       |
-| Q-68 | Koi never stuck               | longest chase of food without a mouthful                                                        | ≤ 12 s                            | `swim.koiChase`                   | `npm run qa:swim`       |
-| Q-69 | Koi never jumps               | the same soak: furthest any spine point moves in one frame at 60 frames/s                       | ≤ 0.08 BL                         | `swim.koiJump`                    | `npm run qa:swim`       |
+| ID   | Check                         | Measures                                                                                                                | Pass                              | Threshold                         | Script                  |
+| ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------- | ----------------------- |
+| Q-1  | Broken rules                  | `check()` issues over 10 min untouched, 5 min tapped, 10 min resizing, aspects 1.48 and 0.91                            | = 0                               | `soak.checkIssues`                | `npm run qa:soak`       |
+| Q-2  | Non-finite poses              | frames with NaN or infinite pose values, same soaks                                                                     | = 0                               | `soak.nanFrames`                  | `npm run qa:soak`       |
+| Q-3  | Scenery stays in the picture  | frames with a pad drifted wholly out of the drawn picture while its home keeps part of it in                            | = 0                               | `soak.padOutOfPictureFrames`      | `npm run qa:soak`       |
+| Q-4  | Swimmers inside their outline | samples with a swimmer's body or any limb past the swimmers' outline (`pictureDistance`)                                | = 0 samples                       | `soak.swimmerPastOutline`         | `npm run qa:soak`       |
+| Q-5  | Toes past the outline         | deepest toe past the swimmers' outline from a frog on a pad                                                             | ≤ 0.02 world units                | `soak.toePastOutline`             | `npm run qa:soak`       |
+| Q-6  | Getting stuck                 | longest stretch in any temporary state                                                                                  | ≤ 40 s                            | `soak.longestTemporaryState`      | `npm run qa:soak`       |
+| Q-7  | Swim length                   | median swim over 2 h untouched                                                                                          | 3 … 8 s                           | `swims.median`                    | `npm run qa:swims`      |
+| Q-8  | Swim length, long tail        | 90th percentile swim                                                                                                    | ≤ 12 s                            | `swims.p90`                       | `npm run qa:swims`      |
+| Q-9  | Longest swim                  | longest swim in 2 h                                                                                                     | ≤ 30 s                            | `swims.longest`                   | `npm run qa:swims`      |
+| Q-10 | Hop rate                      | pad jumps per frog per minute                                                                                           | 2 … 3.5                           | `swims.padJumpsPerFrogPerMinute`  | `npm run qa:swims`      |
+| Q-11 | Into the water                | share of pad jumps that end in the water                                                                                | 0.2 … 0.36                        | `swims.intoWaterShare`            | `npm run qa:swims`      |
+| Q-12 | Planted foot slide            | path a pinned foot travels on its surface per planted stretch, 95th percentile                                          | ≤ 0.06 body lengths · known issue | `motion.plantedSlideP95`          | `npm run qa:motion`     |
+| Q-13 | Planted foot at its pin       | distance from the pin, median by state                                                                                  | ≤ 0.01 body lengths               | `motion.plantedFoot.median`       | `npm run qa:motion`     |
+| Q-14 | Planted foot at its pin, tail | distance from the pin, 95th percentile by state                                                                         | ≤ 0.06 body lengths · known issue | `motion.plantedFoot.p95`          | `npm run qa:motion`     |
+| Q-15 | Settle slide                  | foot travel in the second after an on-pad turn ends                                                                     | ≤ 0.03 body lengths               | `motion.settleSlide`              | `npm run qa:motion`     |
+| Q-16 | Turning while still           | heading change on frames a swimmer moved < 1e-4                                                                         | ≤ 0.05 rad                        | `motion.turnWhileStill`           | `npm run qa:motion`     |
+| Q-17 | Mirroring                     | hind left − right a second into straight swimming                                                                       | ≤ 0.01                            | `motion.mirroring`                | `npm run qa:motion`     |
+| Q-18 | Curvature                     | heading change ÷ distance while swimming, 99th percentile                                                               | ≤ 30 per unit distance            | `motion.curvatureP99`             | `npm run qa:motion`     |
+| Q-19 | Pose jumps in pushes          | largest one-frame pose change in the crouch and the air                                                                 | ≤ 0.4                             | `motion.poseJump.air`             | `npm run qa:motion`     |
+| Q-20 | Pose jumps elsewhere          | largest one-frame pose change in sit, turn, land                                                                        | ≤ 0.1                             | `motion.poseJump.other`           | `npm run qa:motion`     |
+| Q-21 | Rotation spikes               | largest angular acceleration, by state                                                                                  | ≤ 400 rad/s²                      | `motion.angularAcceleration`      | `npm run qa:motion`     |
+| Q-22 | Garbage per frame             | bytes allocated per `world.step()`                                                                                      | ≤ 1024 B                          | `alloc.stepBytesPerFrame`         | `npm run qa:alloc`      |
+| Q-23 | Download, standalone          | the single file's script, minified                                                                                      | ≤ 100 KB                          | `size.standaloneMin`              | `npm run qa:size`       |
+| Q-24 | Download, standalone gzip     | the same, gzipped                                                                                                       | ≤ 40 KB                           | `size.standaloneGzip`             | `npm run qa:size`       |
+| Q-25 | Download with the page        | the demo's JS before the pond comes near                                                                                | ≤ 8 KB                            | `size.demoFirstLoadMin`           | `npm run qa:size`       |
+| Q-26 | Download on approach          | the scene's JS as the pond comes near, minified                                                                         | ≤ 70 KB                           | `size.demoOnApproachMin`          | `npm run qa:size`       |
+| Q-27 | Download on approach, gzip    | the same, gzipped                                                                                                       | ≤ 28 KB                           | `size.demoOnApproachGzip`         | `npm run qa:size`       |
+| Q-28 | Stills                        | each first-frame still                                                                                                  | ≤ 60 KB                           | `size.stillKB`                    | `npm run qa:size`       |
+| Q-29 | Loads cleanly                 | both renderers ready, labelled, no console errors; no dev hooks shipped                                                 | pass                              | —                                 | `npm run qa:smoke`      |
+| Q-30 | Shared noise                  | the shader's `hash()`/`noise()` vs their JS ports (the Canvas caustics' warp), largest difference over the first 10 min | ≤ 0.004                           | `parity.noiseAbs`                 | `npm run qa:parity`     |
+| Q-31 | Same frame, both renderers    | one world and moment drawn by WebGL, then Canvas: colour difference of 16 px blocks, 99th percentile, desktop and phone | ≤ 6                               | `parity.blockP99`                 | `npm run qa:parity`     |
+| Q-70 | Same frame, worst block       | the same frames: largest 16 px block colour difference                                                                  | ≤ 12                              | `parity.blockMax`                 | `npm run qa:parity`     |
+| Q-33 | Day brightness                | mean luma inside the picture, each renderer                                                                             | 133 … 143                         | `luma.day`                        | `npm run qa:luma`       |
+| Q-34 | Renderers match               | WebGL − Canvas mean luma                                                                                                | ≤ 5                               | `luma.rendererGap`                | `npm run qa:luma`       |
+| Q-35 | No taps outside the picture   | taps accepted where the picture's mask is under 0.2                                                                     | ≤ 0 %                             | `hit.acceptedWhereFaint`          | `npm run qa:hit`        |
+| Q-36 | Visible picture takes taps    | clearly visible picture outside the tap rule                                                                            | ≤ 0.5 %                           | `hit.visibleRejected`             | `npm run qa:hit`        |
+| Q-38 | Touch tolerance               | a finger hits a frog a mouse misses                                                                                     | pass                              | —                                 | `npm run qa:tol`        |
+| Q-39 | Text contrast                 | caption, lede, instructions, key caps                                                                                   | ≥ 4.5                             | `a11y.text`                       | `npm run qa:a11y`       |
+| Q-40 | Focus ring contrast           | the keyboard-focus ring against the water and against its halo                                                          | ≥ 3                               | `a11y.nonText`                    | `npm run qa:a11y`       |
+| Q-41 | Phone layout                  | sideways overflow at 375 px                                                                                             | ≤ 0 px                            | `a11y.phoneOverflow`              | `npm run qa:a11y`       |
+| Q-42 | Reduced motion                | a described still, no loop, not focusable, no instructions                                                              | pass                              | —                                 | `npm run qa:rm`         |
+| Q-43 | Shadow direction              | a midge's shadow falls down-left in both renderers, same place                                                          | ≤ 3 px                            | `midge.rendererGapPx`             | `npm run qa:midge`      |
+| Q-44 | Single file                   | page basics, no hooks, 4 instruction steps, no requests, no workers, sandboxed iframe                                   | pass                              | —                                 | `npm run qa:standalone` |
+| Q-45 | Lifecycle                     | heap growth over 80 remounts (reduced motion flipped) after the first 20                                                | ≤ 2 MB                            | `lifecycle.heapGrowthAfterWarmup` | `npm run qa:lifecycle`  |
+| Q-46 | Pause off screen              | animation frames per second scrolled away                                                                               | = 0 rAF/s                         | `offscreen.away`                  | `npm run qa:offscreen`  |
+| Q-47 | Runs on screen                | animation frames per second in view                                                                                     | ≥ 20 rAF/s                        | `offscreen.inView`                | `npm run qa:offscreen`  |
+| Q-48 | Context loss                  | Canvas at once, WebGL retried twice, then Canvas stays; focus kept                                                      | pass                              | —                                 | `npm run qa:loss`       |
+| Q-51 | No stalls on resize           | long tasks during a 2 s drag-resize, both renderers                                                                     | = 0                               | `bake.longTasksDuringDrag`        | `npm run qa:bake`       |
+| Q-52 | No stalls on load             | worst long task, navigation to 4 s, shipped builds, 2×                                                                  | ≤ 80 ms                           | `first.worstLongTask`             | `npm run qa:first`      |
+| Q-53 | Frame cost, GPU               | GPU ms per frame at 1520 × 1027                                                                                         | ≤ 15 ms                           | `gpu.gpuMs`                       | `npm run qa:gpu`        |
+| Q-54 | Frame cost, synced            | CPU + GPU ms per frame with a readback                                                                                  | ≤ 16.7 ms                         | `gpu.syncedMs`                    | `npm run qa:gpu`        |
+| Q-56 | Full-scene composition        | creature, action and motive named before crops; desktop (1×) and phone (2×) frames; ≥ 30 s live                         | signed off                        | —                                 | `npm run qa:shots`      |
+| Q-55 | Review by eye                 | enlarged crops of each key moment, both renderers, only after Q-56                                                      | reviewed                          | —                                 | `npm run qa:shots`      |
+| Q-57 | Gait stride period            | the kit's gait clock walking a measured gait (the cockroach footage log), relative error                                | ≤ 0.05                            | `gait.periodError`                | `npm run qa:gait`       |
+| Q-58 | Gait duty factor              | the same walk, duty factor error                                                                                        | ≤ 0.03                            | `gait.dutyError`                  | `npm run qa:gait`       |
+| Q-59 | Gait phases                   | the same walk, largest touch-down phase error (circular)                                                                | ≤ 0.03                            | `gait.phaseError`                 | `npm run qa:gait`       |
+| Q-60 | Tripod support                | fewest feet down in the kit's tripod at duty factors 0.5–0.7                                                            | ≥ 3 feet                          | `gait.tripodSupport`              | `npm run qa:gait`       |
+| Q-61 | Standing still                | gait cycle drift with no distance travelled                                                                             | = 0                               | `gait.standingDrift`              | `npm run qa:gait`       |
+| Q-62 | Swim wave amplitude           | the kit's swimmer at a full beat: tail half-amplitude against the one asked for, relative error                         | ≤ 0.12                            | `swim.tailAmplitudeError`         | `npm run qa:swim`       |
+| Q-63 | Quiet head                    | the same swim: the head's swing as a share of the tail's                                                                | ≤ 0.3                             | `swim.headShare`                  | `npm run qa:swim`       |
+| Q-64 | Spine length                  | the same swim: largest relative stretch of a spine segment                                                              | ≤ 0.001                           | `swim.stretch`                    | `npm run qa:swim`       |
+| Q-65 | Follow-the-leader             | tail still on a wandering path: furthest spine point off the head's path                                                | ≤ 0.01 BL                         | `swim.pathError`                  | `npm run qa:swim`       |
+| Q-66 | Koi soak                      | world issues in 10 min at each aspect, with food dropped and the fish touched                                           | = 0                               | `swim.koiIssues`                  | `npm run qa:swim`       |
+| Q-67 | Koi eats                      | share of the dropped food eaten in the same soak                                                                        | ≥ 0.6                             | `swim.koiFed`                     | `npm run qa:swim`       |
+| Q-68 | Koi never stuck               | longest chase of food without a mouthful                                                                                | ≤ 12 s                            | `swim.koiChase`                   | `npm run qa:swim`       |
+| Q-69 | Koi never jumps               | the same soak: furthest any spine point moves in one frame at 60 frames/s                                               | ≤ 0.08 BL                         | `swim.koiJump`                    | `npm run qa:swim`       |
 
 <!-- qa-table:end -->
 
@@ -970,6 +966,20 @@ crops, what wasn't checked.
   hind legs, nor for any robin wingbeat rate. They stay as design values
   until a footage log or paper backs them. The synchronous swimming kick and
   the forelimb landing are sourced.
+
+- **Atlas repaints during a resize (E-17) and on the main thread (F-4).**
+  Since board r2 the pad and shade atlas is painted on the main thread in
+  ≤ 8 ms slices (no worker, no cache by size), and a new paint starts for
+  every new canvas height rather than after the size has held. The old atlas
+  is shown scaled meanwhile and no task runs long (`qa:bake`: 0 long tasks
+  in a 2 s drag), but the wasted paints and the missing worker are departures
+  from E-17 and F-4. At 2× desktop a paint takes 600–950 ms of slices.
+
+- **Headless captures of the WebGL scene.** In the headless shell,
+  `Page.captureScreenshot` hangs once the board r2 scene's canvas is above
+  about 1.5 Mpx (desktop at 2×), even after the canvas is removed; the same
+  build runs and composites at 2× in a normal browser. `qa:shots` captures
+  desktop at 1× and the phone at 2×, and `qa:a11y` at 1×.
 
 - **Planted feet off their pins (Q-12, Q-14).** Measured 2026-09-25 by
   `qa:motion`: per planted stretch, the 95th percentile foot slide is

@@ -1,10 +1,9 @@
 import type { FrogSceneHandle, FrogSceneOptions } from '@critters/frog-pond';
-import { FROG_COPY, FROG_INSTRUCTIONS, FROG_THEMES, type FrogTheme } from '@critters/frog-pond/theme';
+import { FROG_COPY, FROG_INSTRUCTIONS } from '@critters/frog-pond/theme';
 
 // The frog pond page, shared by the demo (main.ts) and the single-file
-// standalone (standalone/frogs/entry.ts): the pond in either light, with a
-// Night | Day switch. The light follows the address too (#day, #night). All
-// the copy comes from FROG_COPY and FROG_INSTRUCTIONS.
+// standalone (standalone/frogs/entry.ts): Day Chorus, with its caption and
+// how to play. All the copy comes from FROG_COPY and FROG_INSTRUCTIONS.
 
 /** Mounts the scene; the demo loads its code first, the standalone has it already. */
 export type MountPond = (container: HTMLElement, options: FrogSceneOptions) => Promise<FrogSceneHandle>;
@@ -12,12 +11,9 @@ export type MountPond = (container: HTMLElement, options: FrogSceneOptions) => P
 export function startFrogPage(mount: MountPond) {
   const container = document.getElementById('pond');
   const hint = document.getElementById('hint');
-  const lights = document.getElementById('lights');
   if (!container) return;
   const query = window.matchMedia('(prefers-reduced-motion: reduce)');
   let scene: FrogSceneHandle | null = null;
-  const fromAddress = (): FrogTheme => (window.location.hash === '#day' ? 'day' : 'night');
-  let light = fromAddress();
   let ticket = 0;
 
   const text = (id: string, value: string) => {
@@ -41,54 +37,27 @@ export function startFrogPage(mount: MountPond) {
       hint.appendChild(item);
     }
   }
+  document.title = FROG_COPY.title;
+  text('eyebrow', FROG_COPY.eyebrow);
+  text('title', FROG_COPY.title);
+  text('lede', FROG_COPY.lede);
 
-  const buttons = FROG_THEMES.map((theme) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = FROG_COPY[theme].light;
-    button.addEventListener('click', () => {
-      if (theme === light) return;
-      light = theme;
-      try {
-        history.replaceState(null, '', `#${theme}`);
-      } catch {
-        // Some sandboxes refuse; the light just isn't kept in the address.
-      }
-      start();
-    });
-    lights?.appendChild(button);
-    return button;
-  });
-
+  /** (Re)starts the pond: at first, and when the reduced-motion setting changes. */
   function start() {
-    const copy = FROG_COPY[light];
-    document.documentElement.dataset.light = light;
-    document.title = copy.title;
-    text('eyebrow', copy.eyebrow);
-    text('title', copy.title);
-    text('lede', copy.lede);
-    buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(FROG_THEMES[i] === light)));
     if (hint) hint.hidden = query.matches;
     scene?.dispose();
     scene = null;
     const mine = ++ticket;
-    mount(container!, { reducedMotion: query.matches, describedBy: 'hint', theme: light }).then(
+    mount(container!, { reducedMotion: query.matches, describedBy: 'hint' }).then(
       (mounted) => {
-        // Switched again while this one was loading: keep only the latest.
+        // Restarted while this one was loading: keep only the latest.
         if (mine === ticket) scene = mounted;
         else mounted.dispose();
       },
       (error: unknown) => console.error('[frog-pond] The pond could not load.', error),
     );
   }
-  // Back, forward, or a light typed into the address.
-  const onHash = () => {
-    if (fromAddress() === light) return;
-    light = fromAddress();
-    start();
-  };
   query.addEventListener('change', start);
-  window.addEventListener('hashchange', onHash);
   start();
 
   if (import.meta.env.DEV) {
@@ -97,7 +66,6 @@ export function startFrogPage(mount: MountPond) {
       __critterPageDispose() {
         ticket += 1;
         query.removeEventListener('change', start);
-        window.removeEventListener('hashchange', onHash);
         scene?.dispose();
         scene = null;
       },

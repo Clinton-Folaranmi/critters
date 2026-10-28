@@ -11,7 +11,7 @@ export default async ({ page, site, report }) => {
     const r = await page.eval(`(() => {
       const w = __critterWorld; const c = document.querySelector('canvas'); const H = c.height;
       // One midge, high up, over open water; the others parked far away.
-      w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; f.glow = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
+      w.flies.forEach((f, i) => { f.respawn = 0; f.fade = 1; if (i) { f.x = 0.02; f.y = 0.98; } });
       const f = w.flies[0]; f.x = 0.62 * c.width / H; f.y = 0.52; f.height = 0.08;
       const grab = () => {
         __critterAdvance(0);

@@ -1,6 +1,8 @@
-// Mount and unmount many times through the Night | Day switch, then take
-// the pond off the page: one canvas at a time, observers and listeners
-// released, no loop left running, workers let go, and the heap levels off.
+// Mount and unmount many times, then take the pond off the page: one canvas
+// at a time, observers and listeners released, no loop left running, and the
+// heap levels off. The page remounts the pond whenever the reduced-motion
+// setting changes, so the check flips that setting (the live scene and the
+// reduced-motion still, in turn); the pond has no other switch.
 import { readFileSync } from 'node:fs';
 import { THRESHOLDS } from '../thresholds.mjs';
 
@@ -18,17 +20,16 @@ export default async ({ page, site, report }) => {
     return metrics.metrics.find((m) => m.name === 'JSHeapUsedSize').value / 1048576;
   };
   const series = [await heap()];
-  for (let i = 0; i < T.switches; i++) {
-    const [x, y] = await page.eval(
-      `(() => { const r = document.querySelectorAll('#lights button')[${i % 2 === 0 ? 1 : 0}].getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`,
-    );
-    await page.click(x, y);
+  for (let i = 0; i < T.remounts; i++) {
+    await page.send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-reduced-motion', value: i % 2 === 0 ? 'reduce' : 'no-preference' }],
+    });
     await page.sleep(700);
     if (i % 20 === 19) series.push(await heap());
   }
-  report.info('heap MB every 20 switches', series.map((v) => v.toFixed(1)).join(' → '));
+  report.info('heap MB every 20 remounts', series.map((v) => v.toFixed(1)).join(' → '));
   report.measure(
-    `heap growth from switch 20 to ${T.switches}`,
+    `heap growth from remount 20 to ${T.remounts}`,
     +(series.at(-1) - series[1]).toFixed(2),
     T.heapGrowthAfterWarmup,
   );
@@ -37,7 +38,7 @@ export default async ({ page, site, report }) => {
   report.measure('animation frames pending', live.rafPending, { max: 1 });
   report.measure('resize observers observing', live.ro.observing, { max: 1 });
   report.measure('visibilitychange listeners', live.listeners['document:visibilitychange'] ?? 0, { max: 1 });
-  report.measure('workers running', live.workers.made - live.workers.terminated, { max: 1 });
+  report.measure('workers started (the pond paints on the main thread, in slices)', live.workers.made, { equals: 0 });
   report.info('WebGL contexts made in all', live.glContexts);
 
   await page.eval('__critterPageDispose()');
@@ -54,10 +55,5 @@ export default async ({ page, site, report }) => {
     'after taking the pond off: visibilitychange listeners',
     gone.listeners['document:visibilitychange'] ?? 0,
     { equals: 0 },
-  );
-  // An idle worker stops itself after 15 s.
-  report.info(
-    'after taking the pond off: workers made / terminated',
-    `${gone.workers.made} / ${gone.workers.terminated}`,
   );
 };

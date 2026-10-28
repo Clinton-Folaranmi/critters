@@ -5,14 +5,14 @@
 //
 // The page is the study's demo page (studies/<name>/index.html) with its
 // page.css inlined, its stills left out, and standalone/<name>/entry.ts as
-// one inline classic script that is also the bank painter's worker. The
+// one inline classic script. The
 // output needs no network: anything it loads from elsewhere is a build
 // error, and so is a page missing the basics a phone needs (a doctype, a
 // language, a charset, a viewport, no body margin).
 import { build } from 'esbuild';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { browserOptions, glslMinify, selfWorker } from './esbuild-plugins.mjs';
+import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
 
 /** Replaces the one tag in `page` that `pattern` matches, or fails. */
 function swap(page, pattern, replacement, template) {
@@ -31,7 +31,7 @@ export async function buildStandalone(name, { dev = false } = {}) {
     entryPoints: [`standalone/${name}/entry.ts`],
     format: 'iife',
     write: false,
-    plugins: [selfWorker, glslMinify],
+    plugins: [glslMinify],
   });
   const script = result.outputFiles[0].text;
   if (script.includes('</script')) throw new Error('Bundle contains a closing script tag.');

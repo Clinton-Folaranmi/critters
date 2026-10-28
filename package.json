@@ -45,7 +45,6 @@
     "qa:gpu": "node qa/browser.mjs gpu",
     "qa:first": "node qa/browser.mjs first",
     "qa:bake": "node qa/browser.mjs bake",
-    "qa:reshuffle": "node qa/browser.mjs reshuffle",
     "qa:lifecycle": "node qa/browser.mjs lifecycle",
     "qa:offscreen": "node qa/browser.mjs offscreen",
     "qa:loss": "node qa/browser.mjs loss",

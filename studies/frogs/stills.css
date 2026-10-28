@@ -2,9 +2,6 @@
    scene's first frame is up, the pond shows a still of that very frame
    (regenerate with npm run qa:stills after any visual change). */
 :root {
-  --still: url('stills/night-wide.webp');
-}
-:root[data-light='day'] {
   --still: url('stills/day-wide.webp');
 }
 .pond {
@@ -12,9 +9,6 @@
 }
 @media (max-width: 640px) {
   :root {
-    --still: url('stills/night-narrow.webp');
-  }
-  :root[data-light='day'] {
     --still: url('stills/day-narrow.webp');
   }
 }

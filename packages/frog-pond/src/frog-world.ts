@@ -1,6 +1,6 @@
-// Frogs, lily pads and fireflies (midges by day) for the pond study, in
-// either light. Units are canvas-height; y points up; x runs from 0 to the
-// canvas aspect ratio.
+// Frogs, lily pads and midges for the pond study: open water on every side,
+// by day. Units are canvas-height; y points up; x runs from 0 to the canvas
+// aspect ratio.
 //
 // A frog is a small 2D rig seen from above: a body that squashes, stretches
 // and shifts its weight, two three-segment hind legs with webbed feet and two
@@ -10,7 +10,7 @@
 // the other, gathers in flight, lands forefeet first and settles.
 // FROG_ART_DIRECTION.md describes what each pose is meant to read as.
 
-import { WATER_CX, WATER_CY, openDistance, shoreDistance } from './frog-bank';
+import { WATER_CX, WATER_CY, openDistance, pictureDistance } from './frog-bank';
 import {
   TAU,
   angleDelta,
@@ -24,7 +24,6 @@ import {
   limbEnd,
   mix,
   poseChain,
-  pushOff,
   separate,
   smooth,
   smoothstep,
@@ -38,17 +37,15 @@ const HIND_SEGMENTS = 3;
 const FORE_SEGMENTS = 2;
 /** Capsules per frog: [thigh, shin, foot, upper arm, forearm] × left/right. */
 export const FROG_CAPSULES = (HIND_SEGMENTS + FORE_SEGMENTS) * 2;
-export const MAX_PADS = 8;
+export const MAX_PADS = 13;
 export const MAX_FLIES = 8;
-/** Motes: fireflies (or midges) startled up out of the grass by a tap on the bank. */
-export const MAX_MOTES = 6;
 /** How much larger a frog draws at the top of a leap (per unit of height). */
 export const FROG_LIFT = 0.35;
 
 type FrogState = 'sit' | 'turn' | 'crouch' | 'air' | 'land' | 'swim' | 'dive';
 
-/** What a tap did: moved a frog, only startled one, rocked a pad, hit water, or landed on the bank (or reeds). */
-export type TapResult = 'frog' | 'frog-startle' | 'pad' | 'water' | 'bank';
+/** What a tap did: moved a frog, only startled one, rocked a pad, or hit water. */
+export type TapResult = 'frog' | 'frog-startle' | 'pad' | 'water';
 
 export interface Pad {
   x: number;
@@ -79,7 +76,8 @@ export interface Pad {
   pressY: number;
 }
 
-export interface Firefly {
+/** A midge over the water: the frogs' food. */
+export interface Midge {
   x: number;
   y: number;
   vx: number;
@@ -88,9 +86,7 @@ export interface Firefly {
   homeY: number;
   range: number;
   height: number;
-  phase: number;
-  rate: number;
-  glow: number;
+  /** 0 … 1: how far it has faded in since it (re)appeared. */
   fade: number;
   respawn: number;
 }
@@ -225,23 +221,14 @@ interface FootAnchor {
 
 export type RippleEmitter = (x: number, y: number, strength: number) => void;
 
-/** A mote rising from the grass: where it is, how high, and how far through its short life. */
-export interface Mote {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  height: number;
-  /** Seconds since it rose, and how long it lasts (0: free). */
-  age: number;
-  life: number;
-}
-
-// Pads: radius, notch width, rim damage, age. The first four are the frogs'
-// stages (three occupied, one spare); the rest are supporting pads — a bud
-// near the left bank, and pads drifting off the open edges of the picture
-// that frogs leave alone. No pad touches the bank (see stepPads).
-const PADS: ReadonlyArray<readonly [number, number, number, number]> = [
+// Pads: radius, notch width, rim damage, age, and (the edge pads) the angle
+// the board drew them at; the others turn by index. The first four are the
+// frogs' stages (three occupied, one spare); the rest are scenery that frogs
+// leave alone: a small pad in open water (4), pads drifting off the top and
+// right edges (5-7), and the board's edge pads along the left and bottom
+// (8-12, board r1/r2: reports/frogs/style-board/src/painter-r2.js), so pads
+// frame every edge of the all-water picture and the middle stays open.
+const PADS: ReadonlyArray<readonly [number, number, number, number, number?]> = [
   [0.155, 0.3, 0.15, 0.2],
   [0.135, 0.22, 0.0, 0.05],
   [0.125, 0.34, 0.45, 0.55],
@@ -250,6 +237,11 @@ const PADS: ReadonlyArray<readonly [number, number, number, number]> = [
   [0.13, 0.28, 0.35, 0.7],
   [0.1, 0.3, 0.2, 0.45],
   [0.09, 0.24, 0.6, 0.85],
+  [0.12, 0.3, 0.0, 0.2, 2.2],
+  [0.135, 0.26, 0.3, 0.2, 4.1],
+  [0.1, 0.34, 0.0, 0.6, 6.0],
+  [0.08, 0.28, 0.0, 0.2, 7.9],
+  [0.05, 0.4, 0.0, 0.2, 9.8],
 ];
 // Where each pad floats (share of width, share of height), spaced unevenly:
 // on a wide picture (aspect 1.48), and rearranged for a narrow one (0.91,
@@ -264,6 +256,11 @@ const PAD_HOMES_WIDE: ReadonlyArray<readonly [number, number]> = [
   [0.95, 0.42],
   [0.53, 0.95],
   [0.87, 0.14],
+  [0.015, 0.47],
+  [0.1, 0.09],
+  [0.36, 0.0],
+  [0.02, 0.97],
+  [0.25, 0.27],
 ];
 const PAD_HOMES_NARROW: ReadonlyArray<readonly [number, number]> = [
   [0.36, 0.69],
@@ -274,6 +271,11 @@ const PAD_HOMES_NARROW: ReadonlyArray<readonly [number, number]> = [
   [1.04, 0.44],
   [0.53, 0.95],
   [0.87, 0.14],
+  [-0.01, 0.45],
+  [0.13, 0.06],
+  [0.47, -0.01],
+  [0.02, 0.97],
+  [0.2, 0.24],
 ];
 const NARROW_ASPECT = 0.91;
 const WIDE_ASPECT = 1.48;
@@ -289,25 +291,21 @@ const FROGS = [
   { pad: 1, size: 0.1, palette: 1, heading: 2.75, breath: 1.41 },
   { pad: 2, size: 0.118, palette: 2, heading: -2.1, breath: 1.27 },
 ] as const;
-// Firefly clusters (share of width, share of height, range, count): around
-// the frogs' stages and the reeds, leaving open water quiet.
+// Midge clusters (share of width, share of height, range, count): around the
+// frogs' stages, leaving open water quiet. (The first was placed by the old
+// reeds; it stays, since the frogs hunt these and their motion is frozen.)
 const FLY_CLUSTERS: ReadonlyArray<readonly [number, number, number, number]> = [
   [0.24, 0.76, 0.08, 3],
   [0.8, 0.52, 0.075, 3],
   [0.52, 0.42, 0.06, 2],
 ];
 
-// The water ends at the bank (bottom and left, frog-bank.ts) and runs out of
-// the picture elsewhere. Animals keep a little way off the bank, and inside
-// the old soft oval on the open sides. A pad keeps this far off the bank.
-const BANK_CLEARANCE = 0.012;
-const PAD_CLEARANCE = 0.015;
+// The water runs out of the picture on every side. Swimmers keep inside the
+// soft open-water oval (frog-bank.ts openDistance), as they always did on the
+// open sides, and their trailing legs inside the swimmers' outline (frog-bank.ts
+// pictureDistance), a little in from the drawn picture.
 /** Pads further out than this (in pond radii) are scenery, not stages. */
 const STAGE_REACH = 0.8;
-
-/** A mote's life, in seconds, and how many rise from one tap on the grass. */
-const MOTE_LIFE = 1.6;
-const MOTES_PER_TAP = 4;
 
 /** Left then right, for per-side loops (hoisted so a frame allocates nothing). */
 const SIDES = [1, -1] as const;
@@ -352,14 +350,17 @@ const RECOVER = 0.34;
 const STARTLE_COOLDOWN = 0.35;
 /** Seconds before a swim ends that the frog starts to steer for its pad. */
 const HOMING = 2;
-/** How far a swimmer's trailing legs keep off the bank (world units). */
+/** How far a swimmer's trailing legs keep inside the swimmers' outline (world units). */
 const LEG_CLEARANCE = 0.004;
+/** Within this much more, a swimmer is eased inward rather than moved at once (world units). */
+const LEG_SOFT = 0.012;
+/** How fast that easing closes the gap (1/s): about a sixth of it a frame. */
+const LEG_EASE = 11;
 
 export class FrogWorld {
   readonly pads: Pad[];
   readonly frogs: Frog[];
-  readonly flies: Firefly[];
-  readonly motes: Mote[];
+  readonly flies: Midge[];
   /** Frog-local leg capsules (body-length units): ax, ay, bx, by per capsule. */
   readonly capsules: Float32Array;
   private aspect: number;
@@ -371,7 +372,7 @@ export class FrogWorld {
   constructor(aspect: number, emit: RippleEmitter, frogCount: number = FROGS.length) {
     this.aspect = aspect;
     this.emit = emit;
-    this.pads = PADS.slice(0, MAX_PADS).map(([radius, notch, damage, age], index) => {
+    this.pads = PADS.slice(0, MAX_PADS).map(([radius, notch, damage, age, angle], index) => {
       const [x, y] = padHome(index, aspect);
       return {
         x,
@@ -379,7 +380,7 @@ export class FrogWorld {
         homeX: x,
         homeY: y,
         radius,
-        angle: index * 2.39 + 0.6,
+        angle: angle ?? index * 2.39 + 0.6,
         notch,
         damage,
         vx: 0,
@@ -490,9 +491,13 @@ export class FrogWorld {
     this.flies = [];
     for (const [u, v, range, count] of FLY_CLUSTERS) {
       for (let i = 0; i < count && this.flies.length < MAX_FLIES; i++) {
-        const index = this.flies.length;
         const a = this.random() * TAU;
         const r = range * Math.sqrt(this.random());
+        const height = 0.03 + this.random() * 0.05;
+        // Two draws that seeded the night's blink (gone): still taken, so the
+        // seed sequence, and with it every frog's path, is unchanged.
+        this.random();
+        this.random();
         this.flies.push({
           x: u * aspect + Math.cos(a) * r,
           y: v + Math.sin(a) * r,
@@ -501,17 +506,13 @@ export class FrogWorld {
           homeX: u * aspect,
           homeY: v,
           range,
-          height: 0.03 + this.random() * 0.05,
-          phase: index * 1.1 + this.random(),
-          rate: 0.45 + this.random() * 0.6,
-          // Lit from the start, so the reduced-motion still shows them too.
-          glow: 0.35 + (index % 3) * 0.3,
+          height,
+          // There from the start, so the reduced-motion still shows them too.
           fade: 1,
           respawn: 0,
         });
       }
     }
-    this.motes = Array.from({ length: MAX_MOTES }, () => ({ x: 0, y: 0, vx: 0, vy: 0, height: 0, age: 0, life: 0 }));
     this.capsules = new Float32Array(this.frogs.length * FROG_CAPSULES * 4);
     for (const frog of this.frogs) {
       this.pose(frog);
@@ -528,12 +529,11 @@ export class FrogWorld {
 
   /**
    * Below 1 inside the swimmable water, 1 at its edge, above 1 beyond it:
-   * the open-water oval, or near the bank, whichever is closer. Shrunk by a
-   * margin in world units.
+   * the soft open-water oval, the same on every side. Shrunk by a margin in
+   * world units.
    */
   pondDistance(x: number, y: number, margin = 0) {
-    const bank = 1 - (shoreDistance(x, y, this.aspect) - margin - BANK_CLEARANCE) / 0.3;
-    return Math.max(openDistance(x, y, this.aspect, margin), bank);
+    return openDistance(x, y, this.aspect, margin);
   }
 
   /** Pulls a point back inside the swimmable water (less a margin), toward its middle. */
@@ -543,11 +543,6 @@ export class FrogWorld {
 
   /** pondDistance() as a kit region function, made once so containing allocates nothing. */
   private readonly pondRegion = (x: number, y: number, margin: number) => this.pondDistance(x, y, margin);
-
-  /** Nudges a drifting pad back off the bank. */
-  private keepOffBank(pad: Pad) {
-    pushOff(pad, pad.radius, PAD_CLEARANCE, shoreDistance, this.aspect);
-  }
 
   /**
    * A new canvas shape. Pads keep their place in the picture and drift
@@ -570,7 +565,6 @@ export class FrogWorld {
         pad.x *= scale;
       }
     });
-    for (const mote of this.motes) mote.x *= scale;
     for (const fly of this.flies) {
       fly.x *= scale;
       fly.homeX *= scale;
@@ -597,75 +591,98 @@ export class FrogWorld {
     if (dt <= 0) return;
     this.stepPads(dt);
     this.stepFlies(dt);
-    this.stepMotes(dt);
     for (let i = 0; i < this.frogs.length; i++) this.stepFrog(this.frogs[i], i, dt);
     this.separateSwimmers();
     for (let i = 0; i < this.frogs.length; i++) {
       const frog = this.frogs[i];
       this.pose(frog);
-      if (frog.pad < 0 && frog.state !== 'air' && frog.state !== 'land') this.keepLegsOffBank(frog, i);
+      if (frog.pad < 0 && frog.state !== 'air' && frog.state !== 'land') this.keepLegsInPicture(frog, i, dt);
     }
   }
 
   /**
-   * Containment keeps a swimmer's body off the bank, but its hind legs trail
-   * well behind it (and its forefeet reach ahead), and turning back from the
-   * shore they would slip under the grass. This moves the frog clear, away
-   * from the shore, just far enough that every joint and toe stays on the
-   * water. (A frog in the air is drawn over the bank, so it may cross it.)
+   * Containment keeps a swimmer's body inside the open-water oval, but its
+   * hind legs trail well behind it (and its forefeet reach ahead), and in
+   * places (top and bottom; the sides of a phone) the oval comes closer to
+   * the swimmers' outline than a trailing leg is long. So when any joint or
+   * toe comes within LEG_SOFT of its limit, the frog is eased inward (a share
+   * of the overlap a frame), and only if a part still passes the limit itself
+   * is it moved at once. (Measured over 10 min soaks: it eases a swimmer in a
+   * few hundred frames, never more than 0.0022 in one, about a frame of its
+   * own swimming, and the move-at-once never happens.)
    */
-  private keepLegsOffBank(frog: Frog, index: number) {
+  private keepLegsInPicture(frog: Frog, index: number, dt: number) {
+    const soft = this.legShortfall(frog, index, LEG_CLEARANCE + LEG_SOFT);
+    if (soft <= 0) return;
+    this.moveInward(frog, soft * (1 - Math.exp(-LEG_EASE * dt)));
     for (let pass = 0; pass < 2; pass++) {
-      const scale = frog.size * (1 + frog.z * FROG_LIFT);
-      const c = Math.cos(frog.bodyHeading);
-      const s = Math.sin(frog.bodyHeading);
-      let need = 0;
-      let atX = 0;
-      let atY = 0;
-      const base = index * FROG_CAPSULES * 4;
-      for (let k = 0; k < FROG_CAPSULES; k++) {
-        const part = k % 5;
-        const o = base + k * 4;
-        // Each joint as drawn (with its thickness), and the toe fans.
-        let lx = this.capsules[o + 2];
-        let ly = this.capsules[o + 3];
-        let radius = part === 0 ? 0.09 : 0.05;
-        if (part === 2 || part === 4) {
-          const toe = part === 2 ? HIND_TOE : FORE_TOE;
-          const dx = lx - this.capsules[o];
-          const dy = ly - this.capsules[o + 1];
-          const len = Math.hypot(dx, dy) || 1;
-          lx += (dx / len) * toe * 0.55;
-          ly += (dy / len) * toe * 0.55;
-          radius = toe * 0.6;
-        }
-        lx *= frog.bodyStretch;
-        ly /= frog.bodyStretch;
-        const wx = frog.x + (lx * c - ly * s) * scale;
-        const wy = frog.y + (lx * s + ly * c) * scale;
-        const short = radius * scale + LEG_CLEARANCE - shoreDistance(wx, wy, this.aspect);
-        if (short > need) {
-          need = short;
-          atX = wx;
-          atY = wy;
-        }
-      }
-      if (need <= 0) return;
-      const away = gradient(shoreDistance, this.aspect, atX, atY);
-      frog.x += away[0] * need;
-      frog.y += away[1] * need;
-      this.contain(frog, frog.size * 0.8);
+      const hard = this.legShortfall(frog, index, LEG_CLEARANCE);
+      if (hard <= 0) return;
+      this.moveInward(frog, hard);
     }
   }
 
-  // ---- Pads: float on a spring toward home, bob and spin when pushed.
+  /** Where the part found by legShortfall() is (hoisted so a frame allocates nothing). */
+  private legAtX = 0;
+  private legAtY = 0;
+
+  /**
+   * How far the swimmer's worst joint or toe (as drawn, with its thickness)
+   * is short of `clearance` inside the swimmers' outline, in world units
+   * (0 or less: every part is clear). Leaves that part's place in legAt.
+   */
+  private legShortfall(frog: Frog, index: number, clearance: number) {
+    const scale = frog.size * (1 + frog.z * FROG_LIFT);
+    const c = Math.cos(frog.bodyHeading);
+    const s = Math.sin(frog.bodyHeading);
+    let need = 0;
+    const base = index * FROG_CAPSULES * 4;
+    for (let k = 0; k < FROG_CAPSULES; k++) {
+      const part = k % 5;
+      const o = base + k * 4;
+      // Each joint as drawn (with its thickness), and the toe fans.
+      let lx = this.capsules[o + 2];
+      let ly = this.capsules[o + 3];
+      let radius = part === 0 ? 0.09 : 0.05;
+      if (part === 2 || part === 4) {
+        const toe = part === 2 ? HIND_TOE : FORE_TOE;
+        const dx = lx - this.capsules[o];
+        const dy = ly - this.capsules[o + 1];
+        const len = Math.hypot(dx, dy) || 1;
+        lx += (dx / len) * toe * 0.55;
+        ly += (dy / len) * toe * 0.55;
+        radius = toe * 0.6;
+      }
+      lx *= frog.bodyStretch;
+      ly /= frog.bodyStretch;
+      const wx = frog.x + (lx * c - ly * s) * scale;
+      const wy = frog.y + (lx * s + ly * c) * scale;
+      const short = radius * scale + clearance - pictureDistance(wx, wy, this.aspect);
+      if (short > need) {
+        need = short;
+        this.legAtX = wx;
+        this.legAtY = wy;
+      }
+    }
+    return need;
+  }
+
+  /** Moves a swimmer `by` world units inward, across the outline at legAt. */
+  private moveInward(frog: Frog, by: number) {
+    const inward = gradient(pictureDistance, this.aspect, this.legAtX, this.legAtY);
+    frog.x += inward[0] * by;
+    frog.y += inward[1] * by;
+    this.contain(frog, frog.size * 0.8);
+  }
+
+  // ---- Pads: float on a spring toward home, bob and spin when pushed. The
+  // spring is all that holds them: a push off an edge comes back.
   private stepPads(dt: number) {
     for (const pad of this.pads) {
       pad.vx += (-(pad.x - pad.homeX) * 1.6 - pad.vx * 1.4) * dt;
       pad.vy += (-(pad.y - pad.homeY) * 1.6 - pad.vy * 1.4) * dt;
       pad.x += pad.vx * dt;
       pad.y += pad.vy * dt;
-      this.keepOffBank(pad);
       pad.spin *= Math.exp(-1.6 * dt);
       pad.angle += pad.spin * dt;
       pad.bob *= Math.exp(-2.4 * dt);
@@ -698,7 +715,7 @@ export class FrogWorld {
     pad.press = Math.max(pad.press, amount);
   }
 
-  // ---- Fireflies: a slow drift around their cluster, with an irregular blink.
+  // ---- Midges: a slow drift around their cluster.
   private stepFlies(dt: number) {
     for (const fly of this.flies) {
       if (fly.respawn > 0) {
@@ -732,9 +749,6 @@ export class FrogWorld {
       }
       fly.x += fly.vx * dt;
       fly.y += fly.vy * dt;
-      fly.phase += dt * fly.rate;
-      const pulse = Math.max(0, Math.sin(fly.phase * TAU));
-      fly.glow = (0.25 + 0.75 * pulse ** 3) * fly.fade;
     }
   }
 
@@ -919,7 +933,6 @@ export class FrogWorld {
       } else if (t < 0.24) {
         if (fly.respawn <= 0) {
           fly.respawn = 5 + this.random() * 6;
-          fly.glow = 0;
         }
         frog.tongue = 1 - (t - 0.09) / 0.15;
       } else {
@@ -1597,13 +1610,13 @@ export class FrogWorld {
     const startY = frog.y;
     frog.x += Math.cos(frog.heading) * frog.speed * dt;
     frog.y += Math.sin(frog.heading) * frog.speed * dt;
-    const atBank = this.pondDistance(frog.x, frog.y, frog.size * 0.8) > 1;
+    const atEdge = this.pondDistance(frog.x, frog.y, frog.size * 0.8) > 1;
     this.contain(frog, frog.size * 0.8);
     // Heading only changes with distance travelled, along a curve whose
     // tightness is set by the stroke, so a slow frog cannot yaw in place.
-    // Against the bank the stroke's push still counts: the feet push off it,
-    // which is the only way a frog swimming into the edge can come round.
-    const travelled = atBank ? frog.speed * dt : Math.hypot(frog.x - startX, frog.y - startY);
+    // Against the edge the stroke's push still counts, which is the only way
+    // a frog swimming into it can come round.
+    const travelled = atEdge ? frog.speed * dt : Math.hypot(frog.x - startX, frog.y - startY);
     const turn = (3 + 17 * steer) * travelled;
     frog.heading += clamp(wanted, -turn, turn);
 
@@ -1788,13 +1801,11 @@ export class FrogWorld {
    * hurried along); any tap on a frog is then ignored for a short cooldown,
    * so repeated taps never restart or reposition a movement.
    *
-   * `covered`: the point is under grass or reeds drawn over the water (the
-   * renderer knows; see frog-scene.ts). Only a frog on a pad or in the air,
-   * drawn above the bank, can be tapped there; otherwise it's the bank.
+   * `_covered` is part of the kit's world interface (something drawn over the
+   * water hides it); nothing covers this pond's water, so it is ignored.
    */
-  tap(x: number, y: number, tolerance = 0.014, covered = false): TapResult {
+  tap(x: number, y: number, tolerance = 0.014, _covered = false): TapResult {
     let index = this.frogAt(x, y, tolerance, false);
-    if (index < 0 && covered) return this.tapBank(x, y);
     if (index < 0 && !this.padAt(x, y)) index = this.frogAt(x, y, tolerance, true);
     if (index >= 0) return this.tapFrog(index, x, y);
     const pad = this.padAt(x, y);
@@ -1811,77 +1822,7 @@ export class FrogWorld {
       }
       return 'pad';
     }
-    if (shoreDistance(x, y, this.aspect) < 0) return this.tapBank(x, y);
     return 'water';
-  }
-
-  /**
-   * A tap on the bank, or on the grass or reeds hanging over the water: a
-   * few fireflies (by day, midges) start up out of the grass and drift off,
-   * and near the waterline the water shivers too. The water isn't touched
-   * otherwise.
-   */
-  tapBank(x: number, y: number): TapResult {
-    for (let n = 0; n < MOTES_PER_TAP; n++) {
-      // Reuse a free mote, or else the oldest.
-      let slot = this.motes[0];
-      for (const mote of this.motes) {
-        if (mote.life <= 0) {
-          slot = mote;
-          break;
-        }
-        if (mote.age / mote.life > slot.age / slot.life) slot = mote;
-      }
-      const a = this.random() * TAU;
-      const speed = 0.025 + this.random() * 0.03;
-      slot.x = x + Math.cos(a) * 0.006;
-      slot.y = y + Math.sin(a) * 0.006;
-      slot.vx = Math.cos(a) * speed;
-      slot.vy = Math.sin(a) * speed + 0.012;
-      slot.height = 0.004;
-      slot.age = -n * 0.07;
-      slot.life = MOTE_LIFE * (0.75 + this.random() * 0.5);
-    }
-    const shore = shoreDistance(x, y, this.aspect);
-    if (shore > -0.05) {
-      // The nearest bit of water, found along the shore's gradient.
-      const e = 0.002;
-      let gx = shoreDistance(x + e, y, this.aspect) - shoreDistance(x - e, y, this.aspect);
-      let gy = shoreDistance(x, y + e, this.aspect) - shoreDistance(x, y - e, this.aspect);
-      const g = Math.hypot(gx, gy) || 1;
-      gx /= g;
-      gy /= g;
-      const step = 0.008 - shore;
-      this.emit(x + gx * step, y + gy * step, 0.35 * (1 + shore / 0.05));
-    }
-    return 'bank';
-  }
-
-  // ---- Motes: rise out of the grass, drift, glow (or flicker) and are gone.
-  private stepMotes(dt: number) {
-    for (const mote of this.motes) {
-      if (mote.life <= 0) continue;
-      mote.age += dt;
-      if (mote.age < 0) continue;
-      if (mote.age >= mote.life) {
-        mote.life = 0;
-        continue;
-      }
-      mote.vx *= Math.exp(-1.2 * dt);
-      mote.vy *= Math.exp(-1.2 * dt);
-      mote.vx += (this.random() - 0.5) * 0.3 * dt;
-      mote.vy += (this.random() - 0.5) * 0.3 * dt;
-      mote.x += mote.vx * dt;
-      mote.y += mote.vy * dt;
-      mote.height = Math.min(0.09, mote.height + dt * 0.05);
-    }
-  }
-
-  /** How visible a mote is now (0 … 1): it brightens as it rises, then fades. */
-  moteGlow(mote: Mote) {
-    if (mote.life <= 0 || mote.age <= 0) return 0;
-    const t = mote.age / mote.life;
-    return smooth(t / 0.15) * (1 - smooth((t - 0.45) / 0.55));
   }
 
   private padAt(x: number, y: number) {

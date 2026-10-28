@@ -5,11 +5,34 @@ description: Build a living, interactive creature study for the web, an animal (
 
 # Critter
 
-Work inside the `critters` repository. The rules are those of
-`docs/CREATURE_STUDY_SPEC.md`; rule IDs (`P-18`, `C-3`, …) point there, and
-the spec wins where the two differ. The kit is `packages/critter-kit`; the
-examples are the frog pond (a Study), the cockroach (a Specimen, measured at
-250 fps) and the koi (a Specimen, tuned against tracked footage).
+The `critters` repository is the toolbox: `~/critters`
+(called `$CRITTERS` below). The rules are those of
+`$CRITTERS/docs/CREATURE_STUDY_SPEC.md`; rule IDs (`P-18`, `C-3`, …) point
+there, and the spec wins where the two differ. The kit is
+`packages/critter-kit`; the examples are the frog pond (a Study), the
+cockroach (a Specimen, measured at 250 fps) and the koi (a Specimen, tuned
+against tracked footage). Every path below is relative to `$CRITTERS`.
+
+**In another project**, the toolbox stays where it is and the project borrows
+from it:
+
+- **Read** the spec, `AGENTS.md`, the footage logs and the examples from
+  `$CRITTERS`. Follow its rules for the creature work; the project's own
+  rules win for everything else (stack, layout, commits).
+- **The kit:** copy `$CRITTERS/packages/critter-kit/src` into the project
+  (for example `src/critter-kit/`) and import it from there. Note the copy
+  and the date in the project's README; don't edit the copy, report needed
+  kit changes to the user.
+- **Footage tools:** run them from `$CRITTERS` with absolute paths to the
+  project's clips and outputs (`cd $CRITTERS && node qa/tools/footage/spine.mjs /abs/clip.mp4 …`);
+  they import the repo's libraries. A recorder for the new build (like
+  `follow-koi.mjs`) is written in the project, using them as examples.
+- **Checks:** the repo's `qa:*` scripts only know its own studies. Port the
+  measures you need (`$CRITTERS/qa/swim.mjs`, `gait.mjs`, `motion.mjs`) into
+  the project as plain Node scripts against its world.
+- **Docs:** footage log, visual direction and team files go in the project
+  (`docs/`, `reports/<animal>/team/`), on the same templates.
+- **Never write into `$CRITTERS`** from another project.
 
 This skill makes small living scenes: three frogs on lily pads that breathe,
 blink, hop and swim, a cockroach walking its tripod to a crumb, a koi
@@ -63,8 +86,10 @@ Sources and caveats: `docs/CRITTER_PRIOR_WORK.md`, the footage logs, and
 Steps 2 to 7 are the core and come before habitat, polish or paperwork.
 
 1. **Size it** (P-15). Tell the user the size and a time estimate first.
-   **Specimen**: one animal, an idle and one locomotion mode, plain ground,
-   one variant; about half a day including the loop. **Vignette**: one to
+   **Specimen**: one animal, an idle and one locomotion mode, a simple
+   ground, one variant; about half a day including the loop. Simple means
+   few elements, not unfinished: a Specimen still meets the look bar in
+   step 8. **Vignette**: one to
    three individuals, two or more modes, a small habitat whose one
    affordance is the motive; one to two days. **Study**: the frog pond's
    scale; propose a Vignette instead and build the Study only if the user
@@ -93,6 +118,18 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
    - **The animal's own 3D motion.** Note rolling, pitching or a flank
      showing. If the animal does it, the renderer has to draw it (step 5).
 
+   **The footage is evidence for the motion, not for the habitat.** Clips get
+   filmed wherever the animal happened to be: a grass snake on a wooden
+   jetty, a cockroach on a lab floor. Copy the clip's substrate and you get a
+   snake on a tabletop. Design the habitat from where the animal lives
+   (natural history, field guides), but keep a surface that **moves it the
+   same way** as the footage, because the surface picks the motion: a snake
+   pushing off plank edges moves as it would pushing off grass stems and
+   stones, not as it swims. Record the substrate the clip shows and the
+   habitat you chose in the footage log, with why they're equivalent. A
+   habitat that changes the mode (land to water, flat to branches) needs
+   footage of that mode.
+
 3. **Track it into curves** (P-18). Extract frames with ffmpeg; never trust a
    tracker you haven't checked on overlays by eye.
    - **Pale fish or another contrasty body from above:**
@@ -112,7 +149,7 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
    **literature**, **inferred** or **guess**. The world and the checks both
    read it.
 
-5. **Build the smallest thing that moves.** One animal, plain ground, the
+5. **Build the smallest thing that moves.** One animal, a simple ground, the
    kit's primitives: `gait.ts` for legs, `swim.ts` for spines,
    `contact.ts` for pins. The world is pure and seeded, stepped in Node from
    the first hour (A-1 to A-4), with `check()` for every rule it can detect.
@@ -121,6 +158,19 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
    If the footage showed roll or pitch, give the renderer a way to show it
    now. The koi slides its skin across its outline to bank, and foreshortens
    its head to lift it.
+
+   **Size the camera by the body's width, not its length.** Set the scale so
+   the body is at least about 3 % of the picture's height across (roughly
+   25–30 CSS px in a desktop scene) and check the phone frame too: below
+   that, every painted detail is lost. A compact animal (koi, frog, beetle)
+   gets there with its whole body and room to move. A long, slender one
+   can't: a grass snake is about 34 widths long, and fitting all of it in
+   frame made it 1.7 % wide, a green string. Keep the width and let the body
+   **coil, loop in wide S-curves, or trail out of frame**. The last one
+   breaks the boundary rule (L-16), so it's the user's decision, recorded on
+   the board. The footage usually shows the right framing: the snake clip
+   was 10–12 widths across. Bigger on screen means more pixels a second, so
+   keep the speed true in body lengths.
 
 6. **Compare** (P-18). Record the model's same parts at the footage's frame
    rate, run the same measurement code on it, and print both side by side.
@@ -154,6 +204,25 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
      one theme (A-6). Shared geometry written once. The koi draws every
      part as textured triangles from one painted atlas, so both renderers
      use the same pixels.
+   - **The look bar.** Every size meets it, a Specimen included. Judge the
+     full scene at page size against these, and against a reference you
+     admire for its _qualities_, not its contents (a koi pond's stones and
+     caustics don't belong behind a snake):
+     1. **Readable scale:** the body's width as in step 5; the head, eye and
+        markings legible at desktop and phone size.
+     2. **Depth:** at least three planes (ground, animal, something nearer)
+        with contact shadows where things meet the ground.
+     3. **Overlap:** something in the habitat passes over the animal at
+        times (a blade of grass, a leaf, dappled light), so it sits _in_ the
+        scene, not on top of it like a sticker.
+     4. **Crisp texture:** fine grain and hard edges where the material has
+        them; never a small smooth noise texture stretched up to fill the
+        frame (it reads as out of focus).
+     5. **Form:** one key light shaping the body (its side away from the light
+        darker, a highlight along its top, a soft shadow that separates it
+        from the ground), shared by animal and habitat (P-7).
+     6. **A payoff for every tap** that belongs to the habitat: grass that
+        rustles and parts, a ripple only where there's water.
    - **Make it live:** taps tested against the drawn shapes (B-2, I-2); a
      visible answer to every tap (I-1); a committed animal only flinches
      (H-3); Enter or Space (I-3); reduced motion gets a still (I-5).
@@ -168,6 +237,17 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
    - **Full scene before crops:** at desktop and phone size, write down the
      creature, its action and its motive before opening anything closer
      (Q-R4, Q-R5).
+
+## Working as a team
+
+Past the first rough build, run steps 6 and 7 as a team instead of alone
+(`references/team.md`). You become the orchestrator: you write a contract and
+a brief per round, start three specialists with the Agent tool
+(`critter-footage` measures footage and model alike, `critter-motion` owns
+everything that moves, `critter-look` owns colour, light and texture inside
+the board), review their reports against the footage, and take the
+side-by-side to the user. You never edit creature code yourself, and no
+specialist grades its own work.
 
 ## Approval
 

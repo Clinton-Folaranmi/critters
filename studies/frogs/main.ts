@@ -1,6 +1,6 @@
 import { startFrogPage } from './page';
 
-// The demo page. It ships only the caption, the switch and a still of the
+// The demo page. It ships only the caption and a still of the
 // pond's first frame (stills.css); the scene's code loads as the pond comes
 // within 300 px of the viewport, and its canvas replaces the still once its
 // first frame is drawn.
@@ -29,6 +29,6 @@ startFrogPage(async (container, options) => {
 });
 
 if (import.meta.env.DEV) {
-  // Dev-only, for the QA harness: the shore maths in the page.
+  // Dev-only, for the QA harness: the picture's maths in the page.
   void import('@critters/frog-pond/bank').then((bank) => Object.assign(window, { __critterBank: bank }));
 }

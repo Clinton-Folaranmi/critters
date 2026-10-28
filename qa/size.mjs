@@ -35,12 +35,10 @@ const approach = new Set();
 for (const next of outputs[main].imports)
   if (next.kind === 'dynamic-import') for (const file of closure(next.path)) if (!first.has(file)) approach.add(file);
 const js = Object.keys(outputs).filter((file) => file.endsWith('.js'));
-const worker = js.find((file) => file.endsWith('frog-bank-worker.js'));
-const lazy = js.filter((file) => !first.has(file) && !approach.has(file) && file !== worker);
+const lazy = js.filter((file) => !first.has(file) && !approach.has(file));
 report.measure('demo: with the page, minified', KB(sum(first)), T.demoFirstLoadMin);
 report.measure('demo: as the pond comes near, minified', KB(sum(approach)), T.demoOnApproachMin);
 report.measure('demo: as the pond comes near, gzip', KB(gzip(approach)), T.demoOnApproachGzip);
-report.measure('demo: bank worker, minified', KB(outputs[worker].bytes), T.workerMin);
 report.info(
   'demo: only if needed (Canvas fallback, painting on the page)',
   `${KB(sum(lazy))} KB in ${lazy.length} files`,

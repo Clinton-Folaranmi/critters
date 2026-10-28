@@ -19,7 +19,8 @@ const skip = () => process.env.QA_NO_BUILD === '1';
 
 /**
  * The worlds, shore maths and kit as Node modules: qa/.out/world.mjs (the
- * frog pond), bank.mjs, kit.mjs, cockroach-world.mjs and koi-world.mjs.
+ * frog pond), bank.mjs, kit.mjs, cockroach-world.mjs, koi-world.mjs,
+ * and snake-world.mjs.
  */
 export async function buildNodeModules() {
   if (
@@ -27,7 +28,8 @@ export async function buildNodeModules() {
     existsSync(`${OUT}/world.mjs`) &&
     existsSync(`${OUT}/kit.mjs`) &&
     existsSync(`${OUT}/cockroach-world.mjs`) &&
-    existsSync(`${OUT}/koi-world.mjs`)
+    existsSync(`${OUT}/koi-world.mjs`) &&
+    existsSync(`${OUT}/snake-world.mjs`)
   )
     return;
   const node = {
@@ -47,6 +49,7 @@ export async function buildNodeModules() {
     outfile: `${OUT}/cockroach-world.mjs`,
   });
   await build({ ...node, entryPoints: ['packages/koi/src/world.ts'], outfile: `${OUT}/koi-world.mjs` });
+  await build({ ...node, entryPoints: ['packages/snake/src/world.ts'], outfile: `${OUT}/snake-world.mjs` });
 }
 
 /** Pages opened from file://: the bake page and the standalone builds. */
@@ -55,8 +58,7 @@ export async function buildPages() {
   await mkdir(PAGES, { recursive: true });
   await build({
     stdin: {
-      contents: `import { paintBank, bankMask } from './${SRC}/frog-bank-paint';
-import * as bank from './${SRC}/frog-bank';
+      contents: `import * as bank from './${SRC}/frog-bank';
 import * as shaders from './${SRC}/frog-shaders';
 // A plain compile-and-link, waiting for the result (the scene compiles in the background).
 function createProgram(gl, vertex, fragment) {
@@ -72,7 +74,7 @@ function createProgram(gl, vertex, fragment) {
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
   return program;
 }
-Object.assign(window, { paintBank, bankMask, bank, shaders, createProgram });`,
+Object.assign(window, { bank, shaders, createProgram });`,
       resolveDir: '.',
       loader: 'ts',
     },

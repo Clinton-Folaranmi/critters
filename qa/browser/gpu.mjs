@@ -1,4 +1,4 @@
-// Frame cost at 1520 px wide (1520 × 1027), both lights: GPU time alone
+// Frame cost at 1520 px wide (1520 × 1027): GPU time alone
 // (EXT_disjoint_timer_query_webgl2), and CPU + GPU with a one-pixel readback
 // after each frame (a tiny canvas's cost subtracted). Machine-dependent:
 // run on a quiet machine, and compare with a baseline built from another
@@ -29,7 +29,7 @@ const timerQueries = `(async () => {
   __critterResolution(0);
   ${resize};
   __critterAdvance(0);
-  await new Promise((r) => setTimeout(r, 1200)); // the bank re-bakes for the new size
+  await new Promise((r) => setTimeout(r, 1200)); // the pad atlas repaints for the new size
   const c = document.querySelector('canvas'); const gl = c.getContext('webgl2');
   const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
   if (!ext) return null;
@@ -71,14 +71,12 @@ export default async ({ page, pages, report, opts }) => {
   const results = {};
   for (let r = 0; r < rounds; r++) {
     for (const variant of variants) {
-      for (const light of ['night', 'day']) {
-        await page.goto(`${pages}${variant}.html#${light}`);
-        await page.ready();
-        await page.freeze();
-        const tq = await page.eval(timerQueries);
-        const sync = await page.eval(synced);
-        (results[`${variant} ${light}`] ??= []).push({ ...tq, sync });
-      }
+      await page.goto(`${pages}${variant}.html`);
+      await page.ready();
+      await page.freeze();
+      const tq = await page.eval(timerQueries);
+      const sync = await page.eval(synced);
+      (results[variant] ??= []).push({ ...tq, sync });
     }
   }
   report.info('load average after', load());
@@ -86,7 +84,7 @@ export default async ({ page, pages, report, opts }) => {
     const median = (values) => values.sort((a, b) => a - b)[values.length >> 1];
     const gpu = runs.map((run) => run.gpu).filter((v) => v !== undefined);
     const sync = median(runs.map((run) => run.sync));
-    const official = key.startsWith('dev-frogs ');
+    const official = key === 'dev-frogs';
     if (gpu.length) {
       const value = +median(gpu).toFixed(2);
       if (official) report.measure(`${key}: GPU ms per frame (median of ${rounds})`, value, T.gpuMs);

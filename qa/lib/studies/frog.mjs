@@ -50,9 +50,10 @@ export default {
   async load() {
     await buildNodeModules();
     const { FrogWorld } = await import('../../.out/world.mjs');
-    const { shoreDistance } = await import('../../.out/bank.mjs');
+    const { pictureDistance, pictureEdge } = await import('../../.out/bank.mjs');
     this.World = FrogWorld;
-    this.shoreDistance = shoreDistance;
+    this.pictureDistance = pictureDistance;
+    this.pictureEdge = pictureEdge;
   },
   create(aspect) {
     return new this.World(aspect, () => {}, 3);
@@ -105,9 +106,10 @@ export default {
   /** Whether an animal's pose is made of finite numbers. */
   finite: (f) => Number.isFinite(f.x + f.y + f.heading + f.z + f.stretch + f.lean),
   /**
-   * One random soak tap: on a frog, on a pad (often on its side away from the
-   * bank, so it is pushed toward it), anywhere, or on the bank; a mouse or a
-   * finger. Returns what the world says it hit.
+   * One random soak tap: on a frog, on a pad (often on its side toward the
+   * middle, so it is pushed out toward the edge), anywhere, or in the outer
+   * band of the picture where the edge pads float; a mouse or a finger.
+   * Returns what the world says it hit.
    */
   soakTap(world, rnd, asp) {
     const kind = rnd();
@@ -119,7 +121,7 @@ export default {
       y = f.y + (rnd() - 0.5) * f.size;
     } else if (kind < 0.65) {
       const p = world.pads[Math.floor(rnd() * world.pads.length)];
-      const a = rnd() < 0.6 ? Math.atan2(p.y, p.x) : rnd() * Math.PI * 2;
+      const a = rnd() < 0.6 ? Math.atan2(0.5 - p.y, asp / 2 - p.x) : rnd() * Math.PI * 2;
       const r = p.radius * Math.sqrt(rnd()) * 0.95;
       x = p.x + Math.cos(a) * r;
       y = p.y + Math.sin(a) * r;
@@ -130,7 +132,8 @@ export default {
       for (let k = 0; k < 50; k++) {
         x = rnd() * asp;
         y = rnd();
-        if (this.shoreDistance(x, y, asp) < 0) break;
+        const edge = this.pictureEdge(x, y, asp);
+        if (edge > 0.8 && edge < 1) break;
       }
     }
     return world.tap(x, y, rnd() < 0.5 ? 0.01 : 0.022);
@@ -138,7 +141,7 @@ export default {
   /** The keyboard's central action (a pebble). */
   disturb: (world) => world.disturbCentre(),
 
-  /** The pond's own soak measurements: scenery and drawn parts against the bank, stages, hops. */
+  /** The pond's own soak measurements: pads and drawn parts against the swimmers' outline and the drawn picture, stages, hops. */
   soakStart(world) {
     return {
       padUnder: 0,
@@ -154,25 +157,25 @@ export default {
     };
   },
   soakAnimal(acc, world, f, i, n, asp) {
-    const shoreDistance = this.shoreDistance;
+    // Signed distance inside the swimmers' outline (world units, negative beyond it).
+    const inside = this.pictureDistance;
     // A hop: from the crouch into the air, off a pad.
     if (acc.prev[i].state === 'crouch' && f.state === 'air' && acc.prev[i].pad >= 0) acc.hops++;
     acc.prev[i].state = f.state;
     acc.prev[i].pad = f.pad;
     if (n % 3 !== 0) return;
-    // Sample the drawn shape on a grid near the bank: body, limbs, or neither.
-    // Frogs on a pad or in the air are drawn over the bank: a toe of a frog on
-    // a pad may touch the grass (up to a limit), and a leap may pass over it.
-    // A swimmer is drawn under it, so none of it may.
+    // Sample the drawn shape on a grid near the swimmers' outline: body,
+    // limbs, or neither. No part of a swimmer may go past it; a toe of a frog
+    // on a pad may (up to a limit), and a leap's reach is reported.
     const r = f.size * 1.6 * (1 + f.z * 0.35);
-    if (shoreDistance(f.x, f.y, asp) > r) return;
+    if (inside(f.x, f.y, asp) > r) return;
     let body = 0;
     let limb = 0;
     for (let a = -10; a <= 10; a++)
       for (let b = -10; b <= 10; b++) {
         const x = f.x + (a / 10) * r;
         const y = f.y + (b / 10) * r;
-        const sd = shoreDistance(x, y, asp);
+        const sd = inside(x, y, asp);
         if (sd >= 0) continue;
         if (bodyDistance(f, x, y) <= 0) body = Math.max(body, -sd);
         else if (world.frogDistance(i, x, y) <= 0) limb = Math.max(limb, -sd);
@@ -186,22 +189,36 @@ export default {
     }
   },
   soakFrame(acc, world, asp) {
+    // A pad drifted wholly out of the picture (no part of it inside the drawn
+    // picture) when its home keeps part of it in: drift has lost it. Also how
+    // far out past its home any pad has drifted.
+    const seen = (x, y, radius) => {
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        if (this.pictureEdge(x + Math.cos(a) * radius, y + Math.sin(a) * radius, asp) < 1) return true;
+      }
+      return this.pictureEdge(x, y, asp) < 1;
+    };
     world.pads.forEach((p) => {
-      const clear = this.shoreDistance(p.x, p.y, asp) - p.radius * (1 + Math.abs(p.bob) * 0.03) * 1.024;
-      acc.minPadClear = Math.min(acc.minPadClear, clear);
-      if (clear < 0) acc.padUnder++;
+      const out = this.pictureDistance(p.homeX, p.homeY, asp) - this.pictureDistance(p.x, p.y, asp);
+      acc.minPadClear = Math.min(acc.minPadClear, -out);
+      if (!seen(p.x, p.y, p.radius) && seen(p.homeX, p.homeY, p.radius)) acc.padUnder++;
     });
     if (!world.pads.some((p, i) => i < 4 && p.occupant === -1)) acc.noFreeStage++;
   },
   soakReport(report, tag, acc, T) {
-    report.measure(`${tag}: pad-under-bank frames`, acc.padUnder, T.padUnderBankFrames);
-    report.measure(`${tag}: swimmer body over bank`, acc.swimmerBody, T.swimmerOverBank);
-    report.measure(`${tag}: swimmer limbs over bank`, acc.swimmerLimb, T.swimmerOverBank);
-    report.measure(`${tag}: toe on the grass (frog on a pad)`, +acc.worstToe.toFixed(4), T.drawnOverToe);
-    report.info(`${tag}: leaper over the grass (in the air, allowed)`, +acc.worstAir.toFixed(4));
+    report.measure(`${tag}: pad drifted out of the picture, frames`, acc.padUnder, T.padOutOfPictureFrames);
+    report.measure(`${tag}: swimmer body past the swimmers' outline`, acc.swimmerBody, T.swimmerPastOutline);
+    report.measure(`${tag}: swimmer limbs past the swimmers' outline`, acc.swimmerLimb, T.swimmerPastOutline);
+    report.measure(
+      `${tag}: toe past the swimmers' outline (frog on a pad)`,
+      +acc.worstToe.toFixed(4),
+      T.toePastOutline,
+    );
+    report.info(`${tag}: leaper past the swimmers' outline (in the air, allowed)`, +acc.worstAir.toFixed(4));
   },
   soakNotes(report, tag, acc, world, minutes) {
-    report.info(`${tag}: closest pad rim to the bank`, +acc.minPadClear.toFixed(4));
+    report.info(`${tag}: furthest a pad drifted outward of its home`, +(-acc.minPadClear).toFixed(4));
     report.info(`${tag}: frames with no free stage`, acc.noFreeStage);
     report.info(`${tag}: pad jumps per frog per minute`, +(acc.hops / world.frogs.length / minutes).toFixed(2));
   },

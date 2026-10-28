@@ -1,17 +1,23 @@
 import { startProgram } from '@critters/critter-kit';
-import { REED_BLADES, reedBlades } from './frog-bank';
-import { bakeCaustics, trackBank, type BakedBank } from './frog-bank-layer';
-import { MAX_SPECKS, frogBedShader, frogFragmentShader, frogVertexShader } from './frog-shaders';
-import type { FrogTheme } from './frog-theme';
-import { FROG_CAPSULES, MAX_FLIES, MAX_PADS, type FrogWorld } from './frog-world';
+import {
+  GRAIN_TILE,
+  causticTileJob,
+  makeDrift,
+  makeGrainTile,
+  paintAtlas,
+  type GrainTile,
+  type AtlasJob,
+  type SpriteAtlas,
+} from './frog-caustics';
+import { MAX_SHADE, RIPPLE_ARCS, RIPPLE_SLOTS, frogFragmentShader, frogVertexShader } from './frog-shaders';
+import { FROG_EDGES, FROG_PALETTE, SHADE_CLUSTERS, shadeCentre } from './frog-theme';
+import { FROG_CAPSULES, FROG_LIFT, MAX_FLIES, MAX_PADS, type Frog, type FrogWorld } from './frog-world';
 
 export interface FrogRenderer {
   /** Draws a frame once everything it needs is ready; until then it only gets ready. */
   draw(time: number): void;
-  /** True once it has drawn a full frame, bank and all. */
+  /** True once it has drawn a full frame. */
   readonly ready: boolean;
-  /** The bank being shown, for hit tests; null until the first one is baked. */
-  readonly bank: BakedBank | null;
   dispose(): void;
 }
 
@@ -20,115 +26,177 @@ export interface FrogRendererHooks {
   onLost?: () => void;
   /** Setting up failed after the renderer was made (a shader didn't compile). */
   onFail?: (error: unknown) => void;
-  /** Something new to show arrived between frames (a freshly baked bank). */
+  /** Something new to show arrived between frames. */
   onChange?: () => void;
 }
 
-/** How far outside the reeds' roots and tips their bend, width and shadow can reach. */
-const REED_MARGIN = 0.035;
+/** Device pixels per CSS pixel for this canvas, to the nearest quarter (the grain is sized in CSS px). */
+export const canvasRatio = (canvas: HTMLCanvasElement) =>
+  Math.max(0.5, Math.round((canvas.width / Math.max(1, canvas.clientWidth || canvas.width)) * 4) / 4);
+
+// A small LCG at module level, so drawing ripples allocates nothing.
+let arcSeed = 0;
+const nextArc = () => {
+  arcSeed = (Math.imul(arcSeed, 1664525) + 1013904223) >>> 0;
+  return arcSeed / 4294967296;
+};
+
+/**
+ * Where each ripple's broken arcs start and how long they are (2 rings × 3
+ * arcs, world angles), the same for both renderers: seeded by where it is.
+ */
+export function rippleArcs(x: number, y: number, out: Float32Array, o: number) {
+  arcSeed = (Math.imul(Math.floor(x * 1000 + y * 7000), 2654435761) + 7) >>> 0;
+  const start = nextArc() * Math.PI * 2;
+  for (let ring = 0; ring < 2; ring++) {
+    for (let k = 0; k < 3; k++) {
+      const i = o + (ring * 3 + k) * 2;
+      out[i] = start + ring * 0.6 + k * ((Math.PI * 2) / 3) + nextArc() * 0.3;
+      out[i + 1] = 0.5 + nextArc() * 0.5;
+    }
+  }
+}
+
+/**
+ * The sprites both renderers lay on (pads and shade), painted for the
+ * canvas's height a slice at a time off the frame (see paintAtlas). Until a
+ * new one is done the last one stays in use; `atlas` is null only before the
+ * first is ready. onReady is called when one is.
+ */
+export function atlasBaker(world: FrogWorld, onReady: () => void) {
+  let shown: SpriteAtlas | null = null;
+  let job: AtlasJob | null = null;
+  let wantedH = 0;
+  let wantedRatio = 0;
+  let wantedPads = 0;
+  let timer = 0;
+  const pump = () => {
+    timer = 0;
+    if (!job) return;
+    if (job.work(8)) {
+      shown = job.atlas;
+      job = null;
+      onReady();
+    } else timer = window.setTimeout(pump, 0);
+  };
+  return {
+    get atlas() {
+      return shown;
+    },
+    /** Starts painting for this size and grain, unless that's already done or under way. */
+    fit(h: number, ratio: number, grain: GrainTile) {
+      if (h === wantedH && ratio === wantedRatio && world.pads.length === wantedPads) return;
+      wantedH = h;
+      wantedRatio = ratio;
+      wantedPads = world.pads.length;
+      job = paintAtlasFor(world, h, ratio, grain);
+      window.clearTimeout(timer);
+      pump();
+    },
+    dispose() {
+      window.clearTimeout(timer);
+      job = null;
+    },
+  };
+}
+
+function paintAtlasFor(world: FrogWorld, h: number, ratio: number, grain: GrainTile): AtlasJob {
+  return paintAtlas(world.pads, h, ratio, grain, {
+    leaf: FROG_PALETTE.leaf,
+    vein: FROG_PALETTE.leafVein,
+    aged: FROG_PALETTE.leafAged,
+    band: FROG_PALETTE.shadow,
+    shade: FROG_PALETTE.shade,
+    edges: FROG_EDGES,
+    clusters: SHADE_CLUSTERS,
+  });
+}
+
+/** How far from its centre any part of a frog reaches (world units): legs, toes and all. */
+export function frogReach(world: FrogWorld, frog: Frog, index: number) {
+  const c = world.capsules;
+  let reach = 0.55;
+  for (let k = 0; k < FROG_CAPSULES; k++) {
+    const o = (index * FROG_CAPSULES + k) * 4;
+    reach = Math.max(reach, Math.hypot(c[o + 2], c[o + 3]) + 0.36);
+  }
+  return reach * frog.size * (1 + frog.z * FROG_LIFT) * Math.max(frog.bodyStretch, 1 / frog.bodyStretch);
+}
+
+/** Indices of the frogs in drawing order: lowest first, so a leaper passes over the others. */
+export function frogOrder(world: FrogWorld, out: Int32Array) {
+  const n = world.frogs.length;
+  for (let i = 0; i < n; i++) out[i] = i;
+  for (let i = 1; i < n; i++) {
+    const v = out[i];
+    let j = i - 1;
+    while (j >= 0 && world.frogs[out[j]].z > world.frogs[v].z) {
+      out[j + 1] = out[j];
+      j--;
+    }
+    out[j + 1] = v;
+  }
+  return n;
+}
 
 // Throws on any setup failure it can see at once, so the scene can fall back
-// to a fresh canvas. The shaders compile in the background
-// (KHR_parallel_shader_compile where available) and the bank is baked in a
-// worker, so the first draw() calls only get ready; a compile failure then
-// reaches onFail. If the context is lost later, onLost is called once and
-// draw() becomes a no-op; the scene decides what replaces this renderer.
+// to a fresh canvas. The shader compiles in the background
+// (KHR_parallel_shader_compile where available), so the first draw() calls
+// only get ready; a compile failure then reaches onFail. If the context is
+// lost later, onLost is called once and draw() becomes a no-op.
 export function createFrogWebgl(
   canvas: HTMLCanvasElement,
   world: FrogWorld,
   ripples: Float32Array,
-  theme: FrogTheme,
   hooks: FrogRendererHooks = {},
 ): FrogRenderer {
   const gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
   if (!gl) throw new Error('WebGL2 context creation failed.');
-  const pond = startProgram(gl, frogVertexShader, frogFragmentShader(theme));
-  const bed = startProgram(gl, frogVertexShader, frogBedShader(theme));
+  const pond = startProgram(gl, frogVertexShader, frogFragmentShader());
   const program = pond.program;
   const vao = gl.createVertexArray();
-  // The riverbed never moves, so it is painted once per canvas size into
-  // this texture (colour, and depth in alpha) and sampled by the pond pass.
-  const bedTexture = gl.createTexture();
-  const bedFramebuffer = gl.createFramebuffer();
-  // The bank (frog-bank-paint.ts), laid over the water: the same picture the
-  // Canvas renderer draws.
-  const bankTexture = gl.createTexture();
-  // By day, the baked caustic web (see frog-caustics.ts), tiled; it is made
-  // off the main thread, like the bank.
-  const causticTexture = gl.createTexture();
-  let causticsReady = theme !== 'day';
-  let disposed = false;
-  if (!causticsReady) {
-    bakeCaustics(256).then(
-      (tile) => {
-        if (disposed || gl.isContextLost()) return;
-        gl.bindTexture(gl.TEXTURE_2D, causticTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, tile);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        causticsReady = true;
-        hooks.onChange?.();
-      },
-      (error: unknown) => hooks.onFail?.(error),
-    );
-  }
-  let bedWidth = 0;
-  let bedHeight = 0;
-  const paintBed = () => {
-    bedWidth = canvas.width;
-    bedHeight = canvas.height;
-    gl.bindTexture(gl.TEXTURE_2D, bedTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bedWidth, bedHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, bedFramebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, bedTexture, 0);
-    gl.viewport(0, 0, bedWidth, bedHeight);
-    gl.useProgram(bed.program);
-    gl.bindVertexArray(vao);
-    gl.uniform2f(gl.getUniformLocation(bed.program, 'u_resolution'), bedWidth, bedHeight);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  const texture = (filter: number, wrap: number) => {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter === gl.LINEAR_MIPMAP_LINEAR ? gl.LINEAR : filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
+    return t;
   };
-  // A worker hands the bank over as an ImageBitmap, which some browsers
-  // upload without the flip and premultiply asked for below; drawn into a
-  // plain 2D canvas first, every source uploads the same way.
-  let uploaded: BakedBank | null = null;
-  const uploadBank = (bank: BakedBank) => {
-    let source = bank.image;
-    if (typeof ImageBitmap !== 'undefined' && source instanceof ImageBitmap) {
-      const copy = new OffscreenCanvas(source.width, source.height);
-      copy.getContext('2d')?.drawImage(source, 0, 0);
-      source = copy;
-    }
-    gl.bindTexture(gl.TEXTURE_2D, bankTexture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, source);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    uploaded = bank;
+  // The caustic web (frog-caustics.ts), painted a slice at a time, then tiled.
+  const causticTexture = texture(gl.LINEAR_MIPMAP_LINEAR, gl.REPEAT);
+  const causticJob = causticTileJob(256);
+  let causticReady = false;
+  const uploadCaustics = () => {
+    causticReady = causticJob.work(6);
+    if (!causticReady) return;
+    gl.bindTexture(gl.TEXTURE_2D, causticTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, causticJob.tile);
+    gl.generateMipmap(gl.TEXTURE_2D);
   };
-  const bank = trackBank(theme, () => hooks.onChange?.());
+  // The grain, remade when the pixel density changes; the drift, when the aspect does.
+  const grainTexture = texture(gl.NEAREST, gl.REPEAT);
+  const driftTexture = texture(gl.LINEAR, gl.CLAMP_TO_EDGE);
+  let grain: GrainTile | null = null;
+  let driftAspect = 0;
+  // The pads and shade, painted once per size (paintAtlas), shared with the Canvas renderer.
+  const atlasTexture = texture(gl.LINEAR, gl.CLAMP_TO_EDGE);
+  const baker = atlasBaker(world, () => hooks.onChange?.());
+  let atlas: SpriteAtlas | null = null;
 
   const names = [
     'u_resolution',
     'u_time',
+    'u_ratio',
     'u_ripples[0]',
+    'u_arcs[0]',
     'u_padCount',
+    'u_counts',
     'u_padA[0]',
     'u_padB[0]',
     'u_padC[0]',
-    'u_padD[0]',
     'u_frogCount',
     'u_frogA[0]',
     'u_frogB[0]',
@@ -138,31 +206,35 @@ export function createFrogWebgl(
     'u_legs[0]',
     'u_flyCount',
     'u_flies[0]',
-    'u_moteBox',
-    'u_bed',
+    'u_shade[0]',
+    'u_padLeaf[0]',
+    'u_padBand[0]',
+    'u_shadeSprite[0]',
+    'u_atlas',
+    'u_atlasSize',
+    'u_atlasH',
     'u_caustic',
-    'u_bank',
-    'u_reedEnds[0]',
-    'u_reedShape[0]',
-    'u_reedBox',
+    'u_grain',
+    'u_drift',
   ] as const;
   // Uniform locations can only be read once the program has linked.
   let loc: Record<(typeof names)[number], WebGLUniformLocation | null> | null = null;
   const padA = new Float32Array(MAX_PADS * 4);
   const padB = new Float32Array(MAX_PADS * 4);
   const padC = new Float32Array(MAX_PADS * 4);
-  const padD = new Float32Array(MAX_PADS * 4);
   const frogA = new Float32Array(12);
   const frogB = new Float32Array(12);
   const frogC = new Float32Array(12);
   const frogD = new Float32Array(12);
   const frogE = new Float32Array(12);
   const legs = new Float32Array(3 * FROG_CAPSULES * 4);
-  const flies = new Float32Array(MAX_SPECKS * 4);
-  const reedEnds = new Float32Array(REED_BLADES * 4);
-  const reedShape = new Float32Array(REED_BLADES * 4);
-  const reedBox = new Float32Array(4);
-  const day = theme === 'day';
+  const flies = new Float32Array(MAX_FLIES * 4);
+  const shade = new Float32Array(MAX_SHADE * 4);
+  const padLeaf = new Float32Array(MAX_PADS * 4);
+  const padBand = new Float32Array(MAX_PADS * 4);
+  const shadeSprite = new Float32Array(MAX_SHADE * 4);
+  const arcs = new Float32Array(RIPPLE_SLOTS * RIPPLE_ARCS * 2);
+  const order = new Int32Array(3);
 
   let lost = false;
   let failed = false;
@@ -176,11 +248,11 @@ export function createFrogWebgl(
   };
   canvas.addEventListener('webglcontextlost', onContextLost);
 
-  /** Whether the programs have finished linking (polling costs nothing once they have). */
+  /** Whether the program has finished linking (polling costs nothing once it has). */
   const compiled = () => {
     if (loc) return true;
     try {
-      if (!pond.poll() || !bed.poll()) return false;
+      if (!pond.poll()) return false;
     } catch (error) {
       failed = true;
       hooks.onFail?.(error);
@@ -192,21 +264,56 @@ export function createFrogWebgl(
     return true;
   };
 
+  /** The tiles that depend on the canvas: painted once per density and aspect. */
+  const fitTiles = (aspect: number) => {
+    const ratio = canvasRatio(canvas);
+    if (!grain || grain.ratio !== ratio) {
+      grain = makeGrainTile(ratio);
+      gl.bindTexture(gl.TEXTURE_2D, grainTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, GRAIN_TILE, GRAIN_TILE, 0, gl.RGBA, gl.UNSIGNED_BYTE, grain.pixels);
+    }
+    const rounded = Math.round(aspect * 100) / 100;
+    if (rounded !== driftAspect) {
+      driftAspect = rounded;
+      const drift = makeDrift(rounded);
+      gl.bindTexture(gl.TEXTURE_2D, driftTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, drift.width, drift.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, drift.pixels);
+    }
+    baker.fit(canvas.height, ratio, grain);
+    if (baker.atlas && baker.atlas !== atlas) {
+      atlas = baker.atlas;
+      gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, atlas.canvas);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      for (let i = 0; i < atlas.leaves.length; i++) {
+        padLeaf[i * 4] = atlas.leaves[i].x;
+        padLeaf[i * 4 + 1] = atlas.leaves[i].y;
+        padLeaf[i * 4 + 2] = atlas.leaves[i].half;
+        padBand[i * 4] = atlas.bands[i].x;
+        padBand[i * 4 + 1] = atlas.bands[i].y;
+        padBand[i * 4 + 2] = atlas.bands[i].half;
+      }
+      for (let i = 0; i < atlas.shade.length; i++) {
+        shadeSprite[i * 4] = atlas.shade[i].x;
+        shadeSprite[i * 4 + 1] = atlas.shade[i].y;
+        shadeSprite[i * 4 + 2] = atlas.shade[i].half;
+      }
+    }
+    return ratio;
+  };
+
   const renderer: FrogRenderer = {
     get ready() {
       return ready;
     },
-    get bank() {
-      return bank.bank;
-    },
     draw(time) {
       if (lost || failed || gl.isContextLost()) return;
-      bank.fit(canvas.width, canvas.height);
-      if (!compiled() || !loc) return;
-      const shown = bank.bank;
-      if (!shown || !causticsReady) return;
-      if (shown !== uploaded) uploadBank(shown);
-      if (canvas.width !== bedWidth || canvas.height !== bedHeight) paintBed();
+      if (!causticReady) uploadCaustics();
+      if (!compiled() || !loc || !causticReady) return;
+      const aspect = canvas.width / Math.max(1, canvas.height);
+      const ratio = fitTiles(aspect);
+      if (!atlas) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       const pads = world.pads;
       for (let i = 0; i < pads.length; i++) {
@@ -214,23 +321,23 @@ export function createFrogWebgl(
         const o = i * 4;
         padA[o] = pad.x;
         padA[o + 1] = pad.y;
-        padA[o + 2] = pad.radius;
+        padA[o + 2] = pad.radius * (1 + pad.bob * Math.sin(pad.bobPhase) * 0.03);
         padA[o + 3] = pad.angle;
         padB[o] = pad.notch;
-        padB[o + 1] = pad.bob * Math.sin(pad.bobPhase);
-        padB[o + 2] = pad.age;
-        padB[o + 3] = pad.damage;
-        padC[o] = pad.loadX;
-        padC[o + 1] = pad.loadY;
-        padC[o + 2] = pad.load;
-        padD[o] = pad.pressX;
-        padD[o + 1] = pad.pressY;
-        padD[o + 2] = pad.press;
+        padB[o + 1] = pad.age;
+        padB[o + 2] = pad.damage;
+        padB[o + 3] = pad.press;
+        padC[o] = pad.pressX;
+        padC[o + 1] = pad.pressY;
+        padC[o + 2] = pad.radius;
+        padLeaf[o + 3] = 1 + pad.bob * Math.sin(pad.bobPhase) * 0.03;
       }
       const frogs = world.frogs;
-      for (let i = 0; i < frogs.length; i++) {
+      const count = frogOrder(world, order);
+      for (let n = 0; n < count; n++) {
+        const i = order[n];
         const frog = frogs[i];
-        const o = i * 4;
+        const o = n * 4;
         frogA[o] = frog.x;
         frogA[o + 1] = frog.y;
         frogA[o + 2] = frog.bodyHeading;
@@ -249,58 +356,37 @@ export function createFrogWebgl(
         frogD[o + 3] = frog.webR;
         frogE[o] = frog.lean;
         frogE[o + 1] = frog.look;
-        frogE[o + 2] = frog.impact;
-        frogE[o + 3] = frog.startle;
+        frogE[o + 2] = frogReach(world, frog, i);
+        const from = i * FROG_CAPSULES * 4;
+        const to = n * FROG_CAPSULES * 4;
+        for (let k = 0; k < FROG_CAPSULES * 4; k++) legs[to + k] = world.capsules[from + k];
       }
-      legs.set(world.capsules);
-      // Fireflies glow (night); midges are simply there or not (day). The
-      // motes come after the flies, with a box round the lit ones.
+      // Midges are simply there or not (fade), and gone while respawning.
       for (let i = 0; i < world.flies.length; i++) {
         const fly = world.flies[i];
         flies[i * 4] = fly.x;
         flies[i * 4 + 1] = fly.y;
-        flies[i * 4 + 2] = fly.respawn > 0 ? 0 : day ? fly.fade : fly.glow;
+        flies[i * 4 + 2] = fly.respawn > 0 ? 0 : fly.fade;
         flies[i * 4 + 3] = fly.height;
       }
-      let x0 = Infinity;
-      let y0 = Infinity;
-      let x1 = -Infinity;
-      let y1 = -Infinity;
-      for (let i = 0; i < world.motes.length; i++) {
-        const mote = world.motes[i];
-        const o = (MAX_FLIES + i) * 4;
-        const glow = world.moteGlow(mote);
-        flies[o] = mote.x;
-        flies[o + 1] = mote.y;
-        flies[o + 2] = glow;
-        flies[o + 3] = mote.height;
-        if (glow <= 0) continue;
-        x0 = Math.min(x0, mote.x);
-        x1 = Math.max(x1, mote.x);
-        y0 = Math.min(y0, mote.y - mote.height);
-        y1 = Math.max(y1, mote.y);
+      for (let i = 0; i < RIPPLE_SLOTS; i++) rippleArcs(ripples[i * 4], ripples[i * 4 + 1], arcs, i * RIPPLE_ARCS * 2);
+      for (let i = 0; i < SHADE_CLUSTERS.length; i++) {
+        shadeCentre(SHADE_CLUSTERS[i], aspect, time, shade, i * 4);
+        shade[i * 4 + 2] = SHADE_CLUSTERS[i].reach;
       }
-      reedBlades(canvas.width / canvas.height, time, reedEnds, reedShape, reedBox);
       gl.useProgram(program);
       gl.bindVertexArray(vao);
       gl.uniform2f(loc.u_resolution, canvas.width, canvas.height);
       gl.uniform1f(loc.u_time, time);
-      gl.uniform4fv(loc['u_reedEnds[0]'], reedEnds);
-      gl.uniform4fv(loc['u_reedShape[0]'], reedShape);
-      gl.uniform4f(
-        loc.u_reedBox,
-        reedBox[0] - REED_MARGIN,
-        reedBox[1] - REED_MARGIN,
-        reedBox[2] + REED_MARGIN,
-        reedBox[3] + REED_MARGIN,
-      );
+      gl.uniform1f(loc.u_ratio, ratio);
       gl.uniform4fv(loc['u_ripples[0]'], ripples);
+      gl.uniform4fv(loc['u_arcs[0]'], arcs);
       gl.uniform1i(loc.u_padCount, pads.length);
+      gl.uniform4i(loc.u_counts, FROG_CAPSULES, RIPPLE_SLOTS, RIPPLE_ARCS, 2);
       gl.uniform4fv(loc['u_padA[0]'], padA);
       gl.uniform4fv(loc['u_padB[0]'], padB);
       gl.uniform4fv(loc['u_padC[0]'], padC);
-      gl.uniform4fv(loc['u_padD[0]'], padD);
-      gl.uniform1i(loc.u_frogCount, frogs.length);
+      gl.uniform1i(loc.u_frogCount, count);
       gl.uniform4fv(loc['u_frogA[0]'], frogA);
       gl.uniform4fv(loc['u_frogB[0]'], frogB);
       gl.uniform4fv(loc['u_frogC[0]'], frogC);
@@ -309,33 +395,38 @@ export function createFrogWebgl(
       gl.uniform4fv(loc['u_legs[0]'], legs);
       gl.uniform1i(loc.u_flyCount, world.flies.length);
       gl.uniform4fv(loc['u_flies[0]'], flies);
-      // A glow reaches about 0.065 out (see speckAbove in the shader).
-      gl.uniform4f(loc.u_moteBox, x0 - 0.07, y0 - 0.07, x1 + 0.07, y1 + 0.07);
+      gl.uniform4fv(loc['u_shade[0]'], shade);
+      gl.uniform4fv(loc['u_padLeaf[0]'], padLeaf);
+      gl.uniform4fv(loc['u_padBand[0]'], padBand);
+      gl.uniform4fv(loc['u_shadeSprite[0]'], shadeSprite);
+      if (atlas) gl.uniform2f(loc.u_atlasSize, atlas.canvas.width, atlas.canvas.height);
+      gl.uniform1f(loc.u_atlasH, atlas?.h ?? canvas.height);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, bedTexture);
-      gl.uniform1i(loc.u_bed, 0);
-      gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, causticTexture);
-      gl.uniform1i(loc.u_caustic, 1);
+      gl.uniform1i(loc.u_caustic, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, grainTexture);
+      gl.uniform1i(loc.u_grain, 1);
       gl.activeTexture(gl.TEXTURE2);
-      gl.bindTexture(gl.TEXTURE_2D, bankTexture);
-      gl.uniform1i(loc.u_bank, 2);
+      gl.bindTexture(gl.TEXTURE_2D, driftTexture);
+      gl.uniform1i(loc.u_drift, 2);
+      gl.activeTexture(gl.TEXTURE3);
+      gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+      gl.uniform1i(loc.u_atlas, 3);
       gl.activeTexture(gl.TEXTURE0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       ready = true;
     },
     dispose() {
-      disposed = true;
-      bank.dispose();
+      baker.dispose();
       canvas.removeEventListener('webglcontextlost', onContextLost);
       if (gl.isContextLost()) return;
       if (vao) gl.deleteVertexArray(vao);
       gl.deleteProgram(program);
-      gl.deleteProgram(bed.program);
-      gl.deleteTexture(bedTexture);
       gl.deleteTexture(causticTexture);
-      gl.deleteTexture(bankTexture);
-      gl.deleteFramebuffer(bedFramebuffer);
+      gl.deleteTexture(grainTexture);
+      gl.deleteTexture(driftTexture);
+      gl.deleteTexture(atlasTexture);
     },
   };
   return renderer;

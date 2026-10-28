@@ -1,8 +1,9 @@
 // Frame-stepped soaks of the world at both aspects: left alone, tapped, and
 // resized back and forth. Fails on any check() issue, a non-finite pose or a
 // temporary state that never ends (H-6), and on whatever the study adds: the
-// frog pond (qa/lib/studies/frog.mjs) checks pads under the bank, a
-// swimmer's body or limbs over it, and toes on the grass.
+// frog pond (qa/lib/studies/frog.mjs) checks pads drifted out of the
+// picture, a swimmer's body or limbs past the picture's outline, and toes
+// past it.
 //
 //   npm run qa:soak [-- --minutes=N --aspect=1.48 --mode=idle|tap|resize --seed=7 --study=frog]
 import { createReport, flags } from './lib/report.mjs';
