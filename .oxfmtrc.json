@@ -10,6 +10,7 @@
     "qa/tools/golden.json",
     "docs/*.html",
     "*.webp",
-    "studies/vendor/**"
+    "studies/vendor/**",
+    "studies/site/sketches/**"
   ]
 }

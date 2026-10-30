@@ -39,6 +39,7 @@ export default async ({ page, site, report }) => {
   report.measure('resize observers observing', live.ro.observing, { max: 1 });
   report.measure('visibilitychange listeners', live.listeners['document:visibilitychange'] ?? 0, { max: 1 });
   report.measure('workers started (the pond paints on the main thread, in slices)', live.workers.made, { equals: 0 });
+  report.info("the site shell's loading-sketch workers (not the pond's)", live.workers.shell);
   report.info('WebGL contexts made in all', live.glContexts);
 
   await page.eval('__critterPageDispose()');

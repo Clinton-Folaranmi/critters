@@ -10,10 +10,10 @@
 // split chunk.
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'node:zlib';
+import { crc32, deflateSync, gzipSync } from 'node:zlib';
 import { buildStandalone } from './build-standalone.mjs';
 import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
 import { ANIMALS } from '../studies/site/animals.mjs';
@@ -67,20 +67,81 @@ export async function buildPackage() {
 const escape = (text) =>
   String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
+/** The picture's shapes (site.css aspect-ratio): the border mask is drawn for each with a short side of 512. */
+const SHAPES = { wide: 1.48, narrow: 0.91 };
+
+/** A hand-drawn circle for a badge's ring (66 × 66 box): goes round once and a bit, drifting outward. */
+function ringPath(seed) {
+  const pts = [];
+  const a0 = -2.1 + seed * 0.9;
+  const sweep = Math.PI * 2 + 0.42;
+  for (let i = 0; i <= 64; i++) {
+    const t = i / 64;
+    const a = a0 + sweep * t;
+    const r = 29.2 + 0.7 * Math.sin(2 * a + seed) + 1.6 * t;
+    pts.push(`${(33 + Math.cos(a) * r * 1.01).toFixed(1)} ${(33 + Math.sin(a) * r).toFixed(1)}`);
+  }
+  return `M${pts.join('L')}`;
+}
+
+/** Every file under `dir` (recursively) whose name passes `keep`, as paths relative to `dir`. */
+function filesUnder(dir, keep) {
+  return readdirSync(dir, { recursive: true })
+    .map(String)
+    .filter((name) => keep(name) && statSync(`${dir}/${name}`).isFile());
+}
+
+/** What the next animal's page needs, to fetch ahead on badge hover or focus, or when idle (shell.ts). */
+function preloadsFor(animal, outdir) {
+  const route = `../${animal.slug}/`;
+  const scripts = filesUnder(`${outdir}/${animal.slug}`, (name) => name.endsWith('.js')).map((name) => route + name);
+  const still = (url) => (url.startsWith('../') ? url : route + url);
+  return {
+    common: [route, ...scripts],
+    wide: [still(animal.still.wide), `../assets/sketches/${animal.slug}-wide.json`],
+    narrow: [still(animal.still.narrow ?? animal.still.wide), `../assets/sketches/${animal.slug}-narrow.json`],
+  };
+}
+
 /** One animal's page, from the shell's template (studies/site/page.html). */
-function animalPage(template, animal) {
-  const badges = ANIMALS.map(
-    (other) =>
-      `<li><a class="badge" href="../${other.slug}/"${other.slug === animal.slug ? ' aria-current="page"' : ''}>` +
-      `<span class="dot" style="background-image: url('../assets/badges/${other.slug}.jpg')"></span>${escape(other.name)}</a></li>`,
-  ).join('\n            ');
+function animalPage(template, animal, outdir) {
+  const badges = ANIMALS.map((other, i) => {
+    const pre = preloadsFor(other, outdir);
+    const current = other.slug === animal.slug;
+    const preload = current
+      ? ''
+      : ` data-preload="${pre.common.join(' ')}" data-preload-wide="${pre.wide.join(' ')}" data-preload-narrow="${pre.narrow.join(' ')}"`;
+    return (
+      `<li><a class="badge" href="../${other.slug}/"${current ? ' aria-current="page"' : ''}${preload}>` +
+      `<span class="dot" style="background-image: url('../assets/badges/${other.slug}.jpg')">` +
+      `<svg viewBox="0 0 66 66" aria-hidden="true"><path pathLength="1" d="${ringPath(i * 1.7 + 0.4)}" /></svg></span>` +
+      `${escape(other.name)}</a></li>`
+    );
+  }).join('\n            ');
   const { still } = animal;
   const stills =
     `.scene { background-color: ${animal.ground}; background-image: url('${still.wide}'); background-size: ${still.size}; }` +
     (still.narrow ? `\n      @media (max-width: 640px) { .scene { background-image: url('${still.narrow}'); } }` : '');
+  // The loading sketch (shell.ts): the traced strokes and the still, for each shape.
+  const sketch =
+    `data-sketch-wide="../assets/sketches/${animal.slug}-wide.json" data-sketch-narrow="../assets/sketches/${animal.slug}-narrow.json" ` +
+    `data-still-wide="${still.wide}" data-still-narrow="${still.narrow ?? still.wide}" data-seed="${ANIMALS.indexOf(animal) * 7 + 3}"`;
+  // The name, its letters settling in one by one (site.css); read as one word.
+  const letters = [...animal.name]
+    .map((c, i) => `<span style="--i: ${i}; --r: ${(((i * 37) % 11) - 5) * 1.3}deg">${escape(c)}</span>`)
+    .join('');
+  const title = `<span class="visually-hidden">${escape(animal.name)}</span><span class="letters" aria-hidden="true">${letters}</span>`;
   // The frog pond's how-to-play, for screen readers (the canvas is described by it; page.ts fills it).
   const hint = animal.hint ? '<ul id="hint" class="visually-hidden"></ul>' : '';
-  const fill = { name: escape(animal.name), description: escape(animal.description), still: stills, hint, badges };
+  const fill = {
+    name: escape(animal.name),
+    description: escape(animal.description),
+    still: stills,
+    sketch,
+    title,
+    hint,
+    badges,
+  };
   const page = template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     if (!(key in fill)) throw new Error(`studies/site/page.html: unknown {{${key}}}`);
     return fill[key];
@@ -88,14 +149,67 @@ function animalPage(template, animal) {
   return page.replace(/\n\s*\n(\s*<nav)/, '\n$1');
 }
 
-/** The shell every animal page shares: its CSS, script, font, badges and stills, in <outdir>/assets. */
+/** A grey + alpha PNG (alpha only matters: it's a CSS mask). */
+function maskPng(w, h, alpha) {
+  const row = w * 2 + 1;
+  const raw = Buffer.alloc(row * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) raw[y * row + 1 + x * 2 + 1] = alpha[y * w + x];
+  const chunk = (type, data) => {
+    const head = Buffer.alloc(8);
+    head.writeUInt32BE(data.length, 0);
+    head.write(type, 4, 'ascii');
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), data])), 0);
+    return Buffer.concat([head, data, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 4;
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
+/**
+ * The owner's border for each picture shape, drawn once here with the same
+ * maths as before (studies/site/border.ts), so the page has it from the first
+ * paint and the still shows as soon as it has loaded.
+ */
+async function buildMasks(assets, border) {
+  const bundled = await build({
+    entryPoints: ['studies/site/border.ts'],
+    bundle: true,
+    write: false,
+    format: 'esm',
+    platform: 'node',
+    logLevel: 'warning',
+    define: { BORDER: JSON.stringify(border) },
+  });
+  const { borderMask, TOOL } = await import(
+    `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`
+  );
+  await mkdir(`${assets}/masks`, { recursive: true });
+  for (const [shape, aspect] of Object.entries(SHAPES)) {
+    const w = aspect >= 1 ? Math.round(TOOL * aspect) : TOOL;
+    const h = aspect >= 1 ? TOOL : Math.round(TOOL / aspect);
+    await writeFile(`${assets}/masks/${shape}.png`, maskPng(w, h, borderMask(w, h)));
+  }
+}
+
+/** The shell every animal page shares: its CSS, scripts, font, badges, stills, masks and sketches, in <outdir>/assets. */
 async function buildShell(outdir, dev) {
   const assets = `${outdir}/assets`;
   await mkdir(assets, { recursive: true });
-  for (const dir of ['fonts', 'badges', 'stills'])
+  for (const dir of ['fonts', 'badges', 'stills', 'sketches'])
     await cp(`studies/site/${dir}`, `${assets}/${dir}`, { recursive: true });
   await cp('studies/site/site.css', `${assets}/site.css`);
   const border = JSON.parse(readFileSync('social/approved-settings.json', 'utf8'));
+  await buildMasks(assets, border);
   await build({
     ...browserOptions(dev),
     entryPoints: ['studies/site/shell.ts'],
@@ -103,6 +217,14 @@ async function buildShell(outdir, dev) {
     format: 'esm',
     sourcemap: dev ? 'linked' : false,
     define: { ...browserOptions(dev).define, BORDER: JSON.stringify(border) },
+  });
+  // The loading sketch's worker (studies/site/sketch/), loaded by shell.js.
+  await build({
+    ...browserOptions(dev),
+    entryPoints: ['studies/site/sketch/worker.ts'],
+    outfile: `${assets}/sketch.js`,
+    format: 'esm',
+    sourcemap: dev ? 'linked' : false,
   });
 }
 
@@ -129,8 +251,10 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
         throw new Error(`${vendor}/main.js is missing: run node scripts/sync-studies.mjs`);
       await cp(vendor, route, { recursive: true });
     }
-    await writeFile(`${route}/index.html`, animalPage(template, animal));
   }
+  // The pages last: each lists what the others need, to fetch ahead.
+  for (const animal of ANIMALS)
+    await writeFile(`${outdir}/${animal.slug}/index.html`, animalPage(template, animal, outdir));
   // The older Specimens still build, but nothing links to them until they're redone.
   // The cockroach Specimen (packages/cockroach-floor): no stills or single file yet.
   const cockroach = `${outdir}/cockroach`;

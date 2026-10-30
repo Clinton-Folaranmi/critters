@@ -71,20 +71,34 @@ body::before {
 .stage {
   position: relative;
 }
-/* The picture: the owner's border is its mask (shell.ts draws it for this
-   aspect); it stays hidden until the mask is on, so the edge never flashes
-   square. The scene fills it; until its first frame, its still shows. */
+/* The picture: the owner's border is its mask, drawn at build time for each
+   shape (border.ts → masks/*.png), so it's there from the first paint; until
+   the mask image is in, the picture is fully masked, so the edge never
+   flashes square. The scene fills it; until its first frame, the loading
+   sketch covers it (or, without one, its still shows). */
 .picture {
   position: relative;
   width: 100%;
   aspect-ratio: 1.48 / 1;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
+  -webkit-mask: url('masks/wide.png') 0 0 / 100% 100% no-repeat;
+  mask: url('masks/wide.png') 0 0 / 100% 100% no-repeat;
+  view-transition-name: picture;
 }
-.picture:not([data-border]) {
-  visibility: hidden;
+/* The loading sketch (shell.ts draws it in a worker, inside this element's
+   shadow root): paper from the first paint, so the still never shows first. */
+.sketch {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgb(238, 236, 226);
+  transition: opacity 0.3s ease-out;
+}
+.sketch.gone {
+  opacity: 0;
+}
+html[data-still] .sketch {
+  display: none;
 }
 .scene {
   position: absolute;
@@ -196,20 +210,108 @@ h1 {
   background-size: cover;
   background-position: center;
 }
-/* The hand-drawn ring round the current animal (the board's wobble). */
-.dot::after {
+/* The hand-drawn ring round the current animal (the board's wobble): a
+   pencil circle that draws itself on as the page arrives. */
+.dot svg {
   position: absolute;
-  inset: -4px;
-  content: '';
-  border: 2px solid transparent;
-  border-radius: 50%;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  overflow: visible;
+  pointer-events: none;
   filter: url(#wobble);
 }
-.badge[aria-current='page'] .dot::after {
-  border-color: var(--line);
+.dot path {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  opacity: 0;
 }
-.badge:not([aria-current]):hover .dot::after {
-  border-color: rgba(31, 42, 30, 0.3);
+.badge[aria-current='page'] .dot path {
+  opacity: 1;
+  animation: ring-on 0.46s 0.25s cubic-bezier(0.45, 0.05, 0.3, 1) backwards;
+}
+.badge:not([aria-current]):hover .dot path {
+  opacity: 0.3;
+}
+@keyframes ring-on {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+/* Badges tilt and wobble on hover, and squish when pressed. */
+.badge:not([aria-current]):hover .dot {
+  transform: translateY(-1px);
+  animation: tilt 0.5s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+@keyframes tilt {
+  0% {
+    transform: none;
+  }
+  30% {
+    transform: rotate(-5deg) translateY(-2px);
+  }
+  60% {
+    transform: rotate(3deg) translateY(-2px);
+  }
+  100% {
+    transform: translateY(-1px);
+  }
+}
+.dot {
+  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.badge:active .dot {
+  transform: scale(0.9, 0.86);
+  transition-duration: 0.06s;
+}
+/* The name's letters drop softly into place. */
+h1 .letters span {
+  display: inline-block;
+  white-space: pre;
+  animation: settle 0.52s calc(0.08s + var(--i) * 38ms) cubic-bezier(0.25, 0.8, 0.3, 1) backwards;
+}
+@keyframes settle {
+  0% {
+    transform: translateY(-0.5em) rotate(var(--r));
+    opacity: 0;
+  }
+  65% {
+    transform: translateY(0.05em);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+/* Badge to frame: on browsers with cross-page view transitions, the clicked
+   badge's picture grows into the next page's frame (shell.ts names it). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-group(picture) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+::view-transition-old(picture),
+::view-transition-new(picture) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot path,
+  .dot,
+  h1 .letters span,
+  .badge .dot,
+  .sketch {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 .visually-hidden {
   position: absolute;
@@ -228,6 +330,8 @@ h1 {
   }
   .picture {
     aspect-ratio: 0.91 / 1;
+    -webkit-mask-image: url('masks/narrow.png');
+    mask-image: url('masks/narrow.png');
   }
   .caption {
     padding-inline: 0;

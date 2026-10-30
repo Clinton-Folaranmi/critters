@@ -34,8 +34,15 @@ npm run dev        # the site with dev helpers at http://127.0.0.1:5173/frogs/
 `/butterfly/`, `/snail/`, `/mouse/`. The root redirects to `/frogs/`. Every
 page is the same shell (`studies/site/`: `page.html`, `site.css`, `shell.ts`,
 the list in `animals.mjs`): the picture with the owner's approved border
-(`social/approved-settings.json`, drawn as a CSS mask for the picture's
-aspect), the animal's name, and a row of round badges to the other animals.
+(`social/approved-settings.json`, drawn at build time into a mask image for
+each picture shape, `border.ts`), the animal's name, and a row of round badges
+to the other animals. While a scene loads, a worker draws it in pencil and
+washes the colour in (`studies/site/sketch/`), then the scene's own first frame
+takes over; the strokes are traced from the stills by
+`node scripts/trace-sketches.mjs` into `studies/site/sketches/` (rerun it when a
+still changes). The shell fetches the next animal ahead on badge hover, focus
+or touch, and when idle; supporting browsers grow the clicked badge into the
+next page's frame (a cross-page view transition).
 General Sans is self-hosted in `studies/site/fonts/` (ITF Free Font License,
 `LICENSE-FFL.txt`; not covered by the MIT licence), so the pages work offline.
 The older Specimens (`/cockroach/`, `/koi/`, `/snake/`) still build but
@@ -77,7 +84,7 @@ packages/critter-kit/ the kit every study is built from (maths and seeded random
 packages/frog-pond/   the study (world, scene, renderers, bank, theme)
 packages/cockroach-floor/ the cockroach Specimen, built only from the kit (in progress: docs/HANDOFF.md)
 packages/koi/             the koi Specimen, built only from the kit (in review: docs/KOI_VISUAL_DIRECTION.md)
-studies/site/         the site shell every animal page shares (template, CSS, border script, font, badges, stills)
+studies/site/         the site shell every animal page shares (template, CSS, border, loading sketch, font, badges, stills)
 studies/frogs/        the frog page's script and first-frame stills (its index.html and page.css are the single file's page)
 studies/vendor/       the four external studies' built scripts (scripts/sync-studies.mjs)
 studies/index.html    the site's root (redirects to /frogs/)

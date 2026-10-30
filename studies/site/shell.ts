@@ -1,177 +1,185 @@
-// The site shell's script, shared by every animal page (studies/site/): it
-// draws the owner's approved border on the picture.
+// The site shell's script, shared by every animal page (studies/site/).
 //
-// The border is the one the owner chose for the social posts on 2026-10-28
-// (social/approved-settings.json, passed in at build time as BORDER), with
-// the maths of social/edge-mask.js generalised from a square to a w × h
-// rectangle, as the approved site board does (reports/site-board, rectMask):
-// every size that was a fraction of the square's side is taken from the short
-// side (unit = min(w, h), k = unit / 512, the square tool's own resolution),
-// so the corners, the ragged edge and the grain look the same as on the posts.
-// No value is re-tuned here.
-//
-// The mask is drawn with a short side of 512 (k = 1, the posts' resolution)
-// for the picture's aspect, set as a CSS mask on .picture, and redrawn when
-// the aspect changes (on a window resize, debounced). The scene inside is not masked by
-// its own edge (the frog pond mounts with ownEdge: false; the other four are
-// full bleed). The keyboard-focus ring is drawn by the page (site.css) along
-// the same rounded rectangle, from --ring-inset and --ring-radius set here.
+// - The owner's border is a CSS mask drawn at build time (border.ts →
+//   assets/masks/*.png, set in site.css); here, only the keyboard-focus ring
+//   is fitted to it (--ring-inset, --ring-radius).
+// - The loading sketch (the owner's pick, 2026-10-30): a worker draws the
+//   animal in pencil, then washes the colour in, on a canvas over the picture
+//   (sketch/worker.ts, built to assets/sketch.js). It fast-forwards when the
+//   scene's own first frame is in (the scene shows its canvas: opacity ''),
+//   waits if the scene is late, and cross-fades away. The scene's first frame
+//   is the scene's own; the sketch only covers the wait. Reduced motion, or no
+//   OffscreenCanvas: no sketch; the still shows until the scene is in.
+// - The next animal is fetched ahead: on a badge's hover, focus or touch, and
+//   once this page's scene is in and the browser is idle, the one after.
+// - Badge to frame: where cross-page view transitions are supported
+//   (site.css), the clicked badge's picture grows into the next page's frame.
+import { SETTINGS, TOOL } from './border';
 
-interface BorderSettings {
-  radius: number;
-  fade: number;
-  strength: number;
-  roughness: number;
-  grain: number;
-}
-declare const BORDER: BorderSettings;
+const html = document.documentElement;
+const narrowQuery = matchMedia('(max-width: 640px)');
 
-/** The mask tool's resolution: sizes are fractions of this (social/edge-mask.js). */
-const TOOL = 512;
-
-/**
- * The border for a w × h picture (social/edge-mask.js, made rectangular), as
- * alpha pixels that `fill(y0, y1)` computes a band of rows at a time.
- */
-function borderRows(w: number, h: number, settings: BorderSettings = BORDER) {
-  const clamp = (value: number) => Math.max(0, Math.min(1, value));
-  const smooth = (value: number) => {
-    const t = clamp(value);
-    return t * t * (3 - 2 * t);
+/** The focus ring: the border's rounded rectangle, halfway through its fade. */
+function fitRing(stage: HTMLElement, picture: HTMLElement) {
+  const fit = () => {
+    const { clientWidth: width, clientHeight: height } = picture;
+    if (!width || !height) return;
+    const scale = Math.min(width, height) / TOOL;
+    const inset = (8 + (SETTINGS.roughness / 100) * 25 + ((SETTINGS.fade / 100) * TOOL) / 2) * scale;
+    const radius = Math.max(0, (SETTINGS.radius / 100) * TOOL * scale - inset);
+    stage.style.setProperty('--ring-inset', `${inset.toFixed(1)}px`);
+    stage.style.setProperty('--ring-radius', `${radius.toFixed(1)}px`);
   };
-  const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-  const hash = (x: number, y: number) => {
-    let n = Math.imul(x, 374761393) + Math.imul(y, 668265263);
-    n = Math.imul(n ^ (n >>> 13), 1274126177);
-    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
-  };
-  const noise = (x: number, y: number) => {
-    const ix = Math.floor(x);
-    const iy = Math.floor(y);
-    const tx = smooth(x - ix);
-    const ty = smooth(y - iy);
-    return mix(mix(hash(ix, iy), hash(ix + 1, iy), tx), mix(hash(ix, iy + 1), hash(ix + 1, iy + 1), tx), ty);
-  };
-  const unit = Math.min(w, h);
-  const k = unit / TOOL;
-  const radius = (settings.radius / 100) * unit;
-  const width = (settings.fade / 100) * unit;
-  const strength = settings.strength / 100;
-  const roughness = settings.roughness / 100;
-  const grain = settings.grain / 100;
-  /** How far in the edge starts, and the most the roughening moves it (|noise − 0.5| ≤ 0.5). */
-  const inset = (8 + roughness * 25) * k;
-  const reach = roughness * 25 * k;
-  const alpha = new Uint8ClampedArray(w * h);
-  const hx = w / 2;
-  const hy = h / 2;
-  const fill = (y0: number, y1: number) => {
-    for (let y = y0; y < y1; y++)
-      for (let x = 0; x < w; x++) {
-        const qx = Math.abs(x + 0.5 - hx) - (hx - radius);
-        const qy = Math.abs(y + 0.5 - hy) - (hy - radius);
-        const ox = Math.max(qx, 0);
-        const oy = Math.max(qy, 0);
-        const signed = Math.sqrt(ox * ox + oy * oy) + Math.min(Math.max(qx, qy), 0) - radius;
-        // The roughening moves the edge by at most `reach`: well inside the fade
-        // the alpha is exactly 1, well outside it 0, so skip the noise there.
-        if (-signed - reach - inset >= width) {
-          alpha[y * w + x] = 255;
-          continue;
-        }
-        if (-signed + reach - inset < 0) continue;
-        const uneven = roughness
-          ? roughness *
-            50 *
-            k *
-            (0.7 * (noise(x / (46 * k), y / (46 * k)) - 0.5) + 0.3 * (noise(x / (17 * k), y / (17 * k)) - 0.5))
-          : 0;
-        const distance = -signed + uneven - inset;
-        const fade = width > 0 ? smooth(distance / width) : Number(distance >= 0);
-        let a = distance < 0 ? 0 : Math.pow(fade, 0.2 + 2.3 * strength);
-        if (distance >= 0 && width > 0 && grain) {
-          const speckle = 0.7 * hash(Math.floor(x / 2), Math.floor(y / 2)) + 0.3 * hash(x, y);
-          a *= 1 + grain * 1.2 * (speckle - 0.5) * (1 - fade);
-        }
-        alpha[y * w + x] = Math.round(255 * clamp(a));
-      }
-  };
-  return { alpha, fill };
+  fit();
+  let timer = 0;
+  window.addEventListener('resize', () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(fit, 120);
+  });
 }
 
-/** Alpha pixels of the border for a w × h picture, all at once. */
-export function borderMask(w: number, h: number, settings: BorderSettings = BORDER) {
-  const { alpha, fill } = borderRows(w, h, settings);
-  fill(0, h);
-  return alpha;
+/** Calls `ready` once the scene's first frame is in: its canvas is shown (the scenes clear its opacity). */
+function whenSceneReady(scene: HTMLElement, ready: () => void) {
+  const shown = () => {
+    const canvas = scene.querySelector('canvas');
+    return !!canvas && canvas.style.opacity === '';
+  };
+  if (shown()) return ready();
+  const observer = new MutationObserver(() => {
+    if (!shown()) return;
+    observer.disconnect();
+    ready();
+  });
+  observer.observe(scene, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
 }
 
-/** A main-thread slice, ms: the mask is drawn in bands so loading never stalls the page. */
-const SLICE = 8;
-const nextTask = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+/** The longest the sketch waits for a scene before it gives way to the still (s). */
+const PATIENCE = 15;
 
-/** The border for this aspect as an image URL (alpha only), drawn with a short side of 512. */
-async function maskUrl(aspect: number) {
-  const w = aspect >= 1 ? Math.round(TOOL * aspect) : TOOL;
-  const h = aspect >= 1 ? TOOL : Math.round(TOOL / aspect);
-  const { alpha, fill } = borderRows(w, h);
-  for (let y = 0; y < h;) {
-    const started = performance.now();
-    while (y < h && performance.now() - started < SLICE) {
-      fill(y, Math.min(h, y + 8));
-      y += 8;
-    }
-    if (y < h) await nextTask();
-  }
+function startSketch(picture: HTMLElement, host: HTMLElement, scene: HTMLElement) {
+  const stop = () => {
+    html.dataset.still = '';
+    host.remove();
+  };
+  if ('still' in html.dataset) return stop();
+  const narrow = narrowQuery.matches;
+  const strokes = picture.dataset[narrow ? 'sketchNarrow' : 'sketchWide'];
+  const still = picture.dataset[narrow ? 'stillNarrow' : 'stillWide'];
+  const { clientWidth: w, clientHeight: h } = host;
+  if (!strokes || !still || !w || !h) return stop();
   const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const context = canvas.getContext('2d');
-  if (!context) return null;
-  const image = context.createImageData(w, h);
-  for (let i = 0; i < alpha.length; i++) image.data[i * 4 + 3] = alpha[i];
-  context.putImageData(image, 0, 0);
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-  return blob ? URL.createObjectURL(blob) : null;
+  canvas.style.cssText = 'display: block; width: 100%; height: 100%;';
+  // In a shadow root: the page's own canvas is the scene's (the QA harness and the scenes look for it).
+  host.attachShadow({ mode: 'closed' }).append(canvas);
+  let worker: Worker;
+  try {
+    const offscreen = canvas.transferControlToOffscreen();
+    worker = new Worker(new URL('sketch.js', import.meta.url), { type: 'module' });
+    worker.postMessage(
+      {
+        type: 'start',
+        canvas: offscreen,
+        w,
+        h,
+        // At most 1.5×: the pencil stays crisp, and it costs the scene's paint less.
+        dpr: Math.min(1.5, window.devicePixelRatio || 1),
+        strokes: new URL(strokes, location.href).href,
+        still: new URL(still, location.href).href,
+        tip: true,
+        seed: Number(picture.dataset.seed ?? 3),
+      },
+      [offscreen],
+    );
+  } catch {
+    return stop();
+  }
+  const ready = () => worker.postMessage({ type: 'ready' });
+  const patience = window.setTimeout(ready, PATIENCE * 1000);
+  worker.onerror = () => {
+    window.clearTimeout(patience);
+    worker.terminate();
+    stop();
+  };
+  worker.onmessage = (event: MessageEvent<{ type: string }>) => {
+    const { type } = event.data;
+    if (type === 'drawing') picture.dataset.sketch = 'drawing';
+    if (type === 'failed') worker.onerror?.(new ErrorEvent('error'));
+    if (type === 'done') {
+      window.clearTimeout(patience);
+      picture.dataset.sketch = 'done';
+      // The live scene takes over: the sketch cross-fades away (site.css), then goes.
+      host.classList.add('gone');
+      // The worker has stopped drawing; it's left to the page's end (terminating a worker that
+      // owns a transferred canvas hung the page in Chrome's headless shell). The canvas is hidden.
+      const finish = () => {
+        host.hidden = true;
+      };
+      host.addEventListener('transitionend', finish, { once: true });
+      window.setTimeout(finish, 600);
+    }
+  };
+  whenSceneReady(scene, ready);
+}
+
+/** Fetches ahead what a badge's page needs (into the HTTP cache, so the next page finds it). */
+const fetched = new Set<string>();
+function fetchAhead(badge: HTMLAnchorElement) {
+  const shape = narrowQuery.matches ? 'preloadNarrow' : 'preloadWide';
+  const urls = `${badge.dataset.preload ?? ''} ${badge.dataset[shape] ?? ''}`.split(' ').filter(Boolean);
+  for (const url of urls) {
+    if (fetched.has(url)) continue;
+    fetched.add(url);
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.head.append(link);
+  }
+}
+
+function startBadges(picture: HTMLElement, scene: HTMLElement) {
+  const badges = [...document.querySelectorAll<HTMLAnchorElement>('.badge')];
+  const current = badges.findIndex((badge) => badge.getAttribute('aria-current') === 'page');
+  for (const badge of badges) {
+    if (badge.getAttribute('aria-current') === 'page') continue;
+    const ahead = () => fetchAhead(badge);
+    badge.addEventListener('pointerenter', ahead);
+    badge.addEventListener('focus', ahead);
+    badge.addEventListener('touchstart', ahead, { passive: true });
+    // Badge to frame (site.css): this badge's picture is the one that grows into the next page's frame.
+    badge.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      picture.style.setProperty('view-transition-name', 'none');
+      badge.querySelector<HTMLElement>('.dot')?.style.setProperty('view-transition-name', 'picture');
+    });
+  }
+  // Back to this page from the cache: the names as they were.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    picture.style.removeProperty('view-transition-name');
+    for (const dot of document.querySelectorAll<HTMLElement>('.dot')) dot.style.removeProperty('view-transition-name');
+  });
+  // When idle, after this page's scene is in: the next animal along.
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (connection?.saveData || current < 0) return;
+  const next = badges[(current + 1) % badges.length];
+  whenSceneReady(scene, () => {
+    const idle = (fn: () => void) =>
+      typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback(fn, { timeout: 4000 })
+        : window.setTimeout(fn, 1500);
+    window.setTimeout(() => idle(() => fetchAhead(next)), 800);
+  });
 }
 
 function startShell() {
   const stage = document.querySelector<HTMLElement>('.stage');
   const picture = document.querySelector<HTMLElement>('.picture');
-  if (!stage || !picture) return;
-  const masks = new Map<number, Promise<string | null>>();
-  let wanted = 0;
-  const fit = async () => {
-    const { clientWidth: width, clientHeight: height } = picture;
-    if (!width || !height) return;
-    const aspect = Math.round((width / height) * 100) / 100;
-    if (aspect !== wanted) {
-      wanted = aspect;
-      if (!masks.has(aspect)) masks.set(aspect, maskUrl(aspect));
-      const url = await masks.get(aspect);
-      // Resized to another aspect while this one was drawing: that one wins.
-      if (aspect !== wanted) return;
-      if (url) {
-        picture.style.setProperty('-webkit-mask-image', `url(${url})`);
-        picture.style.setProperty('mask-image', `url(${url})`);
-      }
-    }
-    // The focus ring: the border's rounded rectangle, halfway through its fade.
-    const scale = Math.min(width, height) / TOOL;
-    const inset = (8 + (BORDER.roughness / 100) * 25 + ((BORDER.fade / 100) * TOOL) / 2) * scale;
-    const radius = Math.max(0, (BORDER.radius / 100) * TOOL * scale - inset);
-    stage.style.setProperty('--ring-inset', `${inset.toFixed(1)}px`);
-    stage.style.setProperty('--ring-radius', `${radius.toFixed(1)}px`);
-    picture.dataset.border = '';
-  };
-  void fit();
-  // The picture's size follows the window's (its aspect is set in site.css), so
-  // a window resize is enough; no observer of the page's own.
-  let timer = 0;
-  window.addEventListener('resize', () => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => void fit(), 120);
-  });
+  const scene = document.getElementById('scene');
+  const host = document.querySelector<HTMLElement>('.sketch');
+  if (!stage || !picture || !scene) return;
+  fitRing(stage, picture);
+  if (host) startSketch(picture, host, scene);
+  startBadges(picture, scene);
 }
 
 startShell();

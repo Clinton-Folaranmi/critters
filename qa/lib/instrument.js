@@ -36,13 +36,15 @@
     caf(id);
   };
   // Workers started and terminated, and messages posted to them (bake jobs).
-  s.workers = { made: 0, terminated: 0, posted: 0 };
+  // The site shell's loading sketch (assets/sketch.js) is counted apart: it isn't the scene's.
+  s.workers = { made: 0, terminated: 0, posted: 0, shell: 0 };
   const W = window.Worker;
   if (W) {
     window.Worker = class extends W {
       constructor(...a) {
         super(...a);
-        s.workers.made++;
+        if (/\/assets\/sketch\.js$/.test(String(a[0]))) s.workers.shell++;
+        else s.workers.made++;
       }
       postMessage(...a) {
         s.workers.posted++;

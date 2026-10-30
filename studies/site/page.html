@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{name}}</title>
     <meta name="description" content="{{description}}" />
+    <script>
+      // The loading sketch needs a worker-drawn canvas; without one, or with reduced motion,
+      // the page shows the still until the scene's first frame, as before (shell.ts).
+      if (
+        matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        !('transferControlToOffscreen' in HTMLCanvasElement.prototype) ||
+        !('attachShadow' in Element.prototype)
+      )
+        document.documentElement.dataset.still = '';
+    </script>
     <link rel="preload" href="../assets/fonts/GeneralSans-Semibold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="../assets/masks/wide.png" as="image" media="(min-width: 641px)" crossorigin />
+    <link rel="preload" href="../assets/masks/narrow.png" as="image" media="(max-width: 640px)" crossorigin />
     <link rel="stylesheet" href="../assets/site.css" />
     <style>
       {{still}}
@@ -20,10 +32,13 @@
     </svg>
     <main class="page">
       <div class="stage">
-        <div class="picture"><div id="scene" class="scene"></div></div>
+        <div class="picture" {{sketch}}>
+          <div id="scene" class="scene"></div>
+          <div class="sketch" aria-hidden="true"></div>
+        </div>
       </div>
       <div class="caption">
-        <h1>{{name}}</h1>
+        <h1>{{title}}</h1>
         {{hint}}
         <nav aria-label="Animals">
           <ul class="badges">
