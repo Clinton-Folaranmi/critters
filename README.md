@@ -2,7 +2,7 @@
 
 Interactive, top-down creature studies for the web, the method for building
 them, and the harness that measures them. The first study is a frog pond,
-**Night Chorus / Day Chorus**: three frogs on lily pads that breathe, blink,
+**Frogs**: three frogs on lily pads that breathe, blink,
 croak, catch fireflies, hop, swim and climb out, in a pond with a bank,
 reeds and water you can see into. Tap a frog, a pad, the water or the grass;
 Enter or Space drops a pebble.
@@ -25,7 +25,31 @@ Node 22.18 or later.
 
 ```bash
 npm install
-npm run dev        # the demo with dev helpers at http://127.0.0.1:5173/frogs/ (#day for daylight)
+npm run dev        # the site with dev helpers at http://127.0.0.1:5173/frogs/
+```
+
+## The site
+
+`dist/site/` has one page per animal, in badge order: `/frogs/`, `/ladybug/`,
+`/butterfly/`, `/snail/`, `/mouse/`. The root redirects to `/frogs/`. Every
+page is the same shell (`studies/site/`: `page.html`, `site.css`, `shell.ts`,
+the list in `animals.mjs`): the picture with the owner's approved border
+(`social/approved-settings.json`, drawn as a CSS mask for the picture's
+aspect), the animal's name, and a row of round badges to the other animals.
+General Sans is self-hosted in `studies/site/fonts/` (ITF Free Font License,
+`LICENSE-FFL.txt`; not covered by the MIT licence), so the pages work offline.
+The older Specimens (`/cockroach/`, `/koi/`, `/snake/`) still build but
+aren't linked.
+
+The ladybug, butterfly, snail and mouse are built in their own projects next
+to this repository (`../critter-test`, `../critter-butterfly`,
+`../critter-snail`, `../critter-mouse`). Their built JavaScript is vendored
+into `studies/vendor/<animal>/` and committed, so the site builds without
+them. After one of those studies changes, bring it in again with
+
+```bash
+node scripts/sync-studies.mjs            # all four (runs each project's npm run build)
+node scripts/sync-studies.mjs mouse      # or just one
 ```
 
 Dev helpers (never shipped): `?renderer=canvas`, `?dpr=fixed`, `?frogs=1`,
@@ -53,8 +77,10 @@ packages/critter-kit/ the kit every study is built from (maths and seeded random
 packages/frog-pond/   the study (world, scene, renderers, bank, theme)
 packages/cockroach-floor/ the cockroach Specimen, built only from the kit (in progress: docs/HANDOFF.md)
 packages/koi/             the koi Specimen, built only from the kit (in review: docs/KOI_VISUAL_DIRECTION.md)
-studies/frogs/        the demo page (plain HTML + TypeScript), its CSS and first-frame stills
-studies/index.html    the site's index
+studies/site/         the site shell every animal page shares (template, CSS, border script, font, badges, stills)
+studies/frogs/        the frog page's script and first-frame stills (its index.html and page.css are the single file's page)
+studies/vendor/       the four external studies' built scripts (scripts/sync-studies.mjs)
+studies/index.html    the site's root (redirects to /frogs/)
 standalone/frogs/     the single-file build's entry (the page is studies/frogs with its CSS inlined)
 scripts/              builds (esbuild only), GLSL minifier, static server, dev server, docs check
 qa/                   the checks, thresholds, CDP driver, tools

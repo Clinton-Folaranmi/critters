@@ -35,13 +35,13 @@ export default async ({ page, site, report }) => {
       const root = getComputedStyle(document.documentElement);
       const pages = ['--page', '--page-deep'].map((v) => { const d = document.createElement('div'); d.style.color = root.getPropertyValue(v); document.body.append(d); const c = parse(getComputedStyle(d).color); d.remove(); return c; });
       const bgOf = (e) => { while (e && e !== document.body) { const v = parse(getComputedStyle(e).backgroundColor); if (v.length === 3 || v[3] > 0) return [v.slice(0, 3)]; e = e.parentElement; } return pages; };
-      const items = { eyebrow: '.eyebrow', title: '#title', lede: '#lede', hint: '#hint li', 'key caps': '#hint kbd' };
+      const items = { title: 'h1', 'badge label': '.badge:not([aria-current])', 'current badge label': '.badge[aria-current]' };
       const out = {};
       for (const [k, sel] of Object.entries(items)) { const e = document.querySelector(sel); if (!e) continue; const c = parse(getComputedStyle(e).color).slice(0, 3); out[k] = Math.min(...bgOf(e).map((b) => ratio(c, b))); }
-      // The focus ring: an ink line on a halo, both over the water (the pond's ground colour).
+      // The focus ring (the site shell's): an ink line on a halo, both over the water (the pond's ground colour).
       const stage = document.querySelector('.stage');
       const over = (c, b) => c.slice(0, 3).map((v, i) => v * (c[3] ?? 1) + b[i] * (1 - (c[3] ?? 1)));
-      const water = parse(getComputedStyle(document.getElementById('pond')).backgroundColor).slice(0, 3);
+      const water = parse(getComputedStyle(document.getElementById('scene')).backgroundColor).slice(0, 3);
       const halo = over(parse(getComputedStyle(stage, '::before').backgroundColor), water);
       const ring = over(parse(getComputedStyle(stage, '::after').backgroundColor), water);
       out['focus ring, against the water'] = ratio(ring, water);

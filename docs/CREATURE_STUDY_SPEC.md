@@ -220,6 +220,7 @@ interface SceneOptions<Variant extends string> {
   describedBy?: string; // id of the element that explains the controls
   onModeChange?: (mode: 'webgl2' | 'canvas') => void;
   onReady?: () => void; // the first full frame is on screen
+  ownEdge?: boolean; // false: the page draws the border (the site shell), so no mask or ring properties are set
 }
 interface SceneHandle {
   readonly mode: 'webgl2' | 'canvas';
@@ -549,7 +550,7 @@ and their shadows → vignette and grain → the picture's edge (a CSS mask).
 
 ### 8.3 The picture's edge
 
-- **E-11 (MUST)** The scene has a designed edge where it meets the page (the frog: a squarish oval, a superellipse with exponent 2/0.6, radii (aspect/2 − 0.05, 0.45), made ragged and soft with turbulence, applied as a CSS mask).
+- **E-11 (MUST)** The scene has a designed edge where it meets the page (the frog: a squarish oval, a superellipse with exponent 2/0.6, radii (aspect/2 − 0.05, 0.45), made ragged and soft with turbulence, applied as a CSS mask). A host page may draw a border of its own instead (`ownEdge: false`; the site shell draws the owner's approved border on every animal page, `studies/site/`); then it also draws the focus ring (E-13).
 - **E-12 (MUST)** No interaction outside the visible picture: taps where the edge is faded out do nothing and the cursor turns back to the default (`pictureEdge(x, y, aspect) ≤ 1` accepts; `qa:hit`: 0 taps accepted where the mask is under 0.2; ≤ 0.5 % of the clearly visible picture outside the rule, the ragged fringe).
 - **E-13 (MUST)** The keyboard focus ring follows the same outline, a little outside it (0.03 world units), as an ink line on a halo so it reads over dark water and the page alike (the scene sets `--pond-ring` and `--pond-ring-halo` mask images on the container's parent).
 - **E-14 (SHOULD)** Until the scene applies its edge, the container shows a plain soft oval, so nothing appears with a hard rectangle.

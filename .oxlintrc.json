@@ -9,7 +9,7 @@
     "browser": true,
     "node": true
   },
-  "ignorePatterns": ["dist/**", "node_modules/**", "qa/.out/**", "packages/*/dist/**"],
+  "ignorePatterns": ["dist/**", "node_modules/**", "qa/.out/**", "packages/*/dist/**", "studies/vendor/**"],
   "rules": {
     "no-array-constructor": "error",
     "no-var": "error",

@@ -1,9 +1,10 @@
 import { startFrogPage } from './page';
 
-// The demo page. It ships only the caption and a still of the
-// pond's first frame (stills.css); the scene's code loads as the pond comes
-// within 300 px of the viewport, and its canvas replaces the still once its
-// first frame is drawn.
+// The frog page on the site (the shared shell, studies/site/). It ships only
+// the shell and a still of the pond's first frame; the scene's code loads as
+// the picture comes within 300 px of the viewport, and its canvas replaces
+// the still once its first frame is drawn. The shell draws the owner's
+// border, so the pond mounts without its own bank edge (ownEdge: false).
 
 const loadScene = () => import('@critters/frog-pond').then((module) => module.mountFrogScene);
 let scene: ReturnType<typeof loadScene> | null = null;
@@ -22,11 +23,14 @@ const near = (element: HTMLElement) =>
     observer.observe(element);
   });
 
-startFrogPage(async (container, options) => {
-  await near(container);
-  scene ??= loadScene();
-  return (await scene)(container, options);
-});
+startFrogPage(
+  async (container, options) => {
+    await near(container);
+    scene ??= loadScene();
+    return (await scene)(container, options);
+  },
+  { containerId: 'scene', caption: false, ownEdge: false },
+);
 
 if (import.meta.env.DEV) {
   // Dev-only, for the QA harness: the picture's maths in the page.

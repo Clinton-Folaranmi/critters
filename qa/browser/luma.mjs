@@ -22,8 +22,9 @@ export default async ({ page, site, report }) => {
         data = new Uint8Array(w * h * 4);
         for (let y = 0; y < h; y++) data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
       } else data = c.getContext('2d').getImageData(0, 0, w, h).data;
-      // The mask the scene put on the pond, drawn at the canvas's size.
-      const css = getComputedStyle(document.getElementById('pond')).maskImage || getComputedStyle(document.getElementById('pond')).webkitMaskImage;
+      // The picture's mask (the site shell's border, on .picture), drawn at the canvas's size.
+      const picture = document.querySelector('.picture');
+      const css = getComputedStyle(picture).maskImage || getComputedStyle(picture).webkitMaskImage;
       const img = new Image(); img.src = css.slice(css.indexOf('"') + 1, css.lastIndexOf('"'));
       await img.decode();
       const m = document.createElement('canvas'); m.width = w; m.height = h;

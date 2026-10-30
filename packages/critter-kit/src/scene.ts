@@ -97,6 +97,12 @@ export interface SceneOptions {
   onModeChange?: (mode: RendererMode) => void;
   /** Called once the first full frame is on screen (the canvas is shown then). */
   onReady?: () => void;
+  /**
+   * False: the page draws the picture's border itself, so the container isn't
+   * masked to the study's edge and no focus-ring properties are set. Taps
+   * beyond the edge still do nothing (E-12). Default true.
+   */
+  ownEdge?: boolean;
 }
 
 export interface SceneHandle {
@@ -173,6 +179,7 @@ export function mountScene<Tap extends string, W extends SceneWorld<Tap>, R exte
   let maskedAspect = 0;
   const fitMask = (value: number) => {
     const rounded = Math.round(value * 100) / 100;
+    if (options.ownEdge === false) return;
     if (rounded === maskedAspect || !Number.isFinite(rounded) || rounded <= 0) return;
     maskedAspect = rounded;
     const url = config.edge.maskUrl(rounded);

@@ -2,6 +2,7 @@
 // screen readers, and logs no errors; the shipped build has no dev helpers.
 // Screenshots in qa/.out/shots/smoke-*.png.
 import { FROG_COPY } from '../../packages/frog-pond/src/frog-theme.ts';
+import { ANIMALS } from '../../studies/site/animals.mjs';
 
 export default async ({ page, site, prodSite, report }) => {
   for (const renderer of ['webgl2', 'canvas']) {
@@ -24,7 +25,8 @@ export default async ({ page, site, prodSite, report }) => {
         info.label === FROG_COPY.motionLabel &&
         info.describedBy === 'hint',
     );
-    report.measure(`${tag}: title`, info.title, { equals: FROG_COPY.title });
+    // The site's frog page is titled with the animal's name (the shell, studies/site/).
+    report.measure(`${tag}: title`, info.title, { equals: ANIMALS[0].name });
     report.measure(`${tag}: check() issues`, info.check.length, { equals: 0 });
     // The forced fallback logs that it was forced; nothing else may warn.
     const problems = page.problems(from).filter((line) => !/forced by \?renderer=canvas/.test(line));

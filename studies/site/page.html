@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{name}}</title>
+    <meta name="description" content="{{description}}" />
+    <link rel="preload" href="../assets/fonts/GeneralSans-Semibold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="../assets/site.css" />
+    <style>
+      {{still}}
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="wobble">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="8" />
+        <feDisplacementMap in="SourceGraphic" scale="4.5" />
+      </filter>
+    </svg>
+    <main class="page">
+      <div class="stage">
+        <div class="picture"><div id="scene" class="scene"></div></div>
+      </div>
+      <div class="caption">
+        <h1>{{name}}</h1>
+        {{hint}}
+        <nav aria-label="Animals">
+          <ul class="badges">
+            {{badges}}
+          </ul>
+        </nav>
+      </div>
+    </main>
+    <script type="module" src="../assets/shell.js"></script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
