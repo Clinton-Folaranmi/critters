@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ladybug and frog post preview</title>
+    <style>
+      :root {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        color: #243327;
+        background: #dedfd6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+      main {
+        max-width: 1190px;
+        margin: auto;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: end;
+        margin-bottom: 22px;
+      }
+      h1 {
+        font:
+          italic 400 clamp(30px, 4vw, 48px)/1.1 Georgia,
+          serif;
+        margin: 0 0 7px;
+      }
+      p {
+        margin: 0;
+        color: #526251;
+      }
+      .links {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      a {
+        color: #355e45;
+        text-underline-offset: 3px;
+      }
+      .settings {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px 24px;
+        align-items: center;
+        padding: 16px 18px;
+        background: #f7f7f0;
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
+      label {
+        display: grid;
+        grid-template-columns: 7.5em minmax(0, 1fr) 3.5em;
+        gap: 10px;
+        align-items: center;
+        font-size: 14px;
+      }
+      input {
+        width: 100%;
+        accent-color: #628a5a;
+      }
+      output {
+        min-width: 3.5ch;
+        font-variant-numeric: tabular-nums;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        font-size: 14px;
+        margin: 8px 2px 0;
+      }
+      .post {
+        --size: 82%;
+        aspect-ratio: 1;
+        background: #f1efe6;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .post video {
+        display: block;
+        width: var(--size);
+        height: var(--size);
+        object-fit: cover;
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+      }
+      @media (max-width: 1000px) {
+        .settings {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 720px) {
+        body {
+          padding: 14px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 580px) {
+        .settings {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Little worlds in motion</h1>
+          <p>Live layout preview · both clips use the same settings</p>
+        </div>
+        <nav class="links">
+          <a href="http://127.0.0.1:5174/" target="_blank">Live ladybug</a
+          ><a href="http://127.0.0.1:5173/frogs/" target="_blank">Live frogs</a>
+        </nav>
+      </header>
+      <div class="settings">
+        <label
+          >Artwork size <input id="size" type="range" min="60" max="95" value="90" /><output id="size-value"
+            >90%</output
+          ></label
+        >
+        <label
+          >Corner radius <input id="radius" type="range" min="0" max="50" value="15" /><output id="radius-value"
+            >15%</output
+          ></label
+        >
+        <label
+          >Fade width <input id="fade" type="range" min="0" max="30" value="5" /><output id="fade-value"
+            >5%</output
+          ></label
+        >
+        <label
+          >Fade strength <input id="strength" type="range" min="0" max="100" value="30" /><output id="strength-value"
+            >30%</output
+          ></label
+        >
+        <label
+          >Edge roughness <input id="roughness" type="range" min="0" max="100" value="30" /><output id="roughness-value"
+            >30%</output
+          ></label
+        >
+        <label
+          >Edge noise <input id="grain" type="range" min="0" max="100" value="100" /><output id="grain-value"
+            >100%</output
+          ></label
+        >
+      </div>
+      <p style="font-size: 13px; margin: -8px 2px 18px">
+        Width sets the fade distance; strength sets how deeply it fades. Roughness bends the outline; noise adds fine
+        texture.
+      </p>
+      <section class="grid">
+        <figure>
+          <div class="post"><video src="ladybug-fullbleed-15s.mp4" autoplay muted loop playsinline></video></div>
+          <figcaption>Ladybug · 15 seconds</figcaption>
+        </figure>
+        <figure>
+          <div class="post"><video src="frog-fullbleed-15s.mp4" autoplay muted loop playsinline></video></div>
+          <figcaption>Day Chorus · 15 seconds</figcaption>
+        </figure>
+      </section>
+    </main>
+    <script type="module">
+      import { makeMask } from './edge-mask.js';
+      const keys = ['size', 'radius', 'fade', 'strength', 'roughness', 'grain'];
+      const inputs = Object.fromEntries(keys.map((key) => [key, document.getElementById(key)]));
+      const posts = [...document.querySelectorAll('.post')];
+      const videos = [...document.querySelectorAll('.post video')];
+      const canvas = document.createElement('canvas');
+      const resolution = 512;
+      canvas.width = canvas.height = resolution;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      function drawMask() {
+        const image = context.createImageData(resolution, resolution);
+        image.data.set(makeMask(Object.fromEntries(keys.map((key) => [key, Number(inputs[key].value)])), resolution));
+        context.putImageData(image, 0, 0);
+        const mask = `url(${canvas.toDataURL('image/png')})`;
+        for (const video of videos) {
+          video.style.maskImage = mask;
+          video.style.webkitMaskImage = mask;
+        }
+      }
+      let scheduled = false;
+      function update() {
+        for (const key of keys) document.getElementById(`${key}-value`).textContent = `${inputs[key].value}%`;
+        for (const post of posts) post.style.setProperty('--size', `${inputs.size.value}%`);
+        localStorage.setItem(
+          'critters-social-layout',
+          JSON.stringify(Object.fromEntries(keys.map((key) => [key, inputs[key].value]))),
+        );
+        if (!scheduled) {
+          scheduled = true;
+          requestAnimationFrame(() => {
+            scheduled = false;
+            drawMask();
+          });
+        }
+      }
+      try {
+        const saved = JSON.parse(localStorage.getItem('critters-social-layout') || '{}');
+        for (const key of keys) if (saved[key] !== undefined) inputs[key].value = saved[key];
+      } catch {
+        /* Keep defaults if storage is unavailable. */
+      }
+      for (const key of keys) inputs[key].addEventListener('input', update);
+      update();
+    </script>
+  </body>
+</html>

@@ -1,5 +1,17 @@
 # Handoff
 
+**Social clips (2026-10-30).** The owner approved one shared soft-edge layout
+for two separate, silent 15-second posts: ladybug and Day Chorus frogs.
+The tracked `social/` directory contains the six-slider preview (`live.html`),
+the approved values (`approved-settings.json`: size 90%, radius 15%, fade
+width 5%, strength 30%, roughness 30%, noise 100%), the shared mask code,
+the repeatable export script, both source clips and both final 1080 × 1080
+MP4s. Read `social/README.md` first. Serve that directory locally to use
+the sliders; the browser stores experiments in local storage, while the JSON
+records the approved values. The earlier `reports/social/` folder is ignored
+scratch work. This social edit does not alter the approved study compositions
+(P-12). The owner wants this branch kept local; do not push it.
+
 **Latest (2026-10-28), read this first.** The older notes below still hold
 where this section doesn't override them.
 
