@@ -52,10 +52,10 @@ const TICKS = 2;
 export const CLIPS = {
   // --intro: the tap at 7 s of scene time, on the spotted frog.
   frogs: { start: 4, tapAt: 7, tap: [0.475, 0.586], introTap: 7, introTapAt: [0.362, 0.398] }, // the brown frog, sitting on the middle pad
-  ladybug: { start: 4, tapAt: 7, tap: [0.436, 0.494] }, // the seven-spot walking across the brick
-  butterfly: { start: 4, tapAt: 7, tap: [0.449, 0.494] }, // the peacock feeding in the middle
+  ladybug: { start: 4, tapAt: 7, tap: [0.436, 0.494], introTap: 7, introTapAt: [0.52, 0.546] }, // the seven-spot walking across the brick
+  butterfly: { start: 4, tapAt: 7, tap: [0.449, 0.494], introTap: 7, introTapAt: [0.442, 0.51] }, // the peacock feeding in the middle
   snail: { start: 4, tapAt: 7, tap: [0.449, 0.54] }, // the middle snail's shell
-  mouse: { start: 4, tapAt: 7, tap: [0.522, 0.525] }, // the middle mouse, eating
+  mouse: { start: 4, tapAt: 7, tap: [0.522, 0.525], introTap: 7, introTapAt: [0.466, 0.276] }, // the middle mouse, eating (intro: the grey mouse)
 };
 const ORDER = Object.keys(CLIPS);
 
@@ -281,7 +281,8 @@ async function renderIntro(page, base, animal) {
   const total = SECONDS * FPS;
   const kept = [];
   const keep = (i, png) => {
-    if ([0, 31, 40, 52, 70, 95].includes(i) || (kept.length < 8 && i > 95 && i % 90 === 0)) kept.push(png);
+    // The previous page, the sketch drawing, the wash, the live scene; then the tap (below).
+    if ([0, 36, 52, 75, 100].includes(i)) kept.push(png);
   };
   let i = 0;
   for (; i < FPS; i++) {
@@ -329,11 +330,12 @@ async function renderIntro(page, base, animal) {
     const png = await frame(page);
     await out.write(png);
     keep(i, png);
-    if (tapAt >= 0 && [tapAt + 6, tapAt + 20].includes(i)) kept.push(png);
+    // Just before the tap, 0.3 s and 1.5 s after it.
+    if (tapAt >= 0 && [tapAt, tapAt + 9, tapAt + 45].includes(i)) kept.push(png);
     if (i < total - 1) await page.eval(`window.__clip.step(1000 / 60, ${TICKS})`);
   }
   await out.end();
-  await sheet(kept.slice(0, 8), join(here, `${animal}-intro-sheet.jpg`));
+  await sheet(kept, join(here, `${animal}-intro-sheet.jpg`));
   const mb = statSync(join(here, name)).size / 1e6;
   console.log(
     `${name}: ${OUT.width}x${OUT.height} ${FPS} fps, ${mb.toFixed(1)} MB, click at 1.0s, ` +
