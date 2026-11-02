@@ -43,4 +43,25 @@ export const ANIMALS = [
     still: { wide: '../assets/stills/mouse.jpg', size: 'cover' },
     ground: '#7dad4c',
   },
+  {
+    slug: 'koi',
+    name: 'Koi',
+    description: 'A small interactive study of three koi in a stone-edged garden pond.',
+    still: { wide: '../assets/stills/koi.jpg', size: 'cover' },
+    ground: '#2a4f49',
+  },
+  {
+    slug: 'snake',
+    name: 'Snake',
+    description: 'A small interactive study of three grass snakes basking by a pond.',
+    still: { wide: '../assets/stills/snake.jpg', size: 'cover' },
+    ground: '#6cae45',
+  },
+  {
+    slug: 'cockroach',
+    name: 'Cockroach',
+    description: 'A small interactive study of three woodland cockroaches at a fallen crab apple.',
+    still: { wide: '../assets/stills/cockroach.jpg', size: 'cover' },
+    ground: '#6f9a3c',
+  },
 ];

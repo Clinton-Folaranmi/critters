@@ -25,6 +25,9 @@ export const EXTERNAL_STUDIES = {
   butterfly: 'critter-butterfly',
   snail: 'critter-snail',
   mouse: 'critter-mouse',
+  koi: 'critter-koi',
+  snake: 'critter-snake',
+  cockroach: 'critter-cockroach',
 };
 
 async function sync(animal) {

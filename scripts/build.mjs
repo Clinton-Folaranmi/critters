@@ -255,19 +255,6 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   // The pages last: each lists what the others need, to fetch ahead.
   for (const animal of ANIMALS)
     await writeFile(`${outdir}/${animal.slug}/index.html`, animalPage(template, animal, outdir));
-  // The older Specimens still build, but nothing links to them until they're redone.
-  // The cockroach Specimen (packages/cockroach-floor): no stills or single file yet.
-  const cockroach = `${outdir}/cockroach`;
-  await buildModules({ main: 'studies/cockroach/main.ts' }, cockroach, dev);
-  for (const file of ['index.html', 'page.css']) await cp(`studies/cockroach/${file}`, `${cockroach}/${file}`);
-  // The koi Specimen (packages/koi): no stills or single file yet.
-  const koi = `${outdir}/koi`;
-  await buildModules({ main: 'studies/koi/main.ts' }, koi, dev);
-  for (const file of ['index.html', 'page.css']) await cp(`studies/koi/${file}`, `${koi}/${file}`);
-  // The grass snake Specimen (packages/snake): WebGL2 + Canvas 2D fallback.
-  const snake = `${outdir}/snake`;
-  await buildModules({ main: 'studies/snake/main.ts' }, snake, dev);
-  for (const file of ['index.html', 'page.css']) await cp(`studies/snake/${file}`, `${snake}/${file}`);
   // A GitHub Pages site shouldn't be run through Jekyll.
   await writeFile(`${outdir}/.nojekyll`, '');
   if (!dev && !quiet) {
@@ -280,7 +267,7 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   }
   if (!quiet)
     console.log(
-      `${outdir}/ (${ANIMALS.map((animal) => `${animal.slug}/`).join(', ')}; unlinked: cockroach/, koi/, snake/)`,
+      `${outdir}/ (${ANIMALS.map((animal) => `${animal.slug}/`).join(', ')})`,
     );
   return { outdir: frogs, outputs };
 }
