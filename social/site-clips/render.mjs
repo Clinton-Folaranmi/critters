@@ -146,6 +146,20 @@ export const CLIPS = {
       { at: 11, on: [0.516, 0.752] },
     ],
   },
+  snake: {
+    // The same scene moments as the intro: the turf at 4.5 s draws the crawler (scent), then a tap on
+    // its head on open grass at 9 s sends it off. A snake on a stone, near the bush (cover) or just
+    // tapped only hides in place or flicks its tongue, which barely shows.
+    start: 0,
+    clicks: [
+      { at: 4.5, on: [0.5, 0.84] },
+      { at: 9, on: [0.485, 0.72] },
+    ],
+    intro: [
+      { at: 6.5, on: [0.5, 0.84] },
+      { at: 11, on: [0.485, 0.72] },
+    ],
+  },
 };
 
 /** Capture-time CSS: the picture alone, centred, on the paper; no name or badges, no scrollbars. */
