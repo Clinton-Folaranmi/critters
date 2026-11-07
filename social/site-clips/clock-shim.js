@@ -203,6 +203,14 @@
   const START = 100000;
 
   window.__clip = {
+    /**
+     * Hides the page (to the scenes) while it settles: their loops stop, and a
+     * layer baked in the background is drawn as soon as it lands.
+     */
+    pause() {
+      hidden = true;
+      document.dispatchEvent(new Event('visibilitychange'));
+    },
     /** Restarts the scene's loop from a fixed clock reading (after it's held). */
     rebase() {
       hidden = true;

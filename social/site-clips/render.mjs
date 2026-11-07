@@ -124,6 +124,28 @@ export const CLIPS = {
       { at: 11, on: [0.532, 0.522] },
     ],
   },
+  koi: {
+    start: 4,
+    clicks: [
+      { at: 5, on: [0.803, 0.588] },
+      { at: 10, on: [0.212, 0.615] },
+    ],
+    intro: [
+      { at: 6.5, on: [0.646, 0.356] },
+      { at: 11, on: [0.476, 0.736] },
+    ],
+  },
+  cockroach: {
+    start: 4,
+    clicks: [
+      { at: 5, on: [0.321, 0.468] },
+      { at: 10, on: [0.404, 0.8] },
+    ],
+    intro: [
+      { at: 6.5, on: [0.527, 0.452] },
+      { at: 11, on: [0.516, 0.752] },
+    ],
+  },
 };
 
 /** Capture-time CSS: the picture alone, centred, on the paper; no name or badges, no scrollbars. */
@@ -196,8 +218,18 @@ async function openLive(page, base, animal) {
     if (state.mode !== 'auto' && (state.hidden || state.still)) break;
     await sleep(100);
   }
-  // Background layers some scenes bake in workers, the page's own fades: real time.
-  await sleep(2500);
+  // Background layers some scenes bake in workers (a quick ground first, the full one later) and the
+  // page's own fades take real time. With the scene paused, wait until the picture stops changing:
+  // three matching looks a second apart (at least 3 s, at most 25 s).
+  await page.eval('window.__clip.pause()');
+  let previous = '';
+  let same = 0;
+  for (let waited = 0; waited < 25 && !(same >= 2 && waited >= 3); waited++) {
+    await sleep(1000);
+    const { data } = await page.send('Page.captureScreenshot', { format: 'jpeg', quality: 60 });
+    same = data === previous ? same + 1 : 0;
+    previous = data;
+  }
   if ((await page.eval('window.__clip.mode')) === 'auto') throw new Error(`${animal}: the scene never showed.`);
   if (!(await page.eval('window.__clip.rebase()')))
     throw new Error(`${animal}: the scene's loop didn't restart after the rebase.`);
@@ -518,7 +550,9 @@ try {
         : Object.keys(CLIPS).filter((a) => (intro ? CLIPS[a].intro : CLIPS[a].clicks).some((c) => c.on));
       for (const animal of animals) await run(page, base, animal, { intro });
     },
-    { width: VIEW.width, height: VIEW.height, dsf: DSF },
+    // Software 2D canvases: a scene that paints a layer in Canvas 2D and uploads it to WebGL (the koi's
+    // floor) sometimes got black from an accelerated canvas in the headless shell.
+    { width: VIEW.width, height: VIEW.height, dsf: DSF, flags: ['--disable-accelerated-2d-canvas'] },
   );
 } catch (error) {
   console.error(String(error?.stack ?? error));
