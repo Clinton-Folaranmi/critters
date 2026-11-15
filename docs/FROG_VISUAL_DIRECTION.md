@@ -1,8 +1,13 @@
 # Frog pond — visual direction
 
 The frog pond's board (spec P-12, section 13.1). Until a revision here is
-approved by a person, nothing in it is approved. Working files for the boards
-are in `reports/frogs/style-board/` (gitignored).
+approved by a person, nothing in it is approved. The approved board is
+[`docs/frog-board/board-r2.jpg`](frog-board/board-r2.jpg) (board r2, half
+size), and the painter that drew it, the reference for every value in
+`packages/frog-pond/src/frog-theme.ts`, is
+[`docs/frog-board/painter-r2.js`](frog-board/painter-r2.js). The other working
+files (boards r0 and r1, the r2 loop, briefs and reports) are in
+`reports/frogs/style-board/` (gitignored).
 
 ## r0 (2026-10-27) — APPROVED: Day Chorus in the grainy flat meadow style, water only
 

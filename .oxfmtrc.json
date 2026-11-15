@@ -7,6 +7,8 @@
     "package-lock.json",
     "dist/**",
     "qa/.out/**",
+    "qa/scratch/*.mjs",
+    "docs/frog-board/painter-r2.js",
     "qa/tools/golden.json",
     "docs/*.html",
     "*.webp",
