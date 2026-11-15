@@ -4,8 +4,8 @@
 //   node scripts/build-standalone.mjs frogs   →   dist/standalone/frogs.html
 //
 // The page is the study's demo page (studies/<name>/index.html) with its
-// page.css inlined, its stills left out, and standalone/<name>/entry.ts as
-// one inline classic script. The
+// page.css inlined and standalone/<name>/entry.ts as one inline classic
+// script (no stills: the scene's code is already in the page). The
 // output needs no network: anything it loads from elsewhere is a build
 // error, and so is a page missing the basics a phone needs (a doctype, a
 // language, a charset, a viewport, no body margin).
@@ -42,7 +42,6 @@ export async function buildStandalone(name, { dev = false } = {}) {
   if (fetched) throw new Error(`studies/${name}/page.css loads a file: ${fetched[0]}`);
   let page = await readFile(template, 'utf8');
   page = swap(page, /<link rel="stylesheet" href="page\.css"\s*\/?>/, `<style>\n${css}</style>`, template);
-  page = page.replace(/\n\s*<link rel="stylesheet" href="stills\.css"\s*\/?>/, '');
   page = swap(page, /<script type="module" src="main\.js"><\/script>/, `<script>\n${script}</script>`, template);
   const external = page.match(/<(?:link|script|img|iframe|source)\b[^>]*\b(?:href|src)=/i);
   if (external) throw new Error(`${template} still loads a file: ${external[0]}`);

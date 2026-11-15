@@ -7,8 +7,8 @@
 // r0, board r2, soft strength): flat colour fields, one fine grain over
 // everything with the edges cut against it, flat offset shadow bands from one
 // key light up and to the right, sparse small details, a small palette.
-// Water only. The painters in reports/frogs/style-board/src/painter-r2.js are
-// the reference for every value here.
+// Water only. The board's painter, docs/frog-board/painter-r2.js, is the
+// reference for every value here.
 
 type RGB = readonly [number, number, number];
 
@@ -217,7 +217,6 @@ export const SHADE_CLUSTERS: readonly ShadeCluster[] = [
   }
   return { u, v, reach, leaves };
 });
-export const MAX_SHADE_LEAVES = Math.max(...SHADE_CLUSTERS.map((c) => c.leaves.length));
 
 /** Where a shade cluster's point is at `time` (world units), wrapping round the picture. */
 export function shadeCentre(cluster: ShadeCluster, aspect: number, time: number, out: Float32Array, o: number) {

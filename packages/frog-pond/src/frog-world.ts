@@ -1126,7 +1126,7 @@ export class FrogWorld {
 
   /**
    * Starts a small on-pad reorientation. Only called with a reason: to face a
-   * hop that is already chosen, or a firefly just outside the frog's view.
+   * hop that is already chosen, or a midge just outside the frog's view.
    */
   private startTurn(frog: Frog, target: number) {
     frog.state = 'turn';
@@ -1303,7 +1303,7 @@ export class FrogWorld {
     }
     frog.throat = approach(frog.throat, throat, 20, dt);
 
-    // The eyes follow the nearest lit firefly in front of the frog.
+    // The eyes follow the nearest midge in front of the frog.
     const mouthX = frog.x + Math.cos(frog.heading) * frog.size * 0.45;
     const mouthY = frog.y + Math.sin(frog.heading) * frog.size * 0.45;
     const reach = frog.size * 2.6;
@@ -1331,7 +1331,7 @@ export class FrogWorld {
     });
     frog.look = approach(frog.look, clamp(look, -0.9, 0.9), 4, dt);
 
-    // Hunting: a firefly within reach, roughly ahead, gets the tongue.
+    // Hunting: a midge within reach, roughly ahead, gets the tongue.
     frog.hunger -= dt;
     if (frog.hunger <= 0 && frog.tongueFly < 0) {
       if (target >= 0) {

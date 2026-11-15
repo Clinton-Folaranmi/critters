@@ -15,15 +15,9 @@ export const CAUSTIC_TILE = CAUSTIC_CELL * CAUSTIC_CELLS;
  * A tileable caustic pattern (white, with the brightness in alpha): the thin
  * bright edges between neighbouring cells. Both renderers slide two copies
  * past each other at different scales, bent by a slow warp, and posterise the
- * mix into two flat tones (see caustics() in frog-shaders.ts).
+ * mix into two flat tones (see caustics() in frog-shaders.ts). Painted a
+ * slice at a time: work(ms) paints for about that long and says whether it's done.
  */
-export function makeCausticTile(size: number) {
-  const job = causticTileJob(size);
-  job.work(Infinity);
-  return job.tile;
-}
-
-/** The caustic tile painted a slice at a time: work(ms) paints for about that long and says whether it's done. */
 export function causticTileJob(size: number) {
   const random = seeded(5147);
   const cells = CAUSTIC_CELLS;

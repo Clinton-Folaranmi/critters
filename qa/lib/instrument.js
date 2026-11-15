@@ -43,7 +43,7 @@
     window.Worker = class extends W {
       constructor(...a) {
         super(...a);
-        if (/\/assets\/sketch\.js$/.test(String(a[0]))) s.workers.shell++;
+        if (String(a[0]).endsWith('/assets/sketch.js')) s.workers.shell++;
         else s.workers.made++;
       }
       postMessage(...a) {

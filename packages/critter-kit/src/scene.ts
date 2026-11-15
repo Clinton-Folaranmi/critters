@@ -209,7 +209,7 @@ export function mountScene<Tap extends string, W extends SceneWorld<Tap>, R exte
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
-      // A new size means a re-bake and a repainted bed; don't count those frames.
+      // A new size means repainted layers; don't count those frames.
       settle = 30;
     }
     // Before the first frame, or in the still, things go straight to their places.

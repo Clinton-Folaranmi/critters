@@ -5,7 +5,7 @@ import { THRESHOLDS } from '../thresholds.mjs';
 export default async ({ page, site, report }) => {
   const offsets = {};
   for (const renderer of ['webgl2', 'canvas']) {
-    await page.goto(`${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}#day`);
+    await page.goto(`${site}?dpr=fixed${renderer === 'canvas' ? '&renderer=canvas' : ''}`);
     await page.ready();
     await page.freeze();
     const r = await page.eval(`(() => {
