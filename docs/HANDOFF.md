@@ -69,10 +69,9 @@ packages"). Their pages and boards were removed on 2026-11-14.
   build from git; the build writes `dist/site/vercel.json`
   (`trailingSlash: true`). No GitHub Pages.
 - **Embedding (2026-11-15):** `/embed.js` puts any animal on another page in
-  one line, and `/embed/` is the page to copy the line from (README,
-  "Embedding"). Each animal's page shows the picture alone with `?embed`.
-  The animal pages don't link to `/embed/` yet: where to link it is the
-  owner's call.
+  one line (README, "Embedding"). Each animal's page has an Embed button
+  beside its name that opens the line to copy (the owner: no separate embed
+  page), and shows the picture alone with `?embed`.
 - **Updating an animal:** change it in its own project, then
   `node scripts/sync-studies.mjs <animal>`, replace its still if the first
   frame changed (`studies/site/stills/`, then `node scripts/trace-sketches.mjs`),

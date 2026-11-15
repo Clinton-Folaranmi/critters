@@ -25,10 +25,9 @@
         document.documentElement.dataset.embed = embedded.get('edge') === 'none' ? 'plain' : 'soft';
         if (embedded.get('credit') === 'off') document.documentElement.dataset.credit = 'off';
       }
-      // The loading sketch needs a worker-drawn canvas; without one, with reduced motion, or in
-      // a frame of any shape, the page shows the still until the scene's first frame (shell.ts).
+      // The loading sketch needs a worker-drawn canvas; without one, or with reduced motion,
+      // the page shows the still until the scene's first frame, as before (shell.ts).
       if (
-        document.documentElement.dataset.embed === 'plain' ||
         matchMedia('(prefers-reduced-motion: reduce)').matches ||
         !('transferControlToOffscreen' in HTMLCanvasElement.prototype) ||
         !('attachShadow' in Element.prototype)
@@ -74,6 +73,18 @@
             {{badges}}
           </ul>
         </nav>
+        <!-- Put this animal on another page: the line to copy (shell.ts shows the button and fills the line). -->
+        <button type="button" class="embed-toggle" aria-expanded="false" aria-controls="embed" hidden>Embed</button>
+        <div class="embed" id="embed" data-src="{{site}}/embed.js" data-animal="{{slug}}" hidden>
+          <div class="edges" role="group" aria-label="Edge">
+            <button type="button" data-edge="soft" aria-pressed="true">Soft edge</button>
+            <button type="button" data-edge="none" aria-pressed="false">Square</button>
+          </div>
+          <div class="line">
+            <code></code>
+            <button type="button" class="copy">Copy</button>
+          </div>
+        </div>
       </div>
     </main>
     <script type="module" src="../assets/shell.js"></script>

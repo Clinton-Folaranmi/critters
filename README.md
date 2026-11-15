@@ -97,8 +97,8 @@ One line puts an animal on any page:
 <script async src="https://critters-iota.vercel.app/embed.js" data-animal="frogs"></script>
 ```
 
-`/embed/` on the site is the page to copy it from (pick an animal, see it
-live, copy). The script (`studies/site/embed.ts`, built to `dist/site/embed.js`)
+Each animal's page has an Embed button beside its name that opens this line
+for that animal, with a choice of edge (`shell.ts`, `startEmbedLine`). The script (`studies/site/embed.ts`, built to `dist/site/embed.js`)
 puts a frame where the tag is, as wide as its parent, showing the animal's
 page with `?embed`: the picture alone on a clear page (`page.html` sets
 `data-embed`, `site.css` does the rest), so the border fades into the host
@@ -147,7 +147,7 @@ packages/frog-pond/       the frog pond study (world, scene, renderers, picture 
 packages/cockroach-floor/ kit example and QA fixture: a cockroach walking a measured tripod gait (see below)
 packages/koi/             kit example and QA fixture: a koi on the spine swimmer (see below)
 packages/snake/           kit example and QA fixture: a grass snake in lateral undulation (see below)
-studies/site/             the site shell every animal page shares (template, CSS, border, loading sketch, font licence, badges, stills), the one-line embed and its page
+studies/site/             the site shell every animal page shares (template, CSS, border, loading sketch, font licence, badges, stills) and the one-line embed
 studies/frogs/            the frog page's script and first-frame stills (its index.html and page.css are the single file's page)
 studies/vendor/           the seven external studies' built scripts (scripts/sync-studies.mjs)
 studies/index.html        the site's root (redirects to /frogs/)

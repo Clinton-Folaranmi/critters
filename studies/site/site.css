@@ -169,8 +169,13 @@ html[data-still] .sketch {
 }
 .caption {
   display: grid;
+  grid-template-columns: 1fr auto;
   gap: 14px;
   margin-top: 18px;
+}
+.caption nav,
+.embed {
+  grid-column: 1 / -1;
 }
 h1 {
   margin: 0;
@@ -308,10 +313,105 @@ h1 .letters span {
   .dot,
   h1 .letters span,
   .badge .dot,
+  .embed,
   .sketch {
     animation: none !important;
     transition: none !important;
   }
+}
+/* Put this animal on another page: a quiet button on the name's row opens the
+   line to copy, under the badges (shell.ts). 'Square' shows the picture without
+   its border while it's chosen, as the embed will be. */
+.caption button {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.caption button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.caption .embed-toggle,
+.edges button {
+  padding: 6px 12px;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+}
+.caption .embed-toggle {
+  grid-area: 1 / 2;
+  align-self: center;
+  border-color: rgba(31, 42, 30, 0.22);
+}
+.caption .embed-toggle:hover,
+.caption .embed-toggle[aria-expanded='true'],
+.edges button:hover,
+.edges button[aria-pressed='true'] {
+  color: var(--ink);
+}
+.caption .embed-toggle[aria-expanded='true'],
+.edges button[aria-pressed='true'] {
+  border-color: var(--line);
+}
+.embed {
+  display: grid;
+  gap: 10px;
+  animation: embed-in 0.28s cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+.embed[hidden],
+.embed-toggle[hidden] {
+  display: none;
+}
+@keyframes embed-in {
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+}
+.edges {
+  display: flex;
+  gap: 6px;
+}
+.line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(31, 42, 30, 0.16);
+  border-radius: 14px;
+}
+.line code {
+  overflow-x: auto;
+  white-space: nowrap;
+  font:
+    13px/1.6 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  scrollbar-width: thin;
+}
+.line .copy {
+  padding: 8px 16px;
+  color: var(--page);
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--ink);
+  border-radius: 999px;
+}
+.line .copy:active {
+  transform: scale(0.96);
+}
+.picture.plain {
+  -webkit-mask: none;
+  mask: none;
 }
 /* Embedded in another page (embed.js, or an iframe to ?embed; page.html sets
    data-embed): the picture alone on a clear page, so the border fades into
@@ -356,6 +456,7 @@ html[data-embed='plain'] .stage {
 }
 html[data-embed='plain'] .picture {
   height: 100%;
+  overflow: hidden;
   aspect-ratio: auto;
   -webkit-mask: none;
   mask: none;
@@ -435,6 +536,13 @@ html[data-credit='off'] .credit {
   }
   h1 {
     font-size: 30px;
+  }
+  .line {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+  .line .copy {
+    justify-self: start;
   }
   .badges {
     gap: 10px;

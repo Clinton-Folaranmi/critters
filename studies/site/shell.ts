@@ -14,6 +14,7 @@
 //   once this page's scene is in and the browser is idle, the one after.
 // - Badge to frame: where cross-page view transitions are supported
 //   (site.css), the clicked badge's picture grows into the next page's frame.
+// - The Embed button opens the line that puts this animal on another page.
 // - Embedded in another page (embed.ts, ?embed): the picture alone, with a
 //   small credit; nothing is fetched ahead.
 import { SETTINGS, TOOL } from './border';
@@ -55,6 +56,10 @@ function whenSceneReady(scene: HTMLElement, ready: () => void) {
   observer.observe(scene, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
 }
 
+/** The picture's two shapes (site.css), which the sketches are traced for. */
+const WIDE = 1.48;
+const TALL = 0.91;
+
 /** The longest the sketch waits for a scene before it gives way to the still (s). */
 const PATIENCE = 15;
 
@@ -64,7 +69,17 @@ function startSketch(picture: HTMLElement, host: HTMLElement, scene: HTMLElement
     host.remove();
   };
   if ('still' in html.dataset) return stop();
-  const narrow = narrowQuery.matches;
+  let narrow = narrowQuery.matches;
+  if (html.dataset.embed === 'plain') {
+    // A frame of any shape: the sketch keeps the shape it was traced for (the nearer of
+    // the two) and covers the frame from its centre, cropped evenly, as the scene will.
+    const { clientWidth: width, clientHeight: height } = picture;
+    if (!width || !height) return stop();
+    narrow = width / height < (WIDE + TALL) / 2;
+    const shape = narrow ? TALL : WIDE;
+    const w = Math.max(width, height * shape);
+    host.style.cssText = `inset: auto; left: 50%; top: 50%; width: ${w.toFixed(1)}px; height: ${(w / shape).toFixed(1)}px; transform: translate(-50%, -50%);`;
+  }
   const strokes = picture.dataset[narrow ? 'sketchNarrow' : 'sketchWide'];
   const still = picture.dataset[narrow ? 'stillNarrow' : 'stillWide'];
   const { clientWidth: w, clientHeight: h } = host;
@@ -173,6 +188,51 @@ function startBadges(picture: HTMLElement, scene: HTMLElement) {
   });
 }
 
+/**
+ * The line that puts this animal on another page (page.html: the Embed button and its panel).
+ * While 'Square' is chosen the picture shows without its border, as that embed will.
+ */
+function startEmbedLine(picture: HTMLElement) {
+  const toggle = document.querySelector<HTMLButtonElement>('.embed-toggle');
+  const panel = document.getElementById('embed');
+  const line = panel?.querySelector('code');
+  const copy = panel?.querySelector<HTMLButtonElement>('.copy');
+  if (!toggle || !panel || !line || !copy) return;
+  const edges = [...panel.querySelectorAll<HTMLButtonElement>('.edges button')];
+  let edge = 'soft';
+  const show = () => {
+    const plain = edge === 'none';
+    line.textContent = `<script async src="${panel.dataset.src}" data-animal="${panel.dataset.animal}"${plain ? ' data-edge="none"' : ''}></script>`;
+    for (const button of edges) button.setAttribute('aria-pressed', String(button.dataset.edge === edge));
+    picture.classList.toggle('plain', plain && !panel.hidden);
+  };
+  toggle.hidden = false;
+  toggle.addEventListener('click', () => {
+    panel.hidden = !panel.hidden;
+    toggle.setAttribute('aria-expanded', String(!panel.hidden));
+    show();
+    if (!panel.hidden) panel.scrollIntoView({ block: 'nearest' });
+  });
+  for (const button of edges)
+    button.addEventListener('click', () => {
+      edge = button.dataset.edge ?? 'soft';
+      show();
+    });
+  let reset = 0;
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(line.textContent ?? '');
+      copy.textContent = 'Copied';
+    } catch {
+      // No clipboard here (an old browser, a page not served securely): select the line to copy by hand.
+      window.getSelection()?.selectAllChildren(line);
+      copy.textContent = 'Press ⌘ or Ctrl C';
+    }
+    window.clearTimeout(reset);
+    reset = window.setTimeout(() => (copy.textContent = 'Copy'), 1600);
+  });
+}
+
 /** How long the credit shows in an embedded picture before it steps back (s). */
 const CREDIT_SHOWS = 6;
 
@@ -198,8 +258,9 @@ function startShell() {
   if (!stage || !picture || !scene) return;
   if (html.dataset.embed !== 'plain') fitRing(stage, picture);
   if (host) startSketch(picture, host, scene);
-  if ('embed' in html.dataset) startEmbed(stage, scene);
-  else startBadges(picture, scene);
+  if ('embed' in html.dataset) return startEmbed(stage, scene);
+  startBadges(picture, scene);
+  startEmbedLine(picture);
 }
 
 startShell();
