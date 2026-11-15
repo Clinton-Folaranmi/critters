@@ -28,11 +28,12 @@ adds an uncovered behavior or materially different condition.
 
 ## Exploratory catalogue
 
-The private p5.js cockroach plates in `reports/cockroach-looks/` are the
-starting references. They use the same measured tripod walk, but are sketches,
-not shippable renderers or approved boards.
-
-![Exploratory p5.js style contact sheet; the repeated frames are points in one walk, not separate motion studies.](cockroach-board/sketch-style-contact.jpg)
+Private p5.js cockroach plates were the starting references. They used the
+same measured tripod walk, but were sketches, not shippable renderers or
+approved boards. (The plates and their contact sheet,
+`docs/cockroach-board/sketch-style-contact.jpg`, left the repository on
+2026-11-14; the sheet is in git history. Since 2026-10-27 the owner's chosen
+look is the grainy flat style, `docs/FROG_VISUAL_DIRECTION.md`.)
 
 This contact sheet is a visual reference only. Gait evidence remains the
 250 fps footage and `docs/COCKROACH_FOOTAGE_LOG.md`; the sketch motion is
