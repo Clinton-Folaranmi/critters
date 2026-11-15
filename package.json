@@ -18,6 +18,7 @@
     "build:site": "node scripts/build.mjs site",
     "build:standalone": "node scripts/build.mjs standalone",
     "preview": "node scripts/serve.mjs dist/site",
+    "deploy": "node scripts/deploy.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "format": "oxfmt",

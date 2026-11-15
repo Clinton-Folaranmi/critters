@@ -171,19 +171,31 @@
         Width sets the fade distance; strength sets how deeply it fades. Roughness bends the outline; noise adds fine
         texture.
       </p>
-      <section class="grid">
-        <figure>
-          <div class="post"><video src="ladybug-fullbleed-15s.mp4" autoplay muted loop playsinline></video></div>
-          <figcaption>Ladybug · 15 seconds</figcaption>
-        </figure>
-        <figure>
-          <div class="post"><video src="frog-fullbleed-15s.mp4" autoplay muted loop playsinline></video></div>
-          <figcaption>Day Chorus · 15 seconds</figcaption>
-        </figure>
-      </section>
+      <!-- Clips aren't kept in git: put a square scene capture in this folder and name it in the
+           address, live.html?clip=ladybug-fullbleed-15s.mp4&clip=another.mp4 -->
+      <section class="grid" id="clips"></section>
     </main>
     <script type="module">
       import { makeMask } from './edge-mask.js';
+      // The clips to frame, from the address (?clip=<file>, once per clip).
+      const grid = document.getElementById('clips');
+      const clips = new URLSearchParams(location.search).getAll('clip');
+      for (const clip of clips) {
+        const figure = document.createElement('figure');
+        const post = document.createElement('div');
+        post.className = 'post';
+        const video = Object.assign(document.createElement('video'), { src: clip, muted: true, loop: true });
+        video.autoplay = true;
+        video.playsInline = true;
+        const caption = document.createElement('figcaption');
+        caption.textContent = clip;
+        post.append(video);
+        figure.append(post, caption);
+        grid.append(figure);
+      }
+      if (!clips.length)
+        grid.textContent =
+          'No clip named. Add ?clip=<file>.mp4 to the address (a square scene capture in this folder).';
       const keys = ['size', 'radius', 'fade', 'strength', 'roughness', 'grain'];
       const inputs = Object.fromEntries(keys.map((key) => [key, document.getElementById(key)]));
       const posts = [...document.querySelectorAll('.post')];

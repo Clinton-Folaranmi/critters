@@ -14,3 +14,16 @@ reports/
 
 # Source video for footage logs (never committed: licences and size)
 /footage/
+
+# Media is kept out of git (size). The clip renderers write here; finished
+# clips are filed outside the repository.
+social/**/*.mp4
+social/**/*-sheet.jpg
+
+# General Sans is self-hosted on the site but not redistributed here (ITF Free
+# Font License, studies/site/fonts/LICENSE-FFL.txt): download the three files
+# from Fontshare into studies/site/fonts/ (see README.md, "Fonts").
+studies/site/fonts/*.woff2
+
+# The Vercel project link for npm run deploy (scripts/deploy.mjs)
+.vercel/

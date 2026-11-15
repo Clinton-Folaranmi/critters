@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { crc32, deflateSync, gzipSync } from 'node:zlib';
 import { buildStandalone } from './build-standalone.mjs';
 import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
-import { ANIMALS } from '../studies/site/animals.mjs';
+import { ANIMALS, SITE_URL } from '../studies/site/animals.mjs';
 
 const PACKAGE = 'packages/frog-pond';
 const KIT = 'packages/critter-kit';
@@ -136,6 +136,10 @@ function animalPage(template, animal, outdir) {
   const fill = {
     name: escape(animal.name),
     description: escape(animal.description),
+    slug: animal.slug,
+    ground: animal.ground,
+    url: `${SITE_URL}/${animal.slug}/`,
+    share: `${SITE_URL}/assets/share/${animal.slug}.jpg`,
     still: stills,
     sketch,
     title,
@@ -201,13 +205,40 @@ async function buildMasks(assets, border) {
   }
 }
 
+/**
+ * General Sans isn't kept in git (studies/site/fonts/LICENSE-FFL.txt; README.md, "Fonts"). With
+ * the three files in place the site self-hosts them; without them it is built for the system
+ * sans (the next family in site.css's --sans), with one warning.
+ */
+const FONT_DIR = 'studies/site/fonts';
+const FONT_FILES = ['GeneralSans-Regular.woff2', 'GeneralSans-Medium.woff2', 'GeneralSans-Semibold.woff2'];
+let warnedAboutFonts = false;
+function haveFonts() {
+  const missing = FONT_FILES.filter((file) => !existsSync(`${FONT_DIR}/${file}`));
+  if (missing.length && !warnedAboutFonts) {
+    warnedAboutFonts = true;
+    console.warn(
+      `Warning: ${missing.join(', ')} not in ${FONT_DIR}/ (the font isn't kept in git): ` +
+        'building the site with the system sans. See README.md, "Fonts".',
+    );
+  }
+  return missing.length === 0;
+}
+
 /** The shell every animal page shares: its CSS, scripts, font, badges, stills, masks and sketches, in <outdir>/assets. */
 async function buildShell(outdir, dev) {
   const assets = `${outdir}/assets`;
   await mkdir(assets, { recursive: true });
-  for (const dir of ['fonts', 'badges', 'stills', 'sketches'])
+  for (const dir of ['badges', 'stills', 'sketches', 'share', 'icons'])
     await cp(`studies/site/${dir}`, `${assets}/${dir}`, { recursive: true });
-  await cp('studies/site/site.css', `${assets}/site.css`);
+  if (haveFonts()) {
+    await cp(FONT_DIR, `${assets}/fonts`, { recursive: true });
+    await cp('studies/site/site.css', `${assets}/site.css`);
+  } else {
+    // No font files: leave out the @font-face rules, so nothing asks for them.
+    const css = readFileSync('studies/site/site.css', 'utf8');
+    await writeFile(`${assets}/site.css`, css.replace(/@font-face\s*\{[^}]*\}\s*/g, ''));
+  }
   const border = JSON.parse(readFileSync('social/approved-settings.json', 'utf8'));
   await buildMasks(assets, border);
   await build({
@@ -236,7 +267,9 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   // The root sends you to the first animal, the frogs.
   await cp('studies/index.html', `${outdir}/index.html`);
   await buildShell(outdir, dev);
-  const template = readFileSync('studies/site/page.html', 'utf8');
+  let template = readFileSync('studies/site/page.html', 'utf8');
+  // No font files (see haveFonts): don't preload one.
+  if (!haveFonts()) template = template.replace(/\n\s*<link rel="preload" href="[^"]*\/fonts\/[^"]*"[^>]*>/, '');
   let outputs = {};
   const frogs = `${outdir}/frogs`;
   for (const animal of ANIMALS) {
@@ -255,8 +288,24 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   // The pages last: each lists what the others need, to fetch ahead.
   for (const animal of ANIMALS)
     await writeFile(`${outdir}/${animal.slug}/index.html`, animalPage(template, animal, outdir));
-  // A GitHub Pages site shouldn't be run through Jekyll.
-  await writeFile(`${outdir}/.nojekyll`, '');
+  await writeFile(`${outdir}/404.html`, readFileSync('studies/site/404.html', 'utf8'));
+  await writeFile(`${outdir}/robots.txt`, `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+  const urls = ANIMALS.map((animal) => `  <url><loc>${SITE_URL}/${animal.slug}/</loc></url>`).join('\n');
+  await writeFile(
+    `${outdir}/sitemap.xml`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+  );
+  // Vercel: the pages link to their neighbours with ../, so /frogs must become /frogs/.
+  // Fonts and hash-named chunks never change under one name, so browsers may keep them.
+  const keep = [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }];
+  const vercel = {
+    trailingSlash: true,
+    headers: [
+      { source: '/assets/fonts/(.*)', headers: keep },
+      { source: '/(.*)/chunks/(.*)', headers: keep },
+    ],
+  };
+  await writeFile(`${outdir}/vercel.json`, `${JSON.stringify(vercel, null, 2)}\n`);
   if (!dev && !quiet) {
     for (const [file, { bytes }] of Object.entries(outputs)) {
       if (!file.endsWith('.js')) continue;
@@ -265,10 +314,7 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
       );
     }
   }
-  if (!quiet)
-    console.log(
-      `${outdir}/ (${ANIMALS.map((animal) => `${animal.slug}/`).join(', ')})`,
-    );
+  if (!quiet) console.log(`${outdir}/ (${ANIMALS.map((animal) => `${animal.slug}/`).join(', ')})`);
   return { outdir: frogs, outputs };
 }
 

@@ -1,10 +1,13 @@
 // The animals on the site, in badge order. Each gets a page at /<slug>/ made
 // from the one shell (page.html, site.css, shell.ts). The frog pond is built
-// here; the other four are vendored from their own projects
+// here; the other seven are vendored from their own projects
 // (scripts/sync-studies.mjs → studies/vendor/<slug>/).
 //
 //   still     shown in the picture until the scene's first frame
 //   ground    the colour under the still while it loads
+/** The site's address: the one place to change when it moves to its own domain (link previews, sitemap). */
+export const SITE_URL = 'https://critters-iota.vercel.app';
+
 export const ANIMALS = [
   {
     slug: 'frogs',
@@ -18,28 +21,28 @@ export const ANIMALS = [
   {
     slug: 'ladybug',
     name: 'Ladybug',
-    description: 'A small interactive study of a ladybug walking across garden bricks.',
+    description: 'A small interactive study of three ladybugs on clover between garden bricks.',
     still: { wide: '../assets/stills/ladybug.jpg', size: 'cover' },
     ground: '#8f5546',
   },
   {
     slug: 'butterfly',
     name: 'Butterfly',
-    description: 'A small interactive study of a peacock butterfly feeding on knapweed in a meadow.',
+    description: 'A small interactive study of three butterflies feeding on knapweed in a meadow.',
     still: { wide: '../assets/stills/butterfly.jpg', size: 'cover' },
     ground: '#86b552',
   },
   {
     slug: 'snail',
     name: 'Snail',
-    description: 'A small interactive study of a garden snail gliding across a stepping stone.',
+    description: 'A small interactive study of three garden snails gliding across a stepping stone.',
     still: { wide: '../assets/stills/snail.jpg', size: 'cover' },
     ground: '#6b9940',
   },
   {
     slug: 'mouse',
     name: 'Mouse',
-    description: 'A small interactive study of a wood mouse foraging at a bramble edge.',
+    description: 'A small interactive study of three wood mice foraging at a bramble edge.',
     still: { wide: '../assets/stills/mouse.jpg', size: 'cover' },
     ground: '#7dad4c',
   },

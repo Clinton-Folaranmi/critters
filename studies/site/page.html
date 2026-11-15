@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{name}}</title>
     <meta name="description" content="{{description}}" />
+    <link rel="canonical" href="{{url}}" />
+    <link rel="icon" href="../assets/icons/{{slug}}.png" type="image/png" />
+    <meta name="theme-color" content="{{ground}}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Critters" />
+    <meta property="og:title" content="{{name}}" />
+    <meta property="og:description" content="{{description}}" />
+    <meta property="og:url" content="{{url}}" />
+    <meta property="og:image" content="{{share}}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
     <script>
       // The loading sketch needs a worker-drawn canvas; without one, or with reduced motion,
       // the page shows the still until the scene's first frame, as before (shell.ts).
@@ -19,6 +31,14 @@
     <link rel="preload" href="../assets/masks/wide.png" as="image" media="(min-width: 641px)" crossorigin />
     <link rel="preload" href="../assets/masks/narrow.png" as="image" media="(max-width: 640px)" crossorigin />
     <link rel="stylesheet" href="../assets/site.css" />
+    <!-- Without JavaScript nothing draws the sketch: show the still under it. -->
+    <noscript
+      ><style>
+        .sketch {
+          display: none;
+        }
+      </style></noscript
+    >
     <style>
       {{still}}
     </style>

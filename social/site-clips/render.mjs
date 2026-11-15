@@ -386,7 +386,8 @@ function ffmpeg(args, input) {
     child.on('error', fail);
     child.on('exit', (code) => {
       children.delete(child);
-      code === 0 ? done() : fail(new Error(`ffmpeg exited ${code}`));
+      if (code === 0) done();
+      else fail(new Error(`ffmpeg exited ${code}`));
     });
     if (input) input(child.stdin);
   });
@@ -397,12 +398,12 @@ function encoder(path, height) {
   let stdin;
   const finished = ffmpeg(
     [
-      ...['-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-'],
-      ...['-vf', `scale=${OUT_WIDTH}:${height}:flags=lanczos,format=yuv420p`],
-      ...['-c:v', 'libx264', '-profile:v', 'high', '-preset', 'slow', '-crf', '18', '-tune', 'animation'],
-      ...['-maxrate', '8M', '-bufsize', '16M', '-r', String(FPS), '-g', String(FPS * 2)],
-      ...['-an', '-movflags', '+faststart', path],
-    ],
+      ['-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-'],
+      ['-vf', `scale=${OUT_WIDTH}:${height}:flags=lanczos,format=yuv420p`],
+      ['-c:v', 'libx264', '-profile:v', 'high', '-preset', 'slow', '-crf', '18', '-tune', 'animation'],
+      ['-maxrate', '8M', '-bufsize', '16M', '-r', String(FPS), '-g', String(FPS * 2)],
+      ['-an', '-movflags', '+faststart', path],
+    ].flat(),
     (s) => (stdin = s),
   );
   return {
@@ -417,10 +418,12 @@ async function sheet(frames, path, height) {
   const dir = mkdtempSync(join(tmpdir(), 'critters-sheet-'));
   frames.forEach((png, i) => writeFileSync(join(dir, `f${i}.png`), png));
   const h = 2 * Math.round((480 * height) / OUT_WIDTH / 2);
-  await ffmpeg([
-    ...['-i', join(dir, 'f%d.png'), '-vf', `scale=480:${h}:flags=lanczos,tile=4x2:padding=6:color=white`],
-    ...['-frames:v', '1', '-q:v', '3', path],
-  ]);
+  await ffmpeg(
+    [
+      ['-i', join(dir, 'f%d.png'), '-vf', `scale=480:${h}:flags=lanczos,tile=4x2:padding=6:color=white`],
+      ['-frames:v', '1', '-q:v', '3', path],
+    ].flat(),
+  );
   rmSync(dir, { recursive: true, force: true });
 }
 

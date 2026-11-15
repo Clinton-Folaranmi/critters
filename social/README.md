@@ -1,6 +1,10 @@
-# Ladybug and frog social clips
+# Social clips
 
-This directory holds the two separate silent videos and the live slider preview used to choose their shared frame. The owner chose these values on 2026-10-28:
+The tools that make the social clips, and the border the site shares with them. **No video or contact sheet is kept in git** (`*.mp4` and `*-sheet.jpg` here are ignored): the renderers write into this folder, and finished clips are filed outside the repository.
+
+`approved-settings.json` is also the site's border: `scripts/build.mjs` reads it to draw each picture's edge mask (`studies/site/border.ts`). Don't move it without changing the build.
+
+The owner chose these values on 2026-10-28:
 
 | Setting        | Value |
 | -------------- | ----: |
@@ -13,20 +17,16 @@ This directory holds the two separate silent videos and the live slider preview 
 
 The exact values live in `approved-settings.json`. `edge-mask.js` is shared by `live.html` and `render-approved.mjs`, so the preview and exports use the same edge calculation. The browser also saves subsequent slider changes to local storage; those are experiments until the JSON values are updated.
 
-## Files
+## Square posts (2026-10-30)
 
-- `ladybug-post-15s.mp4` and `frogs-post-15s.mp4`: finished 15-second, silent, 1080 × 1080 H.264 posts at 30 fps.
-- `ladybug-fullbleed-15s.mp4` and `frog-fullbleed-15s.mp4`: scene sources for the sliders and repeatable exports.
-- `live.html`: shared slider preview. Serve this directory over HTTP, for example `python3 -m http.server 5175 --directory social`, then open `http://127.0.0.1:5175/live.html`.
-- `render-approved.mjs`: run `node social/render-approved.mjs` from the repository root to remake the two posts. Requires `ffmpeg` on the machine.
+- `live.html`: the slider preview. Put a square scene capture in this folder, serve the folder over HTTP (for example `python3 -m http.server 5175 --directory social`) and open `http://127.0.0.1:5175/live.html?clip=<file>.mp4` (repeat `clip=` for more than one).
+- `render-approved.mjs`: `node social/render-approved.mjs <scene.mp4> [<scene.mp4> …]` makes a finished 15-second, silent, 1080 × 1080 H.264 post at 30 fps from each capture: `<name>-fullbleed-15s.mp4` becomes `<name>-post-15s.mp4` beside it. Requires `ffmpeg`.
 
-The artwork in both posts is 972 × 972, centered on warm paper with 54 px of padding on each side. The edge fades into the paper. These edits use renderer output and do not change either study composition. The ladybug source is the round-5 desktop scene in the separate `critter-test` repository; the frog source is the Day Chorus renderer, captured with its existing tap response. The full scene sources are included here so a separate checkout can adjust the edit without needing the other repository.
-
-The ladybug handoff still lists three owner decisions: phone framing, brick run speed and full bleed. Those study decisions are separate from this social edit.
+The artwork in a post is 972 × 972, centered on warm paper with 54 px of padding on each side. The edge fades into the paper. These edits use renderer output and do not change a study's composition. Two posts were made this way: a ladybug (the round-5 one-ladybug desktop scene of the ladybug project) and the Day Chorus frogs (captured with the pond's existing tap response).
 
 ## Site clips for X (2026-11-01, redone the same day)
 
-`site-clips/` holds silent 15-second clips of each animal page of the site (`dist/site/<animal>/`), redone to the owner's notes: the picture alone in its ragged border on the page's paper (no name, no badges), framed tight with an even paper margin, and a visible pointer that glides in like a hand, clicks an animal (a soft ring shows the press) and the animal reacts. Two clicks per clip, on different individuals where that reads well. 1920 px wide, about 3:2 (1920 × 1320), 30 fps, H.264 High, yuv420p, `+faststart`, no audio track.
+`site-clips/` makes silent 15-second clips of each animal page of the site (`dist/site/<animal>/`), redone to the owner's notes: the picture alone in its ragged border on the page's paper (no name, no badges), framed tight with an even paper margin, and a visible pointer that glides in like a hand, clicks an animal (a soft ring shows the press) and the animal reacts. Two clicks per clip, on different individuals where that reads well. 1920 px wide, about 3:2 (1920 × 1320), 30 fps, H.264 High, yuv420p, `+faststart`, no audio track.
 
 - `<animal>-x-15s.mp4`: the live scene from 4 s in; clicks at 5 s and 10 s. `<animal>-sheet.jpg`: the start, the frame before each click, 0.3 s and 1.3 s after it, the end.
 - `<animal>-x-15s-intro.mp4`: opens on blank paper; the pencil sketch draws in, the colour washes, the live scene arrives (the scene's first frame is held to 2 s, as on a first visit), then the clicks (timed from the scene's arrival, nominally 2 s, since real loading moves it a little run to run). `<animal>-intro-sheet.jpg`.
