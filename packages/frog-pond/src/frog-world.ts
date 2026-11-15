@@ -31,7 +31,7 @@ import {
   stepArc,
   toSurface,
   type LimbSpec,
-} from '@critters/critter-kit';
+} from 'critter-kit';
 
 const HIND_SEGMENTS = 3;
 const FORE_SEGMENTS = 2;

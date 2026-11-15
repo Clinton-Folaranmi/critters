@@ -1,4 +1,4 @@
-import { TAU } from '@critters/critter-kit';
+import { TAU } from 'critter-kit';
 import {
   CAUSTIC_TILE,
   GRAIN_TILE,

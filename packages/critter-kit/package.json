@@ -1,11 +1,27 @@
 {
-  "name": "@critters/critter-kit",
+  "name": "critter-kit",
   "version": "0.1.0",
-  "private": true,
-  "description": "Building blocks for interactive creature studies: maths, easing, WebGL helpers (more to come).",
+  "description": "Building blocks for animated animals on the web: measured gaits, planted feet, limb chains, a spine swimmer and a scene controller. No dependencies.",
+  "keywords": [
+    "animation",
+    "creature",
+    "locomotion",
+    "gait",
+    "inverse-kinematics",
+    "procedural-animation",
+    "canvas",
+    "webgl"
+  ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Clinton-Folaranmi/critters.git",
+    "directory": "packages/critter-kit"
+  },
+  "homepage": "https://github.com/Clinton-Folaranmi/critters/tree/main/packages/critter-kit#readme",
   "type": "module",
   "sideEffects": false,
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -16,5 +32,8 @@
   "files": [
     "dist",
     "src"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

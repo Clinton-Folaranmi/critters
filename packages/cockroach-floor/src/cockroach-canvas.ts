@@ -2,7 +2,7 @@
 // cockroach as the GPU renderer, from the same shape and theme modules, drawn
 // with paths. Loaded only when WebGL can't be used.
 
-import { makeCanvas, seeded, type RendererHooks, type SceneRenderer } from '@critters/critter-kit';
+import { makeCanvas, seeded, type RendererHooks, type SceneRenderer } from 'critter-kit';
 import {
   ANTENNA_RADIUS,
   BODY_PARTS,

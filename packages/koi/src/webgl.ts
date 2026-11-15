@@ -2,7 +2,7 @@
 // shared mesh (shadows, the koi, the surface) from one atlas, then ripple
 // highlights on top. Falls back to Canvas 2D through the scene's hooks.
 
-import { startProgram, type RendererHooks, type SceneRenderer } from '@critters/critter-kit';
+import { startProgram, type RendererHooks, type SceneRenderer } from 'critter-kit';
 import { koiAtlas, koiFloor } from './koi-paint';
 import { MESH_FLOATS, STRIDE, buildMesh } from './koi-shape';
 import type { KoiWorld } from './koi-world';

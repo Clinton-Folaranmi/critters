@@ -1,4 +1,4 @@
-import { startProgram } from '@critters/critter-kit';
+import { startProgram } from 'critter-kit';
 import {
   GRAIN_TILE,
   causticTileJob,

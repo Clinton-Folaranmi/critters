@@ -1,4 +1,4 @@
-import { devFlag, mountScene, type RendererMode, type SceneHandle, type SceneOptions } from '@critters/critter-kit';
+import { devFlag, mountScene, type RendererMode, type SceneHandle, type SceneOptions } from 'critter-kit';
 import { bankMaskUrl, pictureEdge, pictureRingUrl } from './frog-bank';
 import { FROG_COPY } from './frog-theme';
 import { createFrogWebgl, type FrogRenderer } from './frog-webgl';

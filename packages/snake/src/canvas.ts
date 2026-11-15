@@ -2,7 +2,7 @@
 // and stones floor, the same mesh and the same atlas as WebGL2, each triangle
 // drawn with an affine transform.
 
-import { makeCanvas, type SceneRenderer } from '@critters/critter-kit';
+import { makeCanvas, type SceneRenderer } from 'critter-kit';
 import { snakeAtlas, snakeFloor } from './snake-paint';
 import { ATLAS, MESH_FLOATS, RING, STRIDE, buildMesh } from './snake-shape';
 import type { SnakeWorld } from './snake-world';

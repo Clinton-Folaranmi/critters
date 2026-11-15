@@ -13,7 +13,7 @@
 // left from its right (spec: a mirrored top view would swap them); the gait
 // is the same either way.
 
-import type { GaitSpec, LimbSpec } from '@critters/critter-kit';
+import type { GaitSpec, LimbSpec } from 'critter-kit';
 
 /** Body outline, BL. measured: 195 × 77 px on frame 60; pronotum ≈ 0.23 of the length. */
 export const BODY = {

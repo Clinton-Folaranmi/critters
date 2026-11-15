@@ -5,7 +5,7 @@
 // shared across the bank, the snake and the overhanging grass blades, and a
 // subtle sunlit dust/rustle shimmer where a visitor taps.
 
-import { glslFloat } from '@critters/critter-kit';
+import { glslFloat } from 'critter-kit';
 import { RING } from './snake-shape';
 import { SNAKE_PALETTE as P } from './theme';
 

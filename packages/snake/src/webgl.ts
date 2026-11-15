@@ -3,7 +3,7 @@
 // body, overhanging grass shadows and foreground grass blades) from one atlas,
 // then subtle tap-rustle rings. Falls back to Canvas 2D through the scene's hooks.
 
-import { startProgram, type RendererHooks, type SceneRenderer } from '@critters/critter-kit';
+import { startProgram, type RendererHooks, type SceneRenderer } from 'critter-kit';
 import { floorFragment, floorVertex, meshFragment, meshVertex } from './shaders';
 import { snakeAtlas, snakeFloor } from './snake-paint';
 import { MESH_FLOATS, STRIDE, buildMesh } from './snake-shape';

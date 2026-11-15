@@ -4,7 +4,7 @@
 // browser gets the same picture. WebGL2 uploads these as textures; Canvas 2D
 // draws them directly.
 
-import { makeCanvas } from '@critters/critter-kit';
+import { makeCanvas } from 'critter-kit';
 import { ATLAS, BODY_END, halfWidth, type Region } from './koi-shape';
 import { OUTLINE } from './koi-motion';
 import { KOI_PALETTE as P } from './theme';

@@ -10,7 +10,7 @@
 // and weathered stones along the path edge, ~1,600 fine quadratic-Bezier grass
 // blades with cast shadows and sunlit tip gradients, and tiny meadow wildflowers.
 
-import { TAU, itemSeed, makeCanvas, seeded } from '@critters/critter-kit';
+import { TAU, itemSeed, makeCanvas, seeded } from 'critter-kit';
 import { OUTLINE } from './snake-motion';
 import { ATLAS, halfWidth, skinSToU, type Region } from './snake-shape';
 import { SNAKE_PALETTE as P } from './theme';

@@ -7,11 +7,11 @@ framework. Everything is plain functions over plain data, and the per-frame
 paths are written not to allocate.
 
 It isn't on npm yet. Use it from this repository (the workspace package
-`@critters/critter-kit`), or copy `src/` into your project: the files only
+`critter-kit`), or copy `src/` into your project: the files only
 import each other.
 
 ```ts
-import { advanceGait, createGaitState, isStance, solvePin, TRIPOD_OFFSETS } from '@critters/critter-kit';
+import { advanceGait, createGaitState, isStance, solvePin, TRIPOD_OFFSETS } from 'critter-kit';
 ```
 
 ## What's in it

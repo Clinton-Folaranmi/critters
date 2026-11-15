@@ -3,7 +3,7 @@
 An interactive, top-down frog pond (Day Chorus): three frogs on lily pads on
 open water, with midges, drifting leaf shade and soft caustics, in a grainy
 flat style. Day only, water only. WebGL2 with a Canvas 2D fallback, no
-framework, no runtime dependencies beyond `@critters/critter-kit`. The worked
+framework, no runtime dependencies beyond `critter-kit`. The worked
 example of `docs/CREATURE_STUDY_SPEC.md`; its approved board is
 `docs/FROG_VISUAL_DIRECTION.md`.
 

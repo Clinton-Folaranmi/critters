@@ -3,7 +3,7 @@
 // until it links; a lost context makes draw() a no-op and tells the scene,
 // which switches to the Canvas renderer.
 
-import { startProgram, type RendererHooks, type SceneRenderer } from '@critters/critter-kit';
+import { startProgram, type RendererHooks, type SceneRenderer } from 'critter-kit';
 import { fragmentShader, vertexShader } from './cockroach-shaders';
 import { MAX_CRUMBS, type CockroachWorld } from './cockroach-world';
 

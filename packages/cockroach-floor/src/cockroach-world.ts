@@ -31,7 +31,7 @@ import {
   strideLengthAt,
   swingProgress,
   type GaitState,
-} from '@critters/critter-kit';
+} from 'critter-kit';
 import {
   ANTENNA,
   BEHAVIOUR,

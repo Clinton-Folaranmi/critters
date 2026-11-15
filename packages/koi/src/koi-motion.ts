@@ -9,7 +9,7 @@
 //
 // Coordinates are world units (the picture is 1 high), y up.
 
-import type { SwimShape } from '@critters/critter-kit';
+import type { SwimShape } from 'critter-kit';
 
 /**
  * The outline from above, half-widths in BL against u (0 snout, 1 tail tip).

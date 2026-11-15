@@ -13,4 +13,4 @@
 export { mountKoiScene, type KoiSceneOptions } from './scene';
 export { KOI_COPY, KOI_INSTRUCTIONS, KOI_PALETTE, type KoiPalette } from './theme';
 export type { KoiTap } from './koi-world';
-export type { SceneHandle } from '@critters/critter-kit';
+export type { SceneHandle } from 'critter-kit';

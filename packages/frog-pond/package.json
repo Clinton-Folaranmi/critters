@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "@critters/critter-kit": "0.1.0"
+    "critter-kit": "0.1.0"
   },
   "files": [
     "dist",

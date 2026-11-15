@@ -3,7 +3,7 @@
 // leaves out only the water's moving light and the ripples' bending of the
 // floor; ripples are drawn as rings.
 
-import { makeCanvas, type SceneRenderer } from '@critters/critter-kit';
+import { makeCanvas, type SceneRenderer } from 'critter-kit';
 import { koiAtlas, koiFloor } from './koi-paint';
 import { ATLAS, MESH_FLOATS, RIPPLE, STRIDE, buildMesh } from './koi-shape';
 import type { KoiWorld } from './koi-world';

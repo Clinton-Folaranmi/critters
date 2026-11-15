@@ -22,7 +22,7 @@ import {
   type Emit,
   type SceneWorld,
   type Trail,
-} from '@critters/critter-kit';
+} from 'critter-kit';
 import { BL_IN_BW, BOUT, POSE, SCENT, SPEED, STARTLE, TONGUE, TURN, WEAVE } from './snake-motion';
 import { MEADOW_STONES } from './snake-paint';
 import { snakeDistance } from './snake-shape';

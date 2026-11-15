@@ -3,7 +3,7 @@
 // cockroach-shape.ts, so the Canvas renderer and the hit test draw the same
 // thing. /* glsl */ templates are minified at build (F-7).
 
-import { glslFloat } from '@critters/critter-kit';
+import { glslFloat } from 'critter-kit';
 import { COCKROACH_PALETTE as P } from './cockroach-theme';
 import { CAPSULES, LEG_NAMES, LEG_SEGMENTS, MAX_CRUMBS } from './cockroach-world';
 import {

@@ -29,7 +29,7 @@ import {
   type SceneWorld,
   type SecondaryPoint,
   type SwimBody,
-} from '@critters/critter-kit';
+} from 'critter-kit';
 import {
   BEAT_GLIDE,
   FEED,

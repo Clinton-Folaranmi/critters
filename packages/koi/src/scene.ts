@@ -1,4 +1,4 @@
-import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from '@critters/critter-kit';
+import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from 'critter-kit';
 import { KOI_COPY } from './theme';
 import { createKoiWebgl } from './webgl';
 import { KoiWorld, PICTURE, type KoiTap } from './koi-world';

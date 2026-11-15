@@ -1,4 +1,4 @@
-import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from '@critters/critter-kit';
+import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from 'critter-kit';
 import { COCKROACH_COPY } from './cockroach-theme';
 import { createCockroachWebgl } from './cockroach-webgl';
 import { CockroachWorld, PICTURE, type TapResult } from './cockroach-world';

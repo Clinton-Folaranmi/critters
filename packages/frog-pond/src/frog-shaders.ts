@@ -1,4 +1,4 @@
-import { glslFloat } from '@critters/critter-kit';
+import { glslFloat } from 'critter-kit';
 import { CAUSTIC_TILE, GRAIN_TILE, SHADE_SCALE } from './frog-caustics';
 import {
   FROG_EDGES,

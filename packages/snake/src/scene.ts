@@ -1,4 +1,4 @@
-import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from '@critters/critter-kit';
+import { mountScene, type RendererMode, type SceneHandle, type SceneOptions } from 'critter-kit';
 import { SNAKE_COPY } from './theme';
 import { createSnakeWebgl } from './webgl';
 import { PICTURE, SnakeWorld, type SnakeTap } from './snake-world';

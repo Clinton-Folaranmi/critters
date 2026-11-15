@@ -3,7 +3,7 @@
 // What only the GPU adds: the water's moving light (caustics) over the floor
 // and the koi's back, and ripples that bend the floor seen through them.
 
-import { glslFloat } from '@critters/critter-kit';
+import { glslFloat } from 'critter-kit';
 import { RIPPLE } from './koi-shape';
 import { KOI_PALETTE as P } from './theme';
 

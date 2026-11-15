@@ -6,7 +6,7 @@
 //
 // A vertex is five floats: x, y (world), s, t (atlas, 0–1), alpha.
 
-import type { ChainPoint } from '@critters/critter-kit';
+import type { ChainPoint } from 'critter-kit';
 import { OUTLINE, POSE } from './koi-motion';
 import type { KoiWorld } from './koi-world';
 

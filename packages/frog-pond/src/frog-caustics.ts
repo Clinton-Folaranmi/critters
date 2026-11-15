@@ -1,4 +1,4 @@
-import { makeCanvas, seeded } from '@critters/critter-kit';
+import { makeCanvas, seeded } from 'critter-kit';
 import { FROG_GRAIN } from './frog-theme';
 
 // The baked tiles both renderers share: the caustic web, the grain, and the

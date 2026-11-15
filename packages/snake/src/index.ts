@@ -14,4 +14,4 @@
 export { mountSnakeScene, type SnakeSceneOptions } from './scene';
 export { SNAKE_COPY, SNAKE_INSTRUCTIONS, SNAKE_PALETTE, type SnakePalette } from './theme';
 export type { SnakeTap } from './snake-world';
-export type { SceneHandle } from '@critters/critter-kit';
+export type { SceneHandle } from 'critter-kit';
