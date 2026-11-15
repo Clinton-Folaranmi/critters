@@ -11,7 +11,7 @@ Read first: `AGENTS.md`, then `docs/CREATURE_STUDY_SPEC.md`, then this.
 Two things, both kept:
 
 1. **The site.** Eight animals, one page each, live at
-   <https://critters-iota.vercel.app>.
+   <https://thecritters.vercel.app>.
 2. **The method.** The spec (`docs/CREATURE_STUDY_SPEC.md`, version 1.7), the
    kit (`packages/critter-kit`), the Claude Code skill (`skills/critter/`,
    with its team playbook and the agents in `.claude/agents/` and

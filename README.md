@@ -102,7 +102,7 @@ still build.
 One line puts an animal on any page:
 
 ```html
-<script async src="https://critters-iota.vercel.app/embed.js" data-animal="frogs"></script>
+<script async src="https://thecritters.vercel.app/embed.js" data-animal="frogs"></script>
 ```
 
 Each animal's page has an Embed button beside its name that opens this line
@@ -121,7 +121,7 @@ people's pages point at the site's address, so settle the address
 
 ### Deploying
 
-The site is on Vercel: <https://critters-iota.vercel.app>. It is deployed by
+The site is on Vercel: <https://thecritters.vercel.app>. It is deployed by
 building on this machine (`npm run build:site`, with the fonts in place) and
 uploading the built `dist/site` folder; Vercel does not build from git. The
 build writes `dist/site/vercel.json` (`trailingSlash: true`, because the pages

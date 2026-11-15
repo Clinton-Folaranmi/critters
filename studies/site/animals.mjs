@@ -6,7 +6,7 @@
 //   still     shown in the picture until the scene's first frame
 //   ground    the colour under the still while it loads
 /** The site's address: the one place to change when it moves to its own domain (link previews, sitemap). */
-export const SITE_URL = 'https://critters-iota.vercel.app';
+export const SITE_URL = 'https://thecritters.vercel.app';
 
 export const ANIMALS = [
   {
