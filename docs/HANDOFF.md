@@ -64,9 +64,15 @@ packages"). Their pages and boards were removed on 2026-11-14.
   `studies/site/fonts/` the site self-hosts them; without them the build
   warns once and uses the system sans (README, "Fonts"). Build with the
   fonts in place before deploying.
-- **Deploy:** Vercel, by uploading the built `dist/site` folder from this
-  machine. Vercel does not build from git; the build writes
-  `dist/site/vercel.json` (`trailingSlash: true`). No GitHub Pages.
+- **Deploy:** `npm run deploy` (`scripts/deploy.mjs`): builds, then uploads
+  the built `dist/site` folder from this machine to Vercel. Vercel does not
+  build from git; the build writes `dist/site/vercel.json`
+  (`trailingSlash: true`). No GitHub Pages.
+- **Embedding (2026-11-15):** `/embed.js` puts any animal on another page in
+  one line, and `/embed/` is the page to copy the line from (README,
+  "Embedding"). Each animal's page shows the picture alone with `?embed`.
+  The animal pages don't link to `/embed/` yet: where to link it is the
+  owner's call.
 - **Updating an animal:** change it in its own project, then
   `node scripts/sync-studies.mjs <animal>`, replace its still if the first
   frame changed (`studies/site/stills/`, then `node scripts/trace-sketches.mjs`),

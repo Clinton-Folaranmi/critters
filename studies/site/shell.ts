@@ -14,6 +14,8 @@
 //   once this page's scene is in and the browser is idle, the one after.
 // - Badge to frame: where cross-page view transitions are supported
 //   (site.css), the clicked badge's picture grows into the next page's frame.
+// - Embedded in another page (embed.ts, ?embed): the picture alone, with a
+//   small credit; nothing is fetched ahead.
 import { SETTINGS, TOOL } from './border';
 
 const html = document.documentElement;
@@ -171,15 +173,33 @@ function startBadges(picture: HTMLElement, scene: HTMLElement) {
   });
 }
 
+/** How long the credit shows in an embedded picture before it steps back (s). */
+const CREDIT_SHOWS = 6;
+
+/**
+ * Embedded in another page (page.html sets data-embed): no badges to fetch ahead for. The
+ * credit steps back once the scene has been in for a while (site.css brings it back under
+ * the pointer or the keyboard); with no border ('plain') the focus ring hugs the frame.
+ */
+function startEmbed(stage: HTMLElement, scene: HTMLElement) {
+  if (html.dataset.embed === 'plain') {
+    stage.style.setProperty('--ring-inset', '5px');
+    stage.style.setProperty('--ring-radius', '0px');
+  }
+  const credit = stage.querySelector<HTMLElement>('.credit');
+  if (credit) whenSceneReady(scene, () => window.setTimeout(() => credit.classList.add('quiet'), CREDIT_SHOWS * 1000));
+}
+
 function startShell() {
   const stage = document.querySelector<HTMLElement>('.stage');
   const picture = document.querySelector<HTMLElement>('.picture');
   const scene = document.getElementById('scene');
   const host = document.querySelector<HTMLElement>('.sketch');
   if (!stage || !picture || !scene) return;
-  fitRing(stage, picture);
+  if (html.dataset.embed !== 'plain') fitRing(stage, picture);
   if (host) startSketch(picture, host, scene);
-  startBadges(picture, scene);
+  if ('embed' in html.dataset) startEmbed(stage, scene);
+  else startBadges(picture, scene);
 }
 
 startShell();

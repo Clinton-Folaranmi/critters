@@ -313,6 +313,100 @@ h1 .letters span {
     transition: none !important;
   }
 }
+/* Embedded in another page (embed.js, or an iframe to ?embed; page.html sets
+   data-embed): the picture alone on a clear page, so the border fades into
+   whatever the host page is. 'soft' keeps the border and the picture's shape,
+   fitted inside the frame; 'plain' has no border and fills the frame. */
+.credit {
+  display: none;
+}
+html[data-embed],
+html[data-embed] body {
+  background: transparent;
+}
+html[data-embed] body {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+html[data-embed] body::before,
+html[data-embed] .caption {
+  display: none;
+}
+html[data-embed] .page {
+  display: grid;
+  place-items: center;
+  max-width: none;
+  height: 100vh;
+  padding: 0;
+}
+html[data-embed] .stage {
+  width: min(100vw, 148vh);
+  margin: 0;
+}
+/* Plain: the scene covers the frame. The scenes are painted for shapes from
+   9:16 to 2.2:1; a frame beyond that is covered by the nearest of those and
+   cropped evenly. */
+html[data-embed='plain'] .page {
+  overflow: hidden;
+}
+html[data-embed='plain'] .stage {
+  width: max(100vw, 56.25vh);
+  height: max(100vh, 45.4545vw);
+}
+html[data-embed='plain'] .picture {
+  height: 100%;
+  aspect-ratio: auto;
+  -webkit-mask: none;
+  mask: none;
+}
+/* Whose it is: a small link in the picture's corner that steps back after a
+   few seconds (shell.ts) and returns under the pointer or the keyboard. */
+html[data-embed] .credit {
+  position: absolute;
+  z-index: 3;
+  right: calc(var(--ring-inset, 28px) + 10px);
+  bottom: calc(var(--ring-inset, 28px) + 10px);
+  display: block;
+  padding: 5px 10px;
+  color: var(--ink);
+  font: 500 11px/1.2 var(--sans);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  background: var(--halo);
+  border-radius: 999px;
+  transition: opacity 0.4s ease;
+}
+/* A plain frame may crop the stage: the credit keeps to the frame's corner. */
+html[data-embed='plain'] .credit {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+}
+html[data-embed] .credit.quiet {
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-embed] .credit:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  html[data-embed] .stage:hover .credit {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+html[data-credit='off'] .credit {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-embed] .credit {
+    transition: none;
+  }
+}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -327,6 +421,9 @@ h1 .letters span {
 @media (max-width: 640px) {
   .stage {
     margin-inline: -16px;
+  }
+  html[data-embed='soft'] .stage {
+    width: min(100vw, 91vh);
   }
   .picture {
     aspect-ratio: 0.91 / 1;

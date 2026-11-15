@@ -153,6 +153,22 @@ function animalPage(template, animal, outdir) {
   return page.replace(/\n\s*\n(\s*<nav)/, '\n$1');
 }
 
+/** The page a visitor copies the embed line from (studies/site/embed.html): the animals as a row of buttons. */
+function embedPage(template) {
+  const badges = ANIMALS.map(
+    (animal, i) =>
+      `<li><button type="button" class="badge" data-animal="${animal.slug}" aria-pressed="${i === 0}">` +
+      `<span class="dot" style="background-image: url('../assets/badges/${animal.slug}.jpg')">` +
+      `<svg viewBox="0 0 66 66" aria-hidden="true"><path pathLength="1" d="${ringPath(i * 1.7 + 0.4)}" /></svg></span>` +
+      `${escape(animal.name)}</button></li>`,
+  ).join('\n          ');
+  const fill = { site: SITE_URL, badges };
+  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    if (!(key in fill)) throw new Error(`studies/site/embed.html: unknown {{${key}}}`);
+    return fill[key];
+  });
+}
+
 /** A grey + alpha PNG (alpha only matters: it's a CSS mask). */
 function maskPng(w, h, alpha) {
   const row = w * 2 + 1;
@@ -249,6 +265,18 @@ async function buildShell(outdir, dev) {
     sourcemap: dev ? 'linked' : false,
     define: { ...browserOptions(dev).define, BORDER: JSON.stringify(border) },
   });
+  // The one-line embed (studies/site/embed.ts): a classic script at the site's root.
+  await build({
+    ...browserOptions(dev),
+    entryPoints: ['studies/site/embed.ts'],
+    outfile: `${outdir}/embed.js`,
+    format: 'iife',
+    sourcemap: dev ? 'linked' : false,
+    define: {
+      ...browserOptions(dev).define,
+      ANIMAL_NAMES: JSON.stringify(Object.fromEntries(ANIMALS.map((animal) => [animal.slug, animal.name]))),
+    },
+  });
   // The loading sketch's worker (studies/site/sketch/), loaded by shell.js.
   await build({
     ...browserOptions(dev),
@@ -288,9 +316,13 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   // The pages last: each lists what the others need, to fetch ahead.
   for (const animal of ANIMALS)
     await writeFile(`${outdir}/${animal.slug}/index.html`, animalPage(template, animal, outdir));
+  await mkdir(`${outdir}/embed`, { recursive: true });
+  await writeFile(`${outdir}/embed/index.html`, embedPage(readFileSync('studies/site/embed.html', 'utf8')));
   await writeFile(`${outdir}/404.html`, readFileSync('studies/site/404.html', 'utf8'));
   await writeFile(`${outdir}/robots.txt`, `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
-  const urls = ANIMALS.map((animal) => `  <url><loc>${SITE_URL}/${animal.slug}/</loc></url>`).join('\n');
+  const urls = [...ANIMALS.map((animal) => animal.slug), 'embed']
+    .map((path) => `  <url><loc>${SITE_URL}/${path}/</loc></url>`)
+    .join('\n');
   await writeFile(
     `${outdir}/sitemap.xml`,
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,

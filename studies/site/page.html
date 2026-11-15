@@ -18,9 +18,17 @@
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <script>
-      // The loading sketch needs a worker-drawn canvas; without one, or with reduced motion,
-      // the page shows the still until the scene's first frame, as before (shell.ts).
+      // Inside another page (embed.js, or an iframe to ?embed): the picture alone (site.css).
+      // 'soft' keeps the border and the picture's shape; 'plain' (&edge=none) fills the frame.
+      const embedded = new URLSearchParams(location.search);
+      if (embedded.has('embed')) {
+        document.documentElement.dataset.embed = embedded.get('edge') === 'none' ? 'plain' : 'soft';
+        if (embedded.get('credit') === 'off') document.documentElement.dataset.credit = 'off';
+      }
+      // The loading sketch needs a worker-drawn canvas; without one, with reduced motion, or in
+      // a frame of any shape, the page shows the still until the scene's first frame (shell.ts).
       if (
+        document.documentElement.dataset.embed === 'plain' ||
         matchMedia('(prefers-reduced-motion: reduce)').matches ||
         !('transferControlToOffscreen' in HTMLCanvasElement.prototype) ||
         !('attachShadow' in Element.prototype)
@@ -56,6 +64,7 @@
           <div id="scene" class="scene"></div>
           <div class="sketch" aria-hidden="true"></div>
         </div>
+        <a class="credit" href="{{url}}" target="_blank" rel="noopener">Critters</a>
       </div>
       <div class="caption">
         <h1>{{title}}</h1>

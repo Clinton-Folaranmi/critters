@@ -89,6 +89,28 @@ Without them the build prints one warning and makes the site with the system
 sans instead (no `@font-face` rules, no font preload), so a fresh clone and CI
 still build.
 
+### Embedding
+
+One line puts an animal on any page:
+
+```html
+<script async src="https://critters-iota.vercel.app/embed.js" data-animal="frogs"></script>
+```
+
+`/embed/` on the site is the page to copy it from (pick an animal, see it
+live, copy). The script (`studies/site/embed.ts`, built to `dist/site/embed.js`)
+puts a frame where the tag is, as wide as its parent, showing the animal's
+page with `?embed`: the picture alone on a clear page (`page.html` sets
+`data-embed`, `site.css` does the rest), so the border fades into the host
+page. Options: `data-edge="none"` for no border (the scene fills the frame, for
+a hero or a background), with `data-ratio="16/9"` for its shape (kept within
+9:16 and 2.2:1, the shapes the scenes are painted for); `data-credit="off"`
+hides the small "Critters" link in the corner. A plain
+`<iframe src="…/frogs/?embed&edge=none">` works too. The scenes pause off
+screen and in a hidden tab, and the frame loads lazily. Embeds on other
+people's pages point at the site's address, so settle the address
+(`SITE_URL`) before sharing the line widely.
+
 ### Deploying
 
 The site is on Vercel: <https://critters-iota.vercel.app>. It is deployed by
@@ -125,7 +147,7 @@ packages/frog-pond/       the frog pond study (world, scene, renderers, picture 
 packages/cockroach-floor/ kit example and QA fixture: a cockroach walking a measured tripod gait (see below)
 packages/koi/             kit example and QA fixture: a koi on the spine swimmer (see below)
 packages/snake/           kit example and QA fixture: a grass snake in lateral undulation (see below)
-studies/site/             the site shell every animal page shares (template, CSS, border, loading sketch, font licence, badges, stills)
+studies/site/             the site shell every animal page shares (template, CSS, border, loading sketch, font licence, badges, stills), the one-line embed and its page
 studies/frogs/            the frog page's script and first-frame stills (its index.html and page.css are the single file's page)
 studies/vendor/           the seven external studies' built scripts (scripts/sync-studies.mjs)
 studies/index.html        the site's root (redirects to /frogs/)
