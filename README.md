@@ -9,6 +9,14 @@ them, and the harness that measures them. This repository is two things:
 - **The method:** a spec, a kit of building blocks, a Claude Code skill and
   QA checks, with the frog pond as the worked example.
 
+Three ways to use it:
+
+| You want                                      | Use                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------ |
+| One of these animals on your own page         | The Embed button on any animal's page: one line of HTML, no code ("Embedding") |
+| To build your own animal with this method     | The Claude Code skill, [`skills/critter/SKILL.md`](skills/critter/SKILL.md)    |
+| Just the motion maths inside your own project | `npm install critter-kit` ([`packages/critter-kit`](packages/critter-kit))     |
+
 The first study is the frog pond, **Frogs** (Day Chorus): three frogs on lily
 pads that breathe, blink, croak, catch midges, hop, swim and climb out, on
 open water in a grainy flat style. Tap a frog, a pad or the water; Enter or

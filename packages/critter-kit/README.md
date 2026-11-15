@@ -6,9 +6,13 @@ scene controller that runs it all on a page. TypeScript, no dependencies, no
 framework. Everything is plain functions over plain data, and the per-frame
 paths are written not to allocate.
 
-It isn't on npm yet. Use it from this repository (the workspace package
-`critter-kit`), or copy `src/` into your project: the files only
-import each other.
+It is the machinery, not the animals: you design and draw your own creature,
+and the kit keeps its feet planted and its body moving the way a real one
+does.
+
+```bash
+npm install critter-kit
+```
 
 ```ts
 import { advanceGait, createGaitState, isStance, solvePin, TRIPOD_OFFSETS } from 'critter-kit';
