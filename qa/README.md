@@ -32,7 +32,7 @@ review" below and spec Q-R4 to Q-R7.
 ## Running
 
 ```bash
-npm run qa:node        # soak, swims, motion, alloc, size: Node only, a few minutes (CI runs this)
+npm run qa:node        # soak, swims, motion, alloc, gait, swim, size: Node only, a few minutes (CI runs this)
 npm run qa:browser     # every pass/fail browser check (a few minutes)
 npm run qa             # both
 npm run qa:luma        # any one check
@@ -59,10 +59,17 @@ console after a browser check.
 poke it, which feet are planted and on what, what counts as a fluid, its pose
 channels and resting state, and adds its own soak rows (the pond's pads and
 the swimmers' outline). Choose one with `--study=<name>`; the frog pond is the default.
-`cockroach.mjs` is the cockroach Specimen: six feet pinned to the floor, and
-its curvature and turning-while-still rows are measured while walking or
-running (it has no fluid; the mirroring row doesn't apply). `qa:node` runs
-both checks for every study.
+`cockroach.mjs` is the cockroach example (`packages/cockroach-floor`): six
+feet pinned to the floor, and its curvature and turning-while-still rows are
+measured while walking or running (it has no fluid; the mirroring row doesn't
+apply). `qa:node` runs both checks for every study.
+
+The harness measures what is built in this repository: the frog pond, and
+the three kit examples kept as fixtures (`packages/cockroach-floor` in
+`qa:soak` and `qa:motion`, `packages/koi` in `qa:swim`, `packages/snake`
+through its footage tools). The browser checks open the frog page only. The
+seven other animals on the site are vendored builds; their checks live in
+their own projects.
 
 Options: `npm run qa:soak -- --aspect=0.91 --mode=tap --minutes=30 --seed=3`,
 `npm run qa:swims -- --hours=6`.
@@ -84,8 +91,8 @@ helpers into `qa/.out/pages`.
 | `qa:a11y`       | the pond is the first Tab stop, text contrast, the focus ring's contrast, 375 px layout                                                                    |
 | `qa:rm`         | reduced motion: a described still, no loop, no instructions                                                                                                |
 | `qa:midge`      | midge shadows fall down-left in both renderers, at the same place                                                                                          |
-| `qa:standalone` | the shipped single file from `file://`: page head, no hooks, 4 instruction steps, no requests, no workers, sandboxed iframe                                | Day by click / key / `#day`, sandboxed iframe                                                        |
-| `qa:lifecycle`  | 80 remounts (prefers-reduced-motion flipped), then taking the pond off the page: canvases, loop, observers, listeners, workers, heap                       | Day switches, then taking the pond off the page: canvases, loop, observers, listeners, workers, heap |
+| `qa:standalone` | the shipped single file from `file://`: page head, no hooks, 4 instruction steps, no requests, no workers, sandboxed iframe                                |
+| `qa:lifecycle`  | 80 remounts (prefers-reduced-motion flipped), then taking the pond off the page: canvases, loop, observers, listeners, workers, heap                       |
 | `qa:offscreen`  | the loop runs in view and stops scrolled away                                                                                                              |
 | `qa:loss`       | WebGL context loss → Canvas at once, WebGL retried twice, then Canvas stays; focus kept                                                                    |
 | `qa:bake`       | long tasks during a 2 s drag-resize (the atlas repaints in slices), both renderers                                                                         |
@@ -154,7 +161,9 @@ are committed (`docs/<ANIMAL>_FOOTAGE_LOG.md`, `docs/footage/*.stances.json`).
 | `footfalls.mjs <clip>`     | planted feet in a top view: per-frame body outline, pixels still for 5+ frames outside it, grouped into footfalls with touch-down, lift-off and position → JSON, plus the body path |
 | `spine.mjs <clip>`         | a pale fish's midline seen from above (white koi on dark water): body blob, skeleton, translucent tail followed out, head = wider end → JSON of N-point spines per frame            |
 | `spine-measure.mjs <json>` | the same measurements on a tracked or a model's recorded spine: tail beats, share beating, bend, swing at 60 % of the body; drops head/tail flips, Hampel-filters outliers          |
-| `follow-koi.mjs <dir>`     | the koi study framed to follow the fish at the footage's frame rate, as PNGs: the build's half of a real-speed side-by-side (spec P-19)                                             |
+| `snake-spine.mjs <clip>`   | a grass snake's midline seen from above on planks, with the camera's motion taken out → JSON of spine points per frame                                                              |
+| `snake-measure.mjs <json>` | the same measurements on a tracked snake or a recorded model: wave, speed, pauses                                                                                                   |
+| `record-snake.mjs`         | records the snake example's world (`packages/snake`) in the tracker's format, so footage and model are measured by the same code (spec P-18)                                        |
 | `gait.mjs <stances.json>`  | from reviewed stances per leg: stride period and length, still fraction, phases between legs (`--split` frame for a speed change), and a gait diagram (`--png`)                     |
 
 The workflow, as used for `docs/COCKROACH_FOOTAGE_LOG.md`:

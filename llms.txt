@@ -14,36 +14,45 @@ production code for a Study; after the first build for a Specimen or a
 Vignette, spec P-15 and P-16), and a full-scene composition review at desktop and phone
 size before any detail crop (spec P-11 to P-14, E-33 to E-35, Q-R4 to Q-R7).
 Generated images are optional art direction, never evidence. No sound
-anywhere. The frog study has two variants, Night and Day (theme keys
-`night` and `day`; titles Night Chorus and Day Chorus). Code is MIT; docs are
-CC BY 4.0.
+anywhere. The frog study is Day only (theme key `day`, title Day Chorus):
+water only, in a grainy flat style. The site has eight animals (frogs,
+ladybug, butterfly, snail, mouse, koi, snake, cockroach); the frog pond is
+built here and the other seven are vendored as built JavaScript from their
+own projects. Code is MIT; docs are CC BY 4.0.
 
 ## Docs
 
 - [Creature Study Spec](docs/CREATURE_STUDY_SPEC.md): the rules, interfaces, layout, procedure and QA table (source of truth)
 - [Creature Study Field Manual](docs/CREATURE_STUDY_FIELD_MANUAL.html): the illustrated human edition of the spec, with figures
-- [Frog art direction](docs/FROG_ART_DIRECTION.md): what each frog pose and scene element must read as, with timings
-- [Frog study guide](docs/FROG_STUDY_GUIDE.md): a plain tour of the frog pond's code and how to change common things
-- [Critter skill (draft)](skills/critter/SKILL.md): the Claude Code skill that turns one line into a creature study
-- [Critter kit plan](docs/CRITTER_KIT_PLAN.md): what moves out of the frog pond into a generic kit, and in what order
+- [Frog visual direction](docs/FROG_VISUAL_DIRECTION.md): the frog pond's approved board (Day only, water only, grainy flat style); the board image and its painter are in docs/frog-board
+- [Frog art direction](docs/FROG_ART_DIRECTION.md): what each frog pose must read as, with timings (its motion sections hold; its habitat and look sections describe the earlier pond)
+- [Frog study guide](docs/FROG_STUDY_GUIDE.md): a tour of the frog pond's code as it was before the 2026-10-28 rebuild (the world and motion parts still apply)
+- [Critter skill](skills/critter/SKILL.md): the Claude Code skill that turns one line into a creature study
+- [Critter kit plan](docs/CRITTER_KIT_PLAN.md): what moved out of the frog pond into a generic kit, and in what order
+- [Movement library](docs/MOVEMENT_LIBRARY.md): which animals and locomotion modes already have evidence
 - [Footage brief](docs/FOOTAGE_BRIEF.md): how to source openly licensed slow-motion clips for the test roster
-- [Cockroach footage log](docs/COCKROACH_FOOTAGE_LOG.md): the first footage log, measured from 250 fps footage of _Nauphoeta cinerea_ (spec P-11)
 - [Footage screening](docs/FOOTAGE_SCREENING.md): which downloaded clips show measurable motion, with frame times and verdicts
+- [Cockroach footage log](docs/COCKROACH_FOOTAGE_LOG.md): a grade-A log, measured from 250 fps footage of _Nauphoeta cinerea_ (spec P-11)
+- [Koi footage log](docs/KOI_FOOTAGE_LOG.md): a grade-B log, a fish's spine tracked in footage and measured like the model
+- [Snake footage log](docs/SNAKE_FOOTAGE_LOG.md): a grass snake's lateral undulation, tracked and measured
 - [Prior work](docs/CRITTER_PRIOR_WORK.md): physics, procedural animation, locomotion biology, video tools and motion metrics, with sources
-- [Audit report](docs/audit-report.html): the 2026-09-25 frog pond audit (26 findings, all addressed or superseded)
+- [Audit report](docs/audit-report.html): the 2026-09-25 audit of the earlier frog pond (26 findings, all addressed or superseded)
 
 ## Code
 
-- [packages/critter-kit](packages/critter-kit/src/index.ts): the shared kit (maths and seeded randomness, easing, limb chains (rig), foot pins and steps (contact), containment, hit distances, the gait clock, WebGL helpers and the scene controller), extracted from the frog pond under a golden replay
-- [packages/cockroach-floor](packages/cockroach-floor/src/index.ts): the cockroach Specimen, built only from the kit (in progress; see docs/HANDOFF.md)
-- [packages/koi](packages/koi/src/index.ts): the koi Specimen (a kohaku in a murky pond: beats and glides, food, a fast start), built only from the kit; its board awaits the owner (docs/KOI_VISUAL_DIRECTION.md)
-- [packages/frog-pond](packages/frog-pond/README.md): the framework-free study; `mountFrogScene()`, the theme, the world and shore maths
-- [studies/frogs](studies/frogs/index.html): the demo page (Night | Day), built by scripts/build.mjs
+- [packages/critter-kit](packages/critter-kit/src/index.ts): the shared kit (maths and seeded randomness, easing, limb chains (rig), foot pins and steps (contact), containment, hit distances, the gait clock, the spine swimmer, WebGL helpers and the scene controller), extracted from the frog pond under a golden replay
+- [packages/frog-pond](packages/frog-pond/README.md): the framework-free study; `mountFrogScene()`, the theme, the world and the picture's edge maths
+- [packages/cockroach-floor](packages/cockroach-floor/src/index.ts): kit example and QA fixture, not a site page: a cockroach walking a measured tripod gait with pinned feet
+- [packages/koi](packages/koi/src/index.ts): kit example and QA fixture, not a site page: a koi on the kit's spine swimmer (beats and glides, food, a swish away when touched)
+- [packages/snake](packages/snake/src/index.ts): kit example and QA fixture, not a site page: a grass snake in lateral undulation
+- [studies/site](studies/site/animals.mjs): the shell every animal page shares, and the list of the eight animals
+- [studies/vendor](scripts/sync-studies.mjs): the seven external animals' built scripts, copied in by scripts/sync-studies.mjs
+- [studies/frogs](studies/frogs/main.ts): the frog page's script and stills; its index.html is the single file's page
 - [standalone/frogs/entry.ts](standalone/frogs/entry.ts): the single offline HTML file's script (scripts/build-standalone.mjs)
 - [qa/README.md](qa/README.md): the QA checks (`npm run qa:*`), thresholds and how to run them
 
 ## Working in this repo
 
-- [HANDOFF.md](docs/HANDOFF.md): where the work stands and what's next
+- [HANDOFF.md](docs/HANDOFF.md): what the repository holds, where each animal's source lives, how the site is built and deployed, what is open
 - [AGENTS.md](AGENTS.md): rules for coding agents (also CLAUDE.md)
 - [README.md](README.md): setup, scripts and layout

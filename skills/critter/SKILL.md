@@ -26,7 +26,8 @@ from it:
 - **Footage tools:** run them from `$CRITTERS` with absolute paths to the
   project's clips and outputs (`cd $CRITTERS && node qa/tools/footage/spine.mjs /abs/clip.mp4 …`);
   they import the repo's libraries. A recorder for the new build (like
-  `follow-koi.mjs`) is written in the project, using them as examples.
+  `record-snake.mjs`, which writes a model's spine in the tracker's format)
+  is written in the project, using them as examples.
 - **Checks:** the repo's `qa:*` scripts only know its own studies. Port the
   measures you need (`$CRITTERS/qa/swim.mjs`, `gait.mjs`, `motion.mjs`) into
   the project as plain Node scripts against its world.
@@ -189,13 +190,15 @@ Steps 2 to 7 are the core and come before habitat, polish or paperwork.
 
 7. **Show the side-by-side** (P-19). Make a real-speed video: the reference,
    the build and, after a round of changes, the previous build, all framed
-   alike (`qa/tools/footage/follow-koi.mjs` for the koi). Send it to the user in the
+   alike (the build's half is a small script in the study's project that
+   follows the animal at the footage's frame rate and framing, driving the
+   page with `qa/lib/chrome.mjs`). Send it to the user in the
    first build and after every round of step 6. Their eye is the final check
    and catches what the numbers can't. The koi's tilted camera was spotted
    this way. Repeat steps 6 and 7 until they say it moves like the real one.
 
 8. **Then the rest**, in this order:
-   - **Ground** (`references/environment.md`): one boundary shared by world,
+   - **Ground** (spec section 8, environment): one boundary shared by world,
      renderers and hit test (E-1); affordances that supply motives (E-20); a
      job for every habitat element, quiet near the animal (E-34, E-35).
    - **Pose and contact:** pinned feet (C-1 to C-5); eased poses (P-5,
@@ -301,7 +304,11 @@ code (P-12). An agent prepares boards and reviews; it never signs one off.
 Examples to copy from: the cockroach (`packages/cockroach-floor`: measured
 gait, pinned feet, footfall clock) and the koi (`packages/koi`: tracked
 evidence, the swim primitive, one atlas for both renderers, roll and head
-lift). The frog pond is the large example, built before the footage and
+lift), and the grass snake (`packages/snake`: a spine on the ground). These
+three are kept as the kit's examples and test fixtures; they are not the
+cockroach, koi and snake on the site, which were rebuilt later in their own
+projects (`docs/HANDOFF.md`). Copy their motion code and measures, not their
+look. The frog pond is the large example, built before the footage and
 review rules. Take its mechanics, not its numbers (spec section 15).
 
 ## References

@@ -8,11 +8,19 @@ here) and for people.
 1. `docs/CREATURE_STUDY_SPEC.md` — the single source of truth. Follow its
    MUST rules; cite rule IDs (`E-12`, `L-16`, …) in commits and reviews.
 2. `qa/README.md` — how the checks work and how to run them.
-3. For the frog pond: `docs/FROG_ART_DIRECTION.md`, `docs/FROG_STUDY_GUIDE.md`.
-4. For any study, its review artifacts (spec section 13.1):
+3. `docs/HANDOFF.md` — what the repository holds now, the eight animals and
+   where each one's source lives, how the site is built and deployed.
+4. For the frog pond: `docs/FROG_VISUAL_DIRECTION.md` (the approved board:
+   Day only, water only, the grainy flat style) and `docs/frog-board/`.
+   `docs/FROG_ART_DIRECTION.md` and `docs/FROG_STUDY_GUIDE.md` were written
+   for the earlier pond (Night, a bank, reeds, fireflies): their motion
+   sections (body plan, jump, feet, swim) still hold, their habitat, look
+   and file tour don't.
+5. For any study, its review artifacts (spec section 13.1):
    `docs/<ANIMAL>_FOOTAGE_LOG.md`, `docs/<ANIMAL>_VISUAL_DIRECTION.md`,
-   `docs/<ANIMAL>_COMPOSITION_REVIEW.md`. The frog pond doesn't have them yet
-   (spec section 15).
+   `docs/<ANIMAL>_COMPOSITION_REVIEW.md`. The frog pond has the first two;
+   it has no composition review yet (spec section 15). The seven other
+   animals' artifacts are in their own projects (`docs/HANDOFF.md`).
 
 ## Standing decisions
 
@@ -24,8 +32,14 @@ here) and for people.
 - **No new runtime dependencies.** Dev dependencies need the owner's OK,
   except the ones already here (esbuild, TypeScript, oxlint, oxfmt). Don't add
   Playwright as a dependency: the browser checks use its headless shell only.
-- The repository is **private** until the owner says otherwise. Don't push,
-  make it public or turn on GitHub Pages without being asked.
+- The repository is **public** on GitHub. Pushing still needs the owner's
+  say-so each time: don't push without being asked.
+- The site is on **Vercel**, deployed by building here and uploading the
+  built `dist/site` folder (README, "Deploying"). Vercel doesn't build from
+  git, and there is no GitHub Pages site. Don't deploy without being asked.
+- **No media and no font files in git.** Clips and contact sheets under
+  `social/` and the General Sans files in `studies/site/fonts/` are ignored
+  (README, "Fonts"; `social/README.md`).
 - Licences: MIT for code, CC BY 4.0 for docs (`LICENSE`, `docs/LICENSE`).
 
 ## Visual work needs approval first

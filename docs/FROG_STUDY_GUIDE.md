@@ -1,5 +1,13 @@
 # The frog pond study, explained
 
+> **Historical in part.** This tour was written on 2026-10-13, before the
+> pond was rebuilt (2026-10-28) as Day only, water only, in the grainy flat
+> style. The parts about the world, poses, feet and swimming still apply.
+> The parts about Night | Day, the bank, reeds, bed, fireflies, the bank
+> painter and its worker, and the file list describe code that is gone: see
+> `packages/frog-pond/README.md` and `FROG_VISUAL_DIRECTION.md` for the pond
+> as it is, and `HANDOFF.md` for the site.
+
 A plain-language tour of what we built, how it works, and where to change
 things. The general method behind it (reusable for any creature, with
 diagrams) is `CREATURE_STUDY_SPEC.md` (illustrated in `CREATURE_STUDY_FIELD_MANUAL.html`).

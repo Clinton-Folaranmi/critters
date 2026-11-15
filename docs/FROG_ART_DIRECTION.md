@@ -1,5 +1,12 @@
 # Night Chorus / Day Chorus — art and motion sheet
 
+> **Historical in part.** Written for the earlier pond. Since board r0
+> (`FROG_VISUAL_DIRECTION.md`, 2026-10-27) the pond is Day only and water
+> only, in the grainy flat style: the habitat and look sections here (bank,
+> grass, flowers, reeds, bed, fireflies, the night palette) no longer
+> describe it. The body plan, jump, feet, shift and swim sections still
+> hold, and `qa/thresholds.mjs` still cites them.
+
 What each pose and scene element of the frog pond (`packages/frog-pond`, the demo
 at `studies/frogs`) is meant to communicate, so
 tuning stays anchored to intent rather than parameter nudging. All values live

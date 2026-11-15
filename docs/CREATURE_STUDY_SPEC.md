@@ -152,7 +152,7 @@ interface CreatureWorld<TapResult extends string = string> {
   check(): string[];
 }
 
-/** What renderers get from the world each frame (frog-world.ts: Frog, Pad, Firefly, Mote). */
+/** What renderers get from the world each frame (frog-world.ts: Frog, Pad, Midge). */
 interface AnimalState {
   x: number;
   y: number;
@@ -188,12 +188,15 @@ interface FootPin {
 
 /** The picture and its scenery (frog-bank.ts). All pure functions of (x, y, aspect). */
 interface Habitat {
-  /** Signed distance to the boundary of where animals may go (the frog: + on water, − on the bank). */
+  /**
+   * Signed distance to the boundary of where animals may go: + inside, − beyond it. (The frog pond is all
+   * water since board r2, so it has no shore: its swimmers are kept in by openDistance and pictureDistance.)
+   */
   shoreDistance(x: number, y: number, aspect: number): number;
   /** Below 1 inside the picture's outline, 1 on it, above 1 outside (taps beyond 1 do nothing). */
   pictureEdge(x: number, y: number, aspect: number): number;
   /** Whether a point is on scenery drawn over the animals' layer (reeds, overhanging grass). */
-  occluderAt(x: number, y: number, aspect: number, tolerance?: number): boolean; // frog: reedAt() + bank coverage
+  occluderAt(x: number, y: number, aspect: number, tolerance?: number): boolean; // the frog pond has had no occluders since board r2
   /** Depth (or height) field 0 … 1, the same for every renderer. */
   depth(x: number, y: number, aspect: number): number; // frog: shelfDepth()
 }
@@ -215,7 +218,7 @@ interface CreatureRendererHooks {
 /** Mounting the scene (the kit's scene.ts: mountScene, SceneOptions, SceneHandle; frog-scene.ts wraps it). */
 interface SceneOptions<Variant extends string> {
   reducedMotion: boolean; // true: one still, no loop, no tap target
-  theme?: Variant; // which variant (the frog: 'night' | 'day')
+  theme?: Variant; // which variant, for a study that has more than one (the frog pond is Day only and takes none)
   label?: { motion: string; still: string }; // defaults from the theme's copy
   describedBy?: string; // id of the element that explains the controls
   onModeChange?: (mode: 'webgl2' | 'canvas') => void;
@@ -239,7 +242,7 @@ interface Palette {
 
 /** Visible copy for one variant (frog-theme.ts: FROG_COPY). */
 interface VariantCopy {
-  light: string; // the switch's label ("Night")
+  light: string; // the switch's label, where a study has variants (e.g. "Night")
   eyebrow: string;
   title: string;
   lede: string;
@@ -259,7 +262,7 @@ packages/critter-kit/                the kit every study imports (docs/CRITTER_K
                                      rig, contact, containment, hit distances, gait clock, WebGL helpers,
                                      the scene controller (mountScene)
 packages/<study>/                    the study, no framework
-  package.json                       exports ".", "./world", "./bank", "./theme", "./paint"; "source" condition → src
+  package.json                       exports ".", "./world", "./bank", "./theme" (and "./paint" where a study paints in a worker); "source" condition → src
   src/
     index.ts                         mountScene(), the theme, types
     world.ts, bank.ts, theme.ts      DOM-free entry points (Node can import them)
@@ -271,14 +274,18 @@ packages/<study>/                    the study, no framework
     <animal>-canvas.ts               Canvas 2D fallback (dynamically imported)
     <habitat>.ts                     boundary, depth, occluders, picture edge (+ generated GLSL)
     <habitat>-paint.ts               static layers painted once per size
-    <habitat>-layer.ts               painting in a worker, with a cache and a debounce
-    <habitat>-worker.ts              the worker entry
-    <habitat>-worker-factory.ts      starts the worker (swapped in single-file builds)
+    <habitat>-layer.ts               painting in a worker, with a cache and a debounce   ┐ where static layers are painted in a
+    <habitat>-worker.ts              the worker entry                                     │ worker (F-4). The frog pond had these
+    <habitat>-worker-factory.ts      starts the worker (swapped in single-file builds)    ┘ until board r2; it has none now (section 15)
     env.d.ts                         import.meta.env.DEV
-studies/<study>/                     the demo page (plain HTML + TS)
-  index.html, page.css, page.ts, main.ts, stills.css, stills/*.webp
-standalone/<study>/entry.ts          the single-file build's script (also its own worker)
-scripts/                             build.mjs, build-standalone.mjs, esbuild-plugins.mjs, glsl-minify.mjs, serve.mjs, dev.mjs, docs.mjs
+studies/<study>/                     the study's page (plain HTML + TS)
+  index.html, page.css, page.ts, main.ts, stills/*.webp
+standalone/<study>/entry.ts          the single-file build's script (also its own worker, where the study has one)
+studies/site/                        this repository's site: one shell (page.html, site.css, shell.ts, animals.mjs) for
+                                     every animal page; a study's main.ts mounts into its #scene
+studies/vendor/<animal>/             built scripts of studies made in their own projects (scripts/sync-studies.mjs)
+scripts/                             build.mjs, build-standalone.mjs, esbuild-plugins.mjs, glsl-minify.mjs, serve.mjs, dev.mjs,
+                                     docs.mjs, sync-studies.mjs, trace-sketches.mjs
 qa/                                  checks (section 12), thresholds.mjs, lib/, browser/, tools/
 docs/                                this spec, the field manual, the study's art direction and guide
 ```
@@ -441,15 +448,18 @@ median 6.6 s, 90 % within 10.7 s, longest 25 s at aspect 1.48; 5.4 / 6.8 /
 14.5 s at 0.91.
 
 **Leg clearance (frog).** Containment keeps the body's centre inside the
-swimmable water, but trailing hind legs reach well behind it and would slip
-under the bank as a frog turns back from the shore. After posing,
-`keepLegsOffBank()` checks every knee, ankle and toe (with its drawn
-thickness, the toe fans extended) against `shoreDistance`, and moves the frog
-straight away from the shore by the largest shortfall plus 0.004, twice.
-Measured (`qa:soak`): swimmer body and limbs over the bank, 0 samples in every
-run. A frog on a pad or in the air is drawn over the bank (section 8.2), so
-it is exempt; a toe of a frog on a pad may touch the grass by ≤ 0.02 world
-units (measured ≤ 0.0031).
+swimmable water (the open-water oval, `openDistance`), but trailing hind legs
+reach well behind it and would cross the swimmers' outline
+(`pictureDistance`, a squarish oval a little in from the canvas) as a frog
+turns back from the edge. After posing, `keepLegsInPicture()` checks every
+knee, ankle and toe (with its drawn thickness, the toe fans extended) against
+that outline: a part that comes near its limit eases the frog inward a share
+of the overlap each frame, and a part still past the limit (0.004 clearance)
+moves it inward at once by the shortfall, twice. Measured (`qa:soak`):
+swimmer body and limbs past the outline, 0 samples in every run. A frog on a
+pad or in the air is exempt; a toe of a frog on a pad may pass the outline by
+≤ 0.02 world units (measured 0). (Until board r2 the pond had a bank and the
+same check, then `keepLegsOffBank()`, kept legs from slipping under it.)
 
 - QA (`qa:motion`): straight strokes |L − R| ≤ 0.01 (measured ≤ 0.002 a second into straight swimming); turning while still ≤ 0.05 rad per frame; curvature 99th percentile ≤ 30 (design 3–20; dives and pushes off the bank go past it).
 
@@ -528,29 +538,30 @@ out (section 8.9).
 
 ### 8.1 Boundaries match what's drawn
 
-- **E-1 (MUST)** One function defines the boundary (the frog: `shoreDistance(x, y, aspect)`, positive on water, negative on the bank), shared by the world, both renderers (GLSL generated from the same numbers) and the hit test. JS and GLSL agree to float precision. (Since board r2 the frog's shaders draw no boundary; `qa:parity` compares the noise the renderers share and the frames they draw.)
+- **E-1 (MUST)** One function defines the boundary (the frog pond before board r2: `shoreDistance(x, y, aspect)`, positive on water, negative on the bank; now all water, its boundaries are `openDistance` for swimmers' bodies and `pictureDistance` for their legs, in `frog-bank.ts`), shared by the world, both renderers (GLSL generated from the same numbers) and the hit test. JS and GLSL agree to float precision. (Since board r2 the frog's shaders draw no boundary; `qa:parity` compares the noise the renderers share and the frames they draw.)
 - **E-2 (MUST)** Containment keeps each animal's body off the boundary with a clearance (the frog: 0.012 plus a margin of 0.8 BL inside the open-water oval), and checks every drawn part, not only the centre (7.3, leg clearance).
 - **E-3 (MUST)** Scenery the animals use is kept clear of the boundary too: a drifting pad is nudged back off the bank (the frog, since board r2 all water: a pad drifting off the picture is pulled home by its spring; `qa:soak`: frames with a pad drifted out of the picture, 0).
-- **E-4 (MUST)** Anything the world treats as the boundary is visibly the boundary: the painted bank's waterline follows `shoreDistance`, and details (pebbles at the waterline) are placed along the visible shore, at their intended distance from the water.
+- **E-4 (MUST)** Anything the world treats as the boundary is visibly the boundary: a painted bank's waterline follows `shoreDistance`, and details (pebbles at the waterline) are placed along the visible shore, at their intended distance from the water. (The frog pond did this until board r2; it now has no shore, and its water runs out of the picture on every side.)
 - **E-5 (SHOULD)** Where the scene continues out of the frame (the frog's water runs off the top and right), the swimmable area ends a little inside the picture's edge so animals never swim into the fade.
 
 ### 8.2 Occluders, draw order and taps on them
 
-Draw order (bottom → top) in the frog study: bed → depth tint and caustics →
-shadows on the bed → water surface and ripples → swimmers (drawn under the
-bank) → **the bank** (earth, grass overhanging the water) → pads and frogs on
-pads or in the air (drawn over the bank) → fireflies or midges, motes → reeds
-and their shadows → vignette and grain → the picture's edge (a CSS mask).
+Draw order (bottom → top) in the frog study: water → caustics → ripples →
+swimmers and their wakes → pads and the lily → midges → frogs on pads or in
+the air → the drifting leaf shade → grain → the picture's edge (a CSS mask). Until board r2 the pond also had a bed under the water, a
+**bank** (earth, grass overhanging the water) drawn over swimmers and under
+pads, and reeds drawn over everything; the examples in E-6 to E-10 are from
+that pond.
 
-- **E-6 (MUST)** Decide per state what is drawn over what, and write it down. An animal in the air or on a raised perch is drawn over ground scenery (a frog's leap near the shore passes over the grass); a swimmer is drawn under the bank.
+- **E-6 (MUST)** Decide per state what is drawn over what, and write it down. An animal in the air or on a raised perch is drawn over ground scenery (the frog pond before board r2: a frog's leap near the shore passed over the grass, and a swimmer was drawn under the bank; now a swimmer is drawn under the pads and a frog in the air over them).
 - **E-7 (MUST)** A tap goes to the topmost thing drawn at that point. Scenery drawn over the animals' layer (grass overhanging the water, reeds) takes the tap as scenery, unless an animal drawn over that scenery is there. (The frog pond has had no occluders since board r2; `qa:hit` checks taps against the drawn picture, water, pads and the corner pad.)
-- **E-8 (MUST)** Every tap on scenery produces a visible response (the frog: a tap on the bank or reeds lifts 4 motes — fireflies at night, midges by day — that drift off over ~1.6 s, and ripples the water if within 0.05 of the waterline).
-- **E-9 (MUST)** Occluders cast shadows in the key light's direction like everything else (the frog's reeds, both renderers).
-- **E-10 (SHOULD)** An occluder's geometry is one data layout used by every renderer and the tap test (the frog: `reedBlades()`, uploaded to the shader as uniforms).
+- **E-8 (MUST)** Every tap on scenery produces a visible response (the frog pond before board r2: a tap on the bank or reeds lifted 4 motes that drifted off over ~1.6 s, and rippled the water if within 0.05 of the waterline; now every tap inside the picture lands on a frog, a pad or water, and each responds).
+- **E-9 (MUST)** Occluders cast shadows in the key light's direction like everything else (the frog pond's reeds did, in both renderers, until board r2).
+- **E-10 (SHOULD)** An occluder's geometry is one data layout used by every renderer and the tap test (the frog pond before board r2: `reedBlades()`, uploaded to the shader as uniforms).
 
 ### 8.3 The picture's edge
 
-- **E-11 (MUST)** The scene has a designed edge where it meets the page (the frog: a squarish oval, a superellipse with exponent 2/0.6, radii (aspect/2 − 0.05, 0.45), made ragged and soft with turbulence, applied as a CSS mask). A host page may draw a border of its own instead (`ownEdge: false`; the site shell draws the owner's approved border on every animal page, `studies/site/`); then it also draws the focus ring (E-13).
+- **E-11 (MUST)** The scene has a designed edge where it meets the page (the frog: the whole canvas with softly rounded corners, radius 0.03, applied as a CSS mask; before board r2 a squarish oval, a superellipse with exponent 2/0.6 and radii (aspect/2 − 0.05, 0.45), made ragged and soft with turbulence, which is still the outline swimmers' legs keep inside). A host page may draw a border of its own instead (`ownEdge: false`; the site shell draws the owner's approved border on every animal page, `studies/site/`); then it also draws the focus ring (E-13).
 - **E-12 (MUST)** No interaction outside the visible picture: taps where the edge is faded out do nothing and the cursor turns back to the default (`pictureEdge(x, y, aspect) ≤ 1` accepts; `qa:hit`: 0 taps accepted where the mask is under 0.2; ≤ 0.5 % of the clearly visible picture outside the rule, the ragged fringe).
 - **E-13 (MUST)** The keyboard focus ring follows the same outline, a little outside it (0.03 world units), as an ink line on a halo so it reads over dark water and the page alike (the scene sets `--pond-ring` and `--pond-ring-halo` mask images on the container's parent).
 - **E-14 (SHOULD)** Until the scene applies its edge, the container shows a plain soft oval, so nothing appears with a hard rectangle.
@@ -565,20 +576,20 @@ and their shadows → vignette and grain → the picture's edge (a CSS mask).
 
 ### 8.5 Affordances as motives
 
-- **E-20 (MUST)** The habitat offers the things behaviour needs, and behaviour uses them: perches or stages to rest on, water or open ground to move through, cover to hide in, food to catch. The frog: four stages (three occupied, one spare, so a swimmer always has somewhere to go — `qa:soak` reports frames with no free stage, 0 measured), open water for swims, fireflies to track and catch.
+- **E-20 (MUST)** The habitat offers the things behaviour needs, and behaviour uses them: perches or stages to rest on, water or open ground to move through, cover to hide in, food to catch. The frog: four stages (three occupied, one spare, so a swimmer always has somewhere to go — `qa:soak` reports frames with no free stage, 0 measured), open water for swims, midges to track and catch.
 - **E-21 (MUST)** Only usable things count as affordances: a stage must be big enough for the animal and within reach of the swimmable water (the frog: pads beyond 0.8 pond radii are scenery, and frogs leave them alone).
 - **E-22 (SHOULD)** Scenery that isn't an affordance is visibly different (the frog's small bud pad, pads drifting off the edges).
 
 ### 8.6 Ambient life
 
-- **E-23 (MUST)** Ambient life has a source and a place: the frog's fireflies gather in three clusters (near the left stage, right of centre, mid-pond) and leave the lower pond quiet; midges by day; motes only where the grass was tapped.
-- **E-24 (MUST)** It is sparse and cheap: a fixed pool (the frog: 8 flies, 6 motes), each drawn only inside a box around it (section 10, the motes regression).
-- **E-25 (SHOULD)** Animals notice it (eyes follow fireflies; a tongue strike when one drifts within reach, then 6–14 s of rest).
+- **E-23 (MUST)** Ambient life has a source and a place: the frog's midges gather in three clusters (near the left stage, right of centre, mid-pond) and leave the lower pond quiet. (Before board r2 they were fireflies at night, and motes rose only where the grass was tapped.)
+- **E-24 (MUST)** It is sparse and cheap: a fixed pool (the frog: 8 midges; before board r2 also 6 motes), each drawn only inside a box around it (section 10, the motes regression).
+- **E-25 (SHOULD)** Animals notice it (eyes follow midges; a tongue strike when one drifts within reach, then 6–14 s of rest).
 
 ### 8.7 Wind and weather
 
-The frog study has no wind or weather yet; its reeds sway with time
-(`reedBlades(aspect, time, …)`). These rules are for studies that add them.
+The frog study has no wind or weather; its leaf shade drifts with time
+alone. These rules are for studies that add them.
 
 - **E-26 (MUST)** Wind is one field (direction, strength, gusts over time) owned by the world and read by everything that moves in it: grass, reeds, leaves, the water's ripples, an animal's feathers or balance. Nothing sways on its own clock.
 - **E-27 (MUST)** Gusts travel: a gust reaches things upwind first, so a meadow shows a wave passing, not everything bending at once.
@@ -588,7 +599,7 @@ The frog study has no wind or weather yet; its reeds sway with time
 
 ### 8.8 Time-of-day variants as palettes
 
-- **E-30 (MUST)** A time of day is a palette applied to the same scene, geometry and behaviour (the frog's Night and Day differ only in `FROG_PALETTES`, copy, and fireflies becoming midges). Copy, title and labels are written for each variant.
+- **E-30 (MUST)** A time of day is a palette applied to the same scene, geometry and behaviour (the frog pond's Night and Day, until Night was dropped on 2026-10-27, differed only in their palettes, copy, and fireflies becoming midges; it is now Day only, one `FROG_PALETTE`). Copy, title and labels are written for each variant.
 - **E-31 (MUST)** Each variant has a brightness target: mean luma (0–255, Rec. 601 weights) inside the visible picture, where the picture's mask is over half opaque (the frog: Day only since 2026-10-27, target 133 … 143 around board r2's 138). The renderers stay within 5 of each other (`qa:luma`).
 - **E-32 (MUST)** The key light's direction may change between variants but each variant has one; shadows follow it (P-7). `qa:midge` checks a small flier's shadow in both renderers.
 
@@ -609,9 +620,9 @@ The frog study has no wind or weather yet; its reeds sway with time
 ## 9. Light, palettes and colour
 
 - **V-1 (MUST)** Each variant's palette holds the light's colour and direction, the medium's colours and cloudiness, sky reflection, ground materials, moving light strength, plant and prop colours, ambient life colours, ripple colours, shadow strength and vignette. No colour literals in renderers (A-6).
-- **V-2 (MUST)** Build depth physically: a depth field (the frog: `shelfDepth()`, shallow at the bank, deepest mid-pond, the same in both renderers), a medium that hides the floor more with depth, ground shadows of floating or raised things offset further and softer the deeper or higher they are.
+- **V-2 (MUST)** Build depth physically: a depth field (the frog pond before board r2: `shelfDepth()`, shallow at the bank, deepest mid-pond, the same in both renderers; the flat style since then shows depth with offset shadow bands only), a medium that hides the floor more with depth, ground shadows of floating or raised things offset further and softer the deeper or higher they are.
 - **V-3 (MUST)** Every effect has a physical source: a glow needs a light, a sparkle a surface and a sun, caustics a sun and clear water.
-- **V-4 (MUST)** Static ground is painted once per size (the frog's bed and bank) and never moves; repeating light patterns (caustics) are a seamless tile drawn once, two copies sliding past each other at different scales, faded over deep water, the same tile in both renderers.
+- **V-4 (MUST)** Static ground is painted once per size (the frog's bed and bank, until board r2; now its pad and shade atlas) and never moves; repeating light patterns (caustics) are a seamless tile drawn once, two copies sliding past each other at different scales, faded over deep water, the same tile in both renderers.
 - **V-5 (MUST)** Check shadow direction deliberately: contact, body and ground shadows fall away from the light; sheens, rim light and eye highlights face it.
 - **V-6 (SHOULD)** In low light the floor shows mostly near the light, and raised details catch warm light on the side facing it.
 - **V-7 (MUST)** Finish with a light vignette set by the palette, fine grain, and the designed edge (E-11).
@@ -626,16 +637,16 @@ and the check.
 - **F-1 (MUST) Lazy load near the viewport.** The page ships only the caption, the switch and a still; the scene's code loads when its container comes within 300 px of the viewport (an `IntersectionObserver` with `rootMargin: '300px 0px'`). Frog demo: 4.9 KB of JS with the page, 66.1 KB (26.5 KB gzip) as the pond comes near (`qa:size`).
 - **F-2 (MUST) A still until the first frame.** Until the first full frame is drawn the canvas is hidden (`opacity: 0`) and the container shows a WebP still of that very frame (the frog: `studies/frogs/stills/day-{wide,narrow}.webp`, 46–55 KB, regenerated by `qa:stills`). The world waits (no time passes) until the first frame, so the still and the first live frame match.
 - **F-3 (MUST) Parallel shader compile.** Compile and link without waiting (`KHR_parallel_shader_compile`; `startProgram()` in the kit's `gl.ts` polls `COMPLETION_STATUS_KHR`); the renderer only "gets ready" until it completes.
-- **F-4 (MUST) Paint static layers in a worker.** The bank and the caustic tile are painted in a worker with `OffscreenCanvas` and sent back as `ImageBitmap`s, with a main-thread fallback if workers or `OffscreenCanvas` are missing or the worker fails to load. Baked layers are cached by (width, height, variant), 3 kept, so a renderer swap or a switch back to a variant reuses them; an idle worker stops itself after 15 s.
+- **F-4 (MUST) Paint static layers in a worker.** The bank and the caustic tile are painted in a worker with `OffscreenCanvas` and sent back as `ImageBitmap`s, with a main-thread fallback if workers or `OffscreenCanvas` are missing or the worker fails to load. Baked layers are cached by (width, height, variant), 3 kept, so a renderer swap or a switch back to a variant reuses them; an idle worker stops itself after 15 s. (The frog pond did this for its bank until board r2; it now paints its atlas on the main thread in slices, a recorded departure: section 15.)
 - **F-5 (MUST) Pause off screen.** The loop runs only while the scene is at least partly on screen (`IntersectionObserver`) and the tab is visible (`visibilitychange`); `qa:offscreen`: 0 animation frames scrolled away.
 - **F-6 (MUST) Adaptive resolution.** Cap the pixel ratio at 2. Measure frame time (smoothed); after 60 frames slower than 22 ms, step the resolution down (1, 0.8, 0.65, 0.5 of the device ratio, never below 0.6 CSS px per canvas px), never back up; ignore frames right after a resize. A dev flag (`?dpr=fixed`) holds full resolution for measuring.
 - **F-7 (MUST) Minify GLSL.** Shaders are `/* glsl */` template literals; the build strips comments and spare whitespace (`scripts/glsl-minify.mjs`), keeping every `${…}` interpolation as written.
-- **F-8 (MUST) Load the fallback only when needed.** The Canvas 2D renderer and the main-thread painter are split chunks, fetched only if WebGL fails or the worker can't run.
+- **F-8 (MUST) Load the fallback only when needed.** The Canvas 2D renderer and the main-thread painter are split chunks, fetched only if WebGL fails or the worker can't run. (The frog pond has no worker since board r2, so its only such chunk is the Canvas 2D renderer.)
 - **F-9 (MUST) Per-pixel loop discipline.** A full-screen fragment loop runs over as few items as possible; rare effects get their own loop inside a bounding box. The motes regression: adding 6 motes to the two per-pixel firefly loops (8 → 14 iterations) cost +3 ms per frame; giving motes their own loop inside a box round them, with each speck skipping its exponentials beyond its reach, won it back.
 - **F-10 (MUST)** Limit each animal's detailed shading to a radius around it, and check the radius against the animal's largest real extent over a long run (legs at full push under ~0.9 of it).
 - **F-11 (MUST)** No per-frame garbage in the hot path: scratch arrays hoisted, uniforms written by index (`qa:alloc`: `world.step` ≤ 1 KB per frame, measured ~0.1–0.5 KB).
 - **F-12 (MUST)** Release everything on dispose: the loop, observers, listeners, the canvas and its GPU resources (`qa:lifecycle`: 80 switches, heap flat, 0 canvases and 0 animation frames after dispose).
-- **F-13 (SHOULD)** First load has no main-thread task over 50 ms (`qa:first`, limit 80 ms for noise; measured none on a quiet M1, Phase 1). Frame cost ≲ 15 ms GPU at 1520 × 1027 (`qa:gpu`; measured 10.3 night, 11.4–13.0 day on the M1 in Phase 1). Timing checks depend on the machine: compare against a baseline built in the same session (`qa/tools/baseline.mjs`).
+- **F-13 (SHOULD)** First load has no main-thread task over 50 ms (`qa:first`, limit 80 ms for noise; measured none on a quiet M1, Phase 1). Frame cost ≲ 15 ms GPU at 1520 × 1027 (`qa:gpu`; measured 10.3 for the former Night and 11.4–13.0 for Day on the M1 in Phase 1; 7.7–11.3 for the board r2 look, 2026-10-28). Timing checks depend on the machine: compare against a baseline built in the same session (`qa/tools/baseline.mjs`).
 
 How to measure frame cost: keep the page visible (hidden tabs throttle GPU
 work); force the GPU to finish after each frame (read back one pixel);
@@ -650,9 +661,9 @@ expensive, return early after each layer in turn and time it.
 - **I-3 (MUST)** The scene is focusable (`tabindex="0"`, `role="button"`), labelled per variant, and points to its instructions (`aria-describedby`). Enter or Space triggers a central action (the frog: a pebble in the middle), prevents scrolling and ignores key repeat (`qa:hit`).
 - **I-4 (MUST)** A visible focus ring that follows the picture's edge (E-13).
 - **I-5 (MUST)** With reduced motion: no loop at all; one finished still; `role="img"` with the still's own description; not focusable; the instructions hidden (`qa:rm`).
-- **I-6 (MUST)** A variant switch (the frog: Night | Day) is real buttons with `aria-pressed` (or links with `aria-current` when each variant has its own address); the variant may also be chosen in the address (`#day`).
+- **I-6 (MUST)** A variant switch (the frog pond had Night | Day until 2026-10-27; it is Day only now and has no switch) is real buttons with `aria-pressed` (or links with `aria-current` when each variant has its own address); the variant may also be chosen in the address (`#day`).
 - **I-7 (MUST)** Text contrast ≥ 4.5:1 and non-text (a switch's outline; the frog's keyboard-focus ring against the water and its halo) ≥ 3:1 in every variant (`qa:a11y`).
-- **I-8 (MUST)** A single self-contained HTML file that works offline: a doctype, `lang`, UTF-8, a viewport meta, `body { margin: 0 }`, no external requests, the worker started from the page's own script, working in a sandboxed iframe without storage (`qa:standalone`; the build fails if any basic is missing).
+- **I-8 (MUST)** A single self-contained HTML file that works offline: a doctype, `lang`, UTF-8, a viewport meta, `body { margin: 0 }`, no external requests, any worker started from the page's own script (the frog's single file starts none), working in a sandboxed iframe without storage (`qa:standalone`; the build fails if any basic is missing).
 
 ## 12. QA
 
@@ -756,7 +767,7 @@ Follow these steps in order for a new study. Each step names its output.
 1. **Brief.** Fill in the brief template (section 17), including the size (P-15). Output: the brief.
 2. **Evidence log.** Watch slow-motion footage; read locomotion papers; make `docs/<ANIMAL>_FOOTAGE_LOG.md` using the P-11 split between URLs/time ranges, observations and inferences. Output: the evidence log.
 3. **Direction board and motion sheet.** Make the human-readable visual direction board with its creature-first hierarchy plan and habitat jobs, and the motion sheet: body dimensions in body lengths; for each behaviour a key-pose table with timings (section 7's format); locomotion contact and turning rules; individuals; what a viewer sees in 45 s; and every tap and key. Output: `docs/<ANIMAL>_VISUAL_DIRECTION.md` and `docs/<ANIMAL>_ART_DIRECTION.md`. Get the board explicitly approved under P-12 before production code (a Study; a Specimen or a Vignette follows P-16).
-4. **Scaffold.** Copy `packages/frog-pond` to `packages/<study>`, rename files (section 3), empty the world, keep the scene controller, the build and the harness wiring. Add the study to `scripts/build.mjs`, `studies/<study>/`, `standalone/<study>/entry.ts`. Output: a page that mounts an empty scene in both renderers.
+4. **Scaffold.** Copy `packages/frog-pond` to `packages/<study>`, rename files (section 3), empty the world, keep the scene controller, the build and the harness wiring. Add the study to `scripts/build.mjs`, `studies/<study>/`, `standalone/<study>/entry.ts`. (A study built in its own project instead copies the kit, builds a `main.js` that mounts into `#scene`, and joins this repository's site through `scripts/sync-studies.mjs` and `studies/site/animals.mjs`; the seven animals after the frog pond were made that way.) Output: a page that mounts an empty scene in both renderers.
 5. **Habitat geometry.** Write the boundary, depth, occluders and picture edge as pure functions (section 8), with generated GLSL, and a parity check. Implement only habitat elements with a recorded E-34 job. Output: `<habitat>.ts`, `qa:parity` passing.
 6. **World.** States, timers, motives, containment, `check()`, seeded; the rig and `pose()`; pins and steps. Step it in Node from the first day. Output: `<animal>-world.ts`, `qa:soak` passing.
 7. **Motion.** Author each key pose and transition from the motion sheet; measure with `qa:motion` (planted feet, mirroring, turning while still, pose jumps, spins) and fix in the world. Output: `qa:motion` passing.
@@ -993,17 +1004,24 @@ crops, what wasn't checked.
   the median (0), not the tail. Fix direction: re-pin a foot that is out of
   reach as a small settling step after landing and after a turn, or bound the
   body's settle so pins stay reachable. Until then these rows report KNOWN.
-- **Review artifacts missing (P-11 to P-14, Q-56).** The frog pond was built
-  before these rules. It has no `docs/FROG_FOOTAGE_LOG.md`, no approved
-  `docs/FROG_VISUAL_DIRECTION.md` (so no hierarchy plan per variant and
-  aspect, and no recorded job for each prominent habitat element: bank,
-  grass, flowers, reeds, pads, bed, caustics, fireflies and midges), and no
-  `docs/FROG_COMPOSITION_REVIEW.md`. Its composition has not been signed off
-  under Q-R4 and Q-R5; only crops have been reviewed. `docs/FROG_ART_DIRECTION.md`
-  is its historical motion sheet and isn't a substitute. Until those three
-  exist and the board is approved, make no composition changes to the frog
-  pond (habitat, palette, scale, layout); fixes that measurably restore an
-  existing rule (a shadow direction, a parity error) are still allowed.
+- **Review artifacts incomplete (P-11 to P-14, Q-56).** The frog pond was
+  built before these rules. It now has `docs/FROG_FOOTAGE_LOG.md`
+  (family-level sources; its timings are still unsourced, above) and an
+  approved board, `docs/FROG_VISUAL_DIRECTION.md` r0 (2026-10-27: Day only,
+  water only, the grainy flat style; the board image is in
+  `docs/frog-board/`). It still has no `docs/FROG_COMPOSITION_REVIEW.md`:
+  its composition has not been signed off under Q-R4 and Q-R5.
+  `docs/FROG_ART_DIRECTION.md` is its historical motion sheet; the board
+  supersedes its habitat and look sections. Make no composition changes to
+  the frog pond (habitat, palette, scale, layout) beyond the approved board;
+  fixes that measurably restore an existing rule (a shadow direction, a
+  parity error) are still allowed.
+- **Spec examples from the earlier pond.** Until board r2 the frog pond had a
+  bank, reeds, a bed, fireflies and a Night variant, and painted its bank in
+  a worker. The examples in sections 2, 7, 8, 9, 10 and 11 that mention
+  them (E-1, E-4, E-6 to E-11, E-23, E-30, V-2, V-4, F-4, F-8, I-6) are
+  marked "before board r2" and kept as worked examples of the rules; the
+  rules themselves are unchanged.
 - **Timing checks on a busy machine.** `qa:first`, `qa:gpu` and `qa:bake`
   (long tasks) depend on the GPU and load; on 2026-09-25 (battery, load
   average 5–24) they read 58–77 ms per frame for both this repo and the
