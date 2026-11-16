@@ -4,8 +4,10 @@
 
 **See them move: <https://thecritters.vercel.app>**
 
-Interactive, top-down creature studies for the web, the method for building
-them, and the harness that measures them. This repository is two things:
+Procedural animation studies of real animals, for the web. Nothing is
+pre-drawn or played back: every step, hop and swim is computed live in code
+and tuned against footage of the real animal. This repository is the studies,
+the method for building them, and the harness that measures them:
 
 - **The site:** eight animals, one page each: frogs, ladybug, butterfly,
   snail, mouse, koi, snake and cockroach. Each is a small living scene you can

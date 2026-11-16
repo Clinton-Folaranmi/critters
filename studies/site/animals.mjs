@@ -12,9 +12,9 @@ export const SITE_URL = 'https://thecritters.vercel.app';
 /** What the site says about itself (the About panel on every page, the root's link preview) and where its links go. */
 export const SITE = {
   description:
-    'Small living animal studies you can tap: frogs, a ladybug, a butterfly, a snail, a mouse, koi, a snake and a cockroach.',
+    'Procedurally animated animals you can tap: frogs, a ladybug, a butterfly, a snail, a mouse, koi, a snake and a cockroach.',
   about:
-    'Eight small animals that move like the real ones. Each was studied from footage of the real animal, measured, and built to match.',
+    'Procedural animation studies. Nothing is pre-drawn or played back: every step, hop and swim is computed live, and tuned against footage of the real animal.',
   author: 'Clinton',
   authorUrl: 'https://github.com/Clinton-Folaranmi',
   codeUrl: 'https://github.com/Clinton-Folaranmi/critters',
