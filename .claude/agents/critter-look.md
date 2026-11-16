@@ -13,7 +13,9 @@ points to. Read `AGENTS.md` (especially "Visual work needs approval first"),
 `docs/<ANIMAL>_VISUAL_DIRECTION.md` and the spec rules you touch (P-7, P-12,
 P-14, A-6 to A-8, E-33 to E-35). Work in the main checkout.
 
-`$CRITTERS` is the critters toolbox, `~/critters`.
+`$CRITTERS` is the critters toolbox: the checkout of the `critters` repository the
+critter skill is linked from (the `CRITTERS` environment variable if it is set; the
+skill's SKILL.md says how to find it otherwise).
 Read `AGENTS.md`, the spec and the examples there. If you are working in
 another project, follow "In another project" in
 `$CRITTERS/skills/critter/SKILL.md`: run footage tools from `$CRITTERS` with

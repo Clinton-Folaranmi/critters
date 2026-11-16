@@ -5,8 +5,11 @@ description: Build a living, interactive creature study for the web, an animal (
 
 # Critter
 
-The `critters` repository is the toolbox: `~/critters`
-(called `$CRITTERS` below). The rules are those of
+The `critters` repository is the toolbox, called `$CRITTERS` below: the
+checkout this skill is linked from. Use the `CRITTERS` environment variable
+if it is set; otherwise find it once with
+`cd "$(dirname "$(realpath ~/.claude/skills/critter/SKILL.md)")/../.." && pwd`
+(README, "Using the skill"). The rules are those of
 `$CRITTERS/docs/CREATURE_STUDY_SPEC.md`; rule IDs (`P-18`, `C-3`, …) point
 there, and the spec wins where the two differ. The kit is
 `packages/critter-kit`; the examples are the frog pond (a Study), the

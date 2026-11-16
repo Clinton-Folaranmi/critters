@@ -12,7 +12,9 @@ Start by reading the brief the orchestrator gave you, then the contract it
 points to. Read `AGENTS.md` and the parts of `docs/CREATURE_STUDY_SPEC.md` you
 need (P-11, P-17, P-18). Work in the main checkout.
 
-`$CRITTERS` is the critters toolbox, `~/critters`.
+`$CRITTERS` is the critters toolbox: the checkout of the `critters` repository the
+critter skill is linked from (the `CRITTERS` environment variable if it is set; the
+skill's SKILL.md says how to find it otherwise).
 Read `AGENTS.md`, the spec and the examples there. If you are working in
 another project, follow "In another project" in
 `$CRITTERS/skills/critter/SKILL.md`: run footage tools from `$CRITTERS` with
