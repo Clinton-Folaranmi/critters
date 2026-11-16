@@ -14,7 +14,7 @@
 //   once this page's scene is in and the browser is idle, the one after.
 // - Badge to frame: where cross-page view transitions are supported
 //   (site.css), the clicked badge's picture grows into the next page's frame.
-// - The Embed button opens the line that puts this animal on another page.
+// - About and Embed, on the name's row, each open a panel under the badges.
 // - Embedded in another page (embed.ts, ?embed): the picture alone, with a
 //   small credit; nothing is fetched ahead.
 import { SETTINGS, TOOL } from './border';
@@ -189,37 +189,50 @@ function startBadges(picture: HTMLElement, scene: HTMLElement) {
 }
 
 /**
- * The line that puts this animal on another page (page.html: the Embed button and its panel).
- * While 'Square' is chosen the picture shows without its border, as that embed will.
+ * The two buttons on the name's row (page.html) and their panels, one open at a time. About
+ * says what this is; Embed holds the line that puts this animal on another page, and while
+ * its 'Square' is chosen the picture shows without its border, as that embed will.
  */
-function startEmbedLine(picture: HTMLElement) {
-  const toggle = document.querySelector<HTMLButtonElement>('.embed-toggle');
-  const panel = document.getElementById('embed');
-  const line = panel?.querySelector('code');
-  const copy = panel?.querySelector<HTMLButtonElement>('.copy');
-  if (!toggle || !panel || !line || !copy) return;
-  const edges = [...panel.querySelectorAll<HTMLButtonElement>('.edges button')];
+function startPanels(picture: HTMLElement) {
+  const toggles = [...document.querySelectorAll<HTMLButtonElement>('.tools button')];
+  const panelOf = (toggle: HTMLButtonElement) => document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+  const embed = document.getElementById('embed');
+  const line = embed?.querySelector('code');
+  const copy = embed?.querySelector<HTMLButtonElement>('.copy');
+  const edges = [...(embed?.querySelectorAll<HTMLButtonElement>('.edges button') ?? [])];
   let edge = 'soft';
   const show = () => {
+    if (!embed || !line) return;
     const plain = edge === 'none';
-    line.textContent = `<script async src="${panel.dataset.src}" data-animal="${panel.dataset.animal}"${plain ? ' data-edge="none"' : ''}></script>`;
+    line.textContent = `<script async src="${embed.dataset.src}" data-animal="${embed.dataset.animal}"${plain ? ' data-edge="none"' : ''}></script>`;
     for (const button of edges) button.setAttribute('aria-pressed', String(button.dataset.edge === edge));
-    picture.classList.toggle('plain', plain && !panel.hidden);
+    picture.classList.toggle('plain', plain && !embed.hidden);
   };
-  toggle.hidden = false;
-  toggle.addEventListener('click', () => {
-    panel.hidden = !panel.hidden;
-    toggle.setAttribute('aria-expanded', String(!panel.hidden));
-    show();
-    if (!panel.hidden) panel.scrollIntoView({ block: 'nearest' });
-  });
+  for (const toggle of toggles) {
+    const panel = panelOf(toggle);
+    if (!panel) continue;
+    toggle.hidden = false;
+    toggle.addEventListener('click', () => {
+      const open = panel.hidden;
+      for (const other of toggles) {
+        const theirs = panelOf(other);
+        if (theirs) theirs.hidden = true;
+        other.setAttribute('aria-expanded', 'false');
+      }
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      show();
+      if (open) panel.scrollIntoView({ block: 'nearest' });
+    });
+  }
   for (const button of edges)
     button.addEventListener('click', () => {
       edge = button.dataset.edge ?? 'soft';
       show();
     });
   let reset = 0;
-  copy.addEventListener('click', async () => {
+  copy?.addEventListener('click', async () => {
+    if (!line) return;
     try {
       await navigator.clipboard.writeText(line.textContent ?? '');
       copy.textContent = 'Copied';
@@ -260,7 +273,7 @@ function startShell() {
   if (host) startSketch(picture, host, scene);
   if ('embed' in html.dataset) return startEmbed(stage, scene);
   startBadges(picture, scene);
-  startEmbedLine(picture);
+  startPanels(picture);
 }
 
 startShell();

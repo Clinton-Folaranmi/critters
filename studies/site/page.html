@@ -73,9 +73,21 @@
             {{badges}}
           </ul>
         </nav>
-        <!-- Put this animal on another page: the line to copy (shell.ts shows the button and fills the line). -->
-        <button type="button" class="embed-toggle" aria-expanded="false" aria-controls="embed" hidden>Embed</button>
-        <div class="embed" id="embed" data-src="{{site}}/embed.js" data-animal="{{slug}}" hidden>
+        <!-- What this is, and the line that puts this animal on another page (shell.ts shows the buttons). -->
+        <div class="tools">
+          <button type="button" aria-expanded="false" aria-controls="about" hidden>About</button>
+          <button type="button" aria-expanded="false" aria-controls="embed" hidden>Embed</button>
+        </div>
+        <div class="about panel" id="about" hidden>
+          <p>{{about}}</p>
+          <p class="links">
+            By <a href="{{author_url}}">{{author}}</a>
+            <a href="{{code_url}}">Code</a>
+            <a href="{{kit_url}}">Kit</a>
+            <a href="{{credits_url}}">Footage credits</a>
+          </p>
+        </div>
+        <div class="embed panel" id="embed" data-src="{{site}}/embed.js" data-animal="{{slug}}" hidden>
           <div class="edges" role="group" aria-label="Edge">
             <button type="button" data-edge="soft" aria-pressed="true">Soft edge</button>
             <button type="button" data-edge="none" aria-pressed="false">Square</button>

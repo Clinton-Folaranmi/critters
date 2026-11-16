@@ -63,10 +63,20 @@ body::before {
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .3  0 0 0 0 .25  0 0 0 .55 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
 }
+/* The picture is as wide as the page, so the page narrows in a short window
+   until the name and the badges fit under the picture without scrolling
+   (230 px: the space above the picture, the name and one row of badges). */
 .page {
-  max-width: 900px;
+  max-width: min(900px, (100vh - 230px) * 1.48);
   margin: 0 auto;
   padding-block: clamp(20px, 5vh, 56px) 40px;
+}
+/* Too short for all three (a phone on its side): the picture alone fits. */
+@media (max-height: 520px) {
+  .page {
+    max-width: calc((100vh - 32px) * 1.48);
+    padding-block-start: 16px;
+  }
 }
 .stage {
   position: relative;
@@ -174,7 +184,7 @@ html[data-still] .sketch {
   margin-top: 18px;
 }
 .caption nav,
-.embed {
+.panel {
   grid-column: 1 / -1;
 }
 h1 {
@@ -313,15 +323,17 @@ h1 .letters span {
   .dot,
   h1 .letters span,
   .badge .dot,
-  .embed,
+  .panel,
   .sketch {
     animation: none !important;
     transition: none !important;
   }
 }
-/* Put this animal on another page: a quiet button on the name's row opens the
-   line to copy, under the badges (shell.ts). 'Square' shows the picture without
-   its border while it's chosen, as the embed will be. */
+/* Two quiet buttons on the name's row, each opening a panel under the badges
+   (shell.ts; one open at a time). About: what this is, whose, and where the
+   code, the kit and the footage credits are. Embed: the line that puts this
+   animal on another page; 'Square' shows the picture without its border
+   while it's chosen, as that embed will be. */
 .caption button {
   padding: 0;
   color: inherit;
@@ -334,7 +346,13 @@ h1 .letters span {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
-.caption .embed-toggle,
+.tools {
+  display: flex;
+  grid-area: 1 / 2;
+  gap: 6px;
+  align-self: center;
+}
+.tools button,
 .edges button {
   padding: 6px 12px;
   color: var(--muted);
@@ -343,35 +361,56 @@ h1 .letters span {
   border: 1.5px solid transparent;
   border-radius: 999px;
 }
-.caption .embed-toggle {
-  grid-area: 1 / 2;
-  align-self: center;
+.tools button {
   border-color: rgba(31, 42, 30, 0.22);
 }
-.caption .embed-toggle:hover,
-.caption .embed-toggle[aria-expanded='true'],
+.tools button[hidden] {
+  display: none;
+}
+.tools button:hover,
+.tools button[aria-expanded='true'],
 .edges button:hover,
 .edges button[aria-pressed='true'] {
   color: var(--ink);
 }
-.caption .embed-toggle[aria-expanded='true'],
+.tools button[aria-expanded='true'],
 .edges button[aria-pressed='true'] {
   border-color: var(--line);
 }
-.embed {
+.panel {
   display: grid;
   gap: 10px;
-  animation: embed-in 0.28s cubic-bezier(0.25, 0.8, 0.3, 1);
+  animation: panel-in 0.28s cubic-bezier(0.25, 0.8, 0.3, 1);
 }
-.embed[hidden],
-.embed-toggle[hidden] {
+.panel[hidden] {
   display: none;
 }
-@keyframes embed-in {
+@keyframes panel-in {
   from {
     transform: translateY(-6px);
     opacity: 0;
   }
+}
+.about p {
+  max-width: 58ch;
+  margin: 0;
+}
+.about .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+.about a {
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+.about a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 3px;
 }
 .edges {
   display: flex;
@@ -520,6 +559,9 @@ html[data-credit='off'] .credit {
   border: 0;
 }
 @media (max-width: 640px) {
+  .page {
+    max-width: 900px;
+  }
   .stage {
     margin-inline: -16px;
   }

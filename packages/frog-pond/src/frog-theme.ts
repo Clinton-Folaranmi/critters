@@ -248,7 +248,7 @@ export const FROG_COPY = {
   title: 'Day Chorus',
   lede: 'Three frogs, a scatter of pads, open water and a high sun.',
   description: 'A small interactive study of frogs on lily pads in a sunlit pond.',
-  motionLabel: 'Day Chorus: an interactive sunlit pond where three frogs sit on lily pads on open water.',
+  motionLabel: 'An interactive sunlit pond where three frogs sit on lily pads on open water.',
   stillLabel:
     'A still illustration of three frogs on lily pads in a sunlit pond, with a white water lily and dappled light on the water.',
 } as const;

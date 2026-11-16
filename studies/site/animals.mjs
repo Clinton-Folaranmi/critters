@@ -3,10 +3,24 @@
 // here; the other seven are vendored from their own projects
 // (scripts/sync-studies.mjs → studies/vendor/<slug>/).
 //
-//   still     shown in the picture until the scene's first frame
+//   still     shown in the picture until the scene's first frame: wide, and narrow for the phone's shape
+//             (the scene's own settled first frame at 0.91; the loading sketch is traced from each)
 //   ground    the colour under the still while it loads
 /** The site's address: the one place to change when it moves to its own domain (link previews, sitemap). */
 export const SITE_URL = 'https://thecritters.vercel.app';
+
+/** What the site says about itself (the About panel on every page, the root's link preview) and where its links go. */
+export const SITE = {
+  description:
+    'Small living animal studies you can tap: frogs, a ladybug, a butterfly, a snail, a mouse, koi, a snake and a cockroach.',
+  about:
+    'Eight small animals that move like the real ones. Each was studied from footage of the real animal, measured, and built to match.',
+  author: 'Clinton',
+  authorUrl: 'https://github.com/Clinton-Folaranmi',
+  codeUrl: 'https://github.com/Clinton-Folaranmi/critters',
+  kitUrl: 'https://www.npmjs.com/package/critter-kit',
+  creditsUrl: 'https://github.com/Clinton-Folaranmi/critters/blob/main/docs/CREDITS.md',
+};
 
 export const ANIMALS = [
   {
@@ -22,49 +36,49 @@ export const ANIMALS = [
     slug: 'ladybug',
     name: 'Ladybug',
     description: 'A small interactive study of three ladybugs on clover between garden bricks.',
-    still: { wide: '../assets/stills/ladybug.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/ladybug.jpg', narrow: '../assets/stills/ladybug-narrow.webp', size: 'cover' },
     ground: '#8f5546',
   },
   {
     slug: 'butterfly',
     name: 'Butterfly',
     description: 'A small interactive study of three butterflies feeding on knapweed in a meadow.',
-    still: { wide: '../assets/stills/butterfly.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/butterfly.jpg', narrow: '../assets/stills/butterfly-narrow.webp', size: 'cover' },
     ground: '#86b552',
   },
   {
     slug: 'snail',
     name: 'Snail',
     description: 'A small interactive study of three garden snails gliding across a stepping stone.',
-    still: { wide: '../assets/stills/snail.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/snail.jpg', narrow: '../assets/stills/snail-narrow.webp', size: 'cover' },
     ground: '#6b9940',
   },
   {
     slug: 'mouse',
     name: 'Mouse',
     description: 'A small interactive study of three wood mice foraging at a bramble edge.',
-    still: { wide: '../assets/stills/mouse.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/mouse.jpg', narrow: '../assets/stills/mouse-narrow.webp', size: 'cover' },
     ground: '#7dad4c',
   },
   {
     slug: 'koi',
     name: 'Koi',
     description: 'A small interactive study of three koi in a stone-edged garden pond.',
-    still: { wide: '../assets/stills/koi.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/koi.jpg', narrow: '../assets/stills/koi-narrow.webp', size: 'cover' },
     ground: '#2a4f49',
   },
   {
     slug: 'snake',
     name: 'Snake',
     description: 'A small interactive study of three grass snakes basking by a pond.',
-    still: { wide: '../assets/stills/snake.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/snake.jpg', narrow: '../assets/stills/snake-narrow.webp', size: 'cover' },
     ground: '#6cae45',
   },
   {
     slug: 'cockroach',
     name: 'Cockroach',
     description: 'A small interactive study of three woodland cockroaches at a fallen crab apple.',
-    still: { wide: '../assets/stills/cockroach.jpg', size: 'cover' },
+    still: { wide: '../assets/stills/cockroach.jpg', narrow: '../assets/stills/cockroach-narrow.webp', size: 'cover' },
     ground: '#6f9a3c',
   },
 ];

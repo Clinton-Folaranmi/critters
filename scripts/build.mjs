@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { crc32, deflateSync, gzipSync } from 'node:zlib';
 import { buildStandalone } from './build-standalone.mjs';
 import { browserOptions, glslMinify } from './esbuild-plugins.mjs';
-import { ANIMALS, SITE_URL } from '../studies/site/animals.mjs';
+import { ANIMALS, SITE, SITE_URL } from '../studies/site/animals.mjs';
 
 const PACKAGE = 'packages/frog-pond';
 const KIT = 'packages/critter-kit';
@@ -138,6 +138,12 @@ function animalPage(template, animal, outdir) {
     description: escape(animal.description),
     slug: animal.slug,
     site: SITE_URL,
+    about: escape(SITE.about),
+    author: escape(SITE.author),
+    author_url: SITE.authorUrl,
+    code_url: SITE.codeUrl,
+    kit_url: SITE.kitUrl,
+    credits_url: SITE.creditsUrl,
     ground: animal.ground,
     url: `${SITE_URL}/${animal.slug}/`,
     share: `${SITE_URL}/assets/share/${animal.slug}.jpg`,
@@ -278,7 +284,12 @@ export async function buildSite({ dev = false, quiet = false } = {}) {
   await rm(outdir, { recursive: true, force: true });
   await mkdir(outdir, { recursive: true });
   // The root sends you to the first animal, the frogs.
-  await cp('studies/index.html', `${outdir}/index.html`);
+  await writeFile(
+    `${outdir}/index.html`,
+    readFileSync('studies/index.html', 'utf8')
+      .replaceAll('{{site}}', SITE_URL)
+      .replaceAll('{{description}}', escape(SITE.description)),
+  );
   await buildShell(outdir, dev);
   let template = readFileSync('studies/site/page.html', 'utf8');
   // No font files (see haveFonts): don't preload one.
