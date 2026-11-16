@@ -4,10 +4,9 @@
 
 **See them move: <https://thecritters.vercel.app>**
 
-Procedural animation studies of real animals, for the web. Nothing is
-pre-drawn or played back: every step, hop and swim is computed live in code
-and tuned against footage of the real animal. This repository is the studies,
-the method for building them, and the harness that measures them:
+Procedural animation studies of real animals, for the web, tuned against
+footage of each one. This repository is the studies, the method for building
+them, and the harness that measures them:
 
 - **The site:** eight animals, one page each: frogs, ladybug, butterfly,
   snail, mouse, koi, snake and cockroach. Each is a small living scene you can

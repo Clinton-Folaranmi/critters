@@ -13,8 +13,7 @@ export const SITE_URL = 'https://thecritters.vercel.app';
 export const SITE = {
   description:
     'Procedurally animated animals you can tap: frogs, a ladybug, a butterfly, a snail, a mouse, koi, a snake and a cockroach.',
-  about:
-    'Procedural animation studies. Nothing is pre-drawn or played back: every step, hop and swim is computed live, and tuned against footage of the real animal.',
+  about: 'Procedural animation studies of real animals, tuned against footage of each one.',
   author: 'Clinton',
   authorUrl: 'https://github.com/Clinton-Folaranmi',
   codeUrl: 'https://github.com/Clinton-Folaranmi/critters',
