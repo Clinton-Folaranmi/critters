@@ -1,5 +1,9 @@
 # Critters
 
+[![Eight animals: frogs, a ladybug, a butterfly, a snail, a mouse, koi, a snake and a cockroach](docs/readme-hero.jpg)](https://thecritters.vercel.app)
+
+**See them move: <https://thecritters.vercel.app>**
+
 Interactive, top-down creature studies for the web, the method for building
 them, and the harness that measures them. This repository is two things:
 
@@ -35,6 +39,29 @@ Space drops a pebble.
 - **The checks:** [`qa/`](qa/README.md), `npm run qa:*`, with thresholds and
   exit codes.
 - **Where the work stands:** [`docs/HANDOFF.md`](docs/HANDOFF.md).
+
+## Using the skill
+
+The skill builds a new animal from one line ("a robin at a bird table"), with
+the spec as its rules and this repository as its toolbox. It runs in
+[Claude Code](https://claude.com/claude-code). Link it from a checkout:
+
+```bash
+git clone https://github.com/Clinton-Folaranmi/critters.git
+cd critters && npm install
+mkdir -p ~/.claude/skills ~/.claude/agents
+ln -s "$PWD/skills/critter" ~/.claude/skills/critter
+ln -s "$PWD"/.claude/agents/critter-*.md ~/.claude/agents/
+```
+
+Then, in any project, ask Claude Code for an animal. The skill finds this
+checkout through its own link (or the `CRITTERS` environment variable, if you
+set it), reads the spec and the examples here, and copies the kit into your
+project. It also needs `ffmpeg` for the footage tools and, for the browser
+checks, Playwright's headless shell (`npx playwright install chromium-headless-shell`).
+
+Footage it studies is used for measurement only and never shipped; the
+sources behind the eight animals here are in [`docs/CREDITS.md`](docs/CREDITS.md).
 
 ## Setup
 
@@ -106,7 +133,7 @@ One line puts an animal on any page:
 ```
 
 Each animal's page has an Embed button beside its name that opens this line
-for that animal, with a choice of edge (`shell.ts`, `startEmbedLine`). The script (`studies/site/embed.ts`, built to `dist/site/embed.js`)
+for that animal, with a choice of edge (`shell.ts`, `startPanels`). The script (`studies/site/embed.ts`, built to `dist/site/embed.js`)
 puts a frame where the tag is, as wide as its parent, showing the animal's
 page with `?embed`: the picture alone on a clear page (`page.html` sets
 `data-embed`, `site.css` does the rest), so the border fades into the host
@@ -188,6 +215,7 @@ worker and makes no requests. `qa:standalone` checks it.
 
 ## Licence
 
-Code: MIT ([`LICENSE`](LICENSE)). Docs (`docs/`, `llms.txt`): CC BY 4.0
-([`docs/LICENSE`](docs/LICENSE)). General Sans: ITF Free Font License
-(`studies/site/fonts/LICENSE-FFL.txt`), not redistributed here.
+Code: MIT ([`LICENSE`](LICENSE)): everything except the documentation. Docs
+(`docs/`, `llms.txt`): CC BY 4.0 ([`docs/LICENSE`](docs/LICENSE)). General Sans:
+ITF Free Font License (`studies/site/fonts/LICENSE-FFL.txt`), not redistributed
+here. Footage credits: [`docs/CREDITS.md`](docs/CREDITS.md).

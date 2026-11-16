@@ -69,12 +69,23 @@ packages"). Their pages and boards were removed on 2026-11-14.
   build from git; the build writes `dist/site/vercel.json`
   (`trailingSlash: true`). No GitHub Pages.
 - **Embedding (2026-11-15):** `/embed.js` puts any animal on another page in
-  one line (README, "Embedding"). Each animal's page has an Embed button
-  beside its name that opens the line to copy (the owner: no separate embed
-  page), and shows the picture alone with `?embed`.
+  one line (README, "Embedding"). Each animal's page shows the picture alone
+  with `?embed`.
+- **About and Embed (2026-11-16):** two quiet buttons on the name's row open
+  a panel under the badges, one at a time (the owner: no separate pages, no
+  extra copy). About's words and links are `SITE` in
+  `studies/site/animals.mjs`; the footage credits are `docs/CREDITS.md`.
+- **Stills:** every animal has a wide still and a phone-shaped one (0.91),
+  the scene's own settled first frame, so the loading sketch hands over to
+  the same picture on a phone. The seven vendored animals' narrow stills are
+  WebP captures of `/<animal>/?embed&edge=none` under reduced motion at
+  455 × 500, 2×.
+- **Short windows:** the page narrows until the name and badges fit under
+  the picture (`.page` in `site.css`).
 - **Updating an animal:** change it in its own project, then
-  `node scripts/sync-studies.mjs <animal>`, replace its still if the first
-  frame changed (`studies/site/stills/`, then `node scripts/trace-sketches.mjs`),
+  `node scripts/sync-studies.mjs <animal>`, replace its stills (wide and
+  narrow) if the first frame changed (`studies/site/stills/`, then
+  `node scripts/trace-sketches.mjs`),
   `npm run build:site`, review, deploy.
 - **Social clips:** `social/site-clips/render.mjs` makes the 15-second X
   clips from `dist/site`; `social/render-approved.mjs` makes square posts.
