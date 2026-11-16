@@ -32,7 +32,7 @@ Two things, both kept:
 
 The seven external animals each have their own project (its own copy of the
 kit, footage log, visual direction board, checks and git history). Their home
-is one folder, `~/critter-studies/<animal>/`.
+is one folder, a private `critter-studies/<animal>/` checkout beside this one.
 They were first built as sibling folders of this repository (`critter-test`
 for the ladybug, `critter-butterfly`, `critter-snail`, `critter-mouse`,
 `critter-koi`, `critter-snake`, `critter-cockroach`), and

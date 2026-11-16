@@ -392,8 +392,8 @@ h1 .letters span {
   }
 }
 .about p {
-  max-width: 58ch;
   margin: 0;
+  text-wrap: balance;
 }
 .about .links {
   display: flex;
